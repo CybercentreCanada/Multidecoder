@@ -1,5 +1,7 @@
 """ Helper functions for type coersion between string and bytes """
 
+from typing import Union
+
 def make_str(string: Union[str, bytes]) -> str:
     """ Helper function for bytes to str coersion """
     return string.decode(errors='ignore') if isinstance(string, bytes) else string
