@@ -4,8 +4,8 @@ import re
 
 from typing import Mapping, List
 
-from string_helper import make_str
-from network import is_public_ip
+from multidecoder.string_helper import make_str
+from multidecoder.network import is_public_ip
 
 IP_RE = rb'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b'
 DOMAIN_RE = rb'\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})\b'

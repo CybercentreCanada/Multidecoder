@@ -3,8 +3,8 @@
 from ipaddress import AddressValueError, IPv4Address
 from typing import Union
 
-from domains import TOP_LEVEL_DOMAINS
-from string_helper import make_str, make_bytes
+from multidecoder.domains import TOP_LEVEL_DOMAINS
+from multidecoder.string_helper import make_str, make_bytes
 
 def is_valid_domain(domain: Union[str, bytes]) -> bool:
     """ Checks if a domain is valid """

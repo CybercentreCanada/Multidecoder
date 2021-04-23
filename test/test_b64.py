@@ -1,6 +1,6 @@
 import binascii
 
-from  multidecoder import base64_search
+from multidecoder.base64 import base64_search
 
 def test_base64_search_empty():
     assert base64_search(b'') == []
