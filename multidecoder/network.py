@@ -1,9 +1,9 @@
 """ Network indicators
 
 This module contains:
-- Regexes for finding IPs, domains, email addresses, and URLs
-- Validators for checking potential network indicators
-- find_network_indicators, a function for finding all network indicators for a text
+- Regexes for finding IPs, domains, email addresses, and URLs.
+- Validators for checking potential network indicators.
+- find_network_indicators, a function for finding all network indicators for a text.
 """
 
 import re
@@ -17,14 +17,14 @@ from multidecoder.string_helper import make_str, make_bytes
 IP_RE = rb'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b'
 DOMAIN_RE = rb'(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})\b'
 EMAIL_RE = rb'(?i)\b[a-z0-9._%+-]{3,}@(' + DOMAIN_RE[4:] + rb')\b'
-URL_RE = rb'(?i)(?:ftp|http|https)://(' + IP_RE + rb'|' + DOMAIN_RE[4:] + rb')(?::[0-9]{1,5})?' \
+URL_RE = rb'(?i)(?:ftp|https?)://(' + IP_RE + rb'|' + DOMAIN_RE[4:] + rb')(?::[0-9]{1,5})?' \
          rb'(?:/[a-z0-9/\-.&%$#=~?_+]{3,200})?'
 
 def find_network_indicators(data: bytes) -> Mapping[str, Set[bytes]]:
-    """ Find network indicators in data
+    """ Find network indicators in data.
 
     Args:
-        data: The data to search
+        data: The data to search.
     """
     return {
             'domain': {domain for domain in re.findall(DOMAIN_RE, data)
@@ -38,18 +38,18 @@ def find_network_indicators(data: bytes) -> Mapping[str, Set[bytes]]:
 
 def is_public_ip(ip: Union[str, bytes]) -> bool:
     """
-    Checks if an ipv4 address is valid and a standard public internet address
+    Checks if an ipv4 address is valid and a standard public internet address.
 
     rejects invalid addresses.
     rejects a valid address if it is:
-        - a multicast address
-        - a private address
-        - a reserved address
+        - a multicast address,
+        - a private address,
+        - a reserved address.
 
     Args:
-        ip: The ipv4 address to check
+        ip: The ipv4 address to check.
     Returns:
-        Whether ip is a public ip address
+        Whether ip is a public ip address.
     """
     try:
         address = IPv4Address(make_str(ip))
@@ -58,14 +58,14 @@ def is_public_ip(ip: Union[str, bytes]) -> bool:
     return address.is_global and not address.is_multicast
 
 def is_valid_domain(domain: Union[str, bytes]) -> bool:
-    """ Checks if a domain is valid
+    """ Checks if a domain is valid.
 
-    Checks the top level domain to ensure it is a registered top level domain
+    Checks the top level domain to ensure it is a registered top level domain.
 
     Args:
-        domain: The domain to validate
+        domain: The domain to validate.
     Returns:
-        Whether domain has a valid top level domain
+        Whether domain has a valid top level domain.
     """
     parts = make_bytes(domain).rsplit(b'.', 1)
     if len(parts) != 2:

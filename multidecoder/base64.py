@@ -1,29 +1,39 @@
 """
-MultiDecoder
+Base 64 encoded text
 """
-
 
 import binascii
 import re
 
+from typing import Dict
 
-def base64_search(text):
+HTML_ESCAPE_RE = rb'&#(?:x[a-fA-F0-9]{1,4}|\d{1,4});'
+BASE64_RE = rb'(?:[A-Za-z0-9+/]{4,}(?:<\x00  \x00)?(?:&#13;|&#xD;)?(?:&#10;|&#xA)?\r?\n?){3,}' \
+            rb'[A-Za-z0-9+/]{2,}={0,2}'
+
+MIN_B64_CHARS = 6
+
+def base64_search(text: bytes) -> Dict[bytes, bytes]:
     """
-    Finds all base64 in text
-    retuns a list of decoded sections
+    Find all base64 encoded sections in a text.
+
+    Args:
+        text: The text to search.
+    Returns:
+        A dictionary with the original base64 encoded sections as keys
+        and the corresponding decoded data as values.
     """
-    b64_matches = set()
-    base64_results = []
-    base64_pattern = b'([\x20]{0,2}(?:[A-Za-z0-9+/]{10,}={0,2}(?:&#[x1][A0];)?[\r]?[\n]?){2,})'
-    for b64_match in re.findall(base64_pattern, text):
-        b64_string = b64_match.replace(b'\n', b'').replace(b'\r', b'').replace(b' ', b'')\
-                .replace(b'&#xA;', b'').replace(b'&#10;', b'')
-        if b64_string in b64_matches:
+    b64_matches = {}
+    for b64_match in re.findall(BASE64_RE, text):
+        if b64_match in b64_matches:
             continue
-        b64_matches.add(b64_string)
+        b64_string = re.sub(HTML_ESCAPE_RE, b'', b64_match).replace(b'\n', b'').replace(b'\r', b'') \
+                .replace(b'<\x00  \x00', b'')
         uniq_char = set(b64_string)
-        if len(uniq_char) > 6:
-            b64result = binascii.a2b_base64(b64_string)
-            if b64result:
-                base64_results.append(b64result)
-    return base64_results
+        if len(uniq_char) > MIN_B64_CHARS and len(b64_string) % 4 == 0:
+            try:
+                b64_result = binascii.a2b_base64(b64_string)
+                b64_matches[b64_match] = b64_result
+            except binascii.Error:
+                pass
+    return b64_matches
