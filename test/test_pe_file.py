@@ -10,4 +10,4 @@ def test_find_pe_files():
                          b'This program cannot be run in DOS mode. This is obviously not PE content.') == []
     with open(os.path.join(TEST_DIR, 'samples/powershell.exe'), 'rb') as f:
         ps = f.read()
-    assert find_pe_files(ps) == [ps]
+    assert find_pe_files(ps) == [(ps, 0, len(ps))]

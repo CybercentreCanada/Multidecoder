@@ -21,7 +21,7 @@ def test_ip_re():
     assert not re.search(IP_RE, b'.123.123.123')
 
     # ip are found in context
-    assert re.search(IP_RE, b'http://8.8.8.8/something').group(0) == b'8.8.8.8'
+    assert re.search(IP_RE, b'http://8.8.8.8/something').group() == b'8.8.8.8'
 
 def test_domain_re():
     # normal domain
@@ -52,8 +52,8 @@ def test_find_network_indicators():
         b'From: some_guy@suspicious.com,\n'
         b'click this: https://8.8.8.8/gonna/steal/your/money.html  !!') \
              == {
-                    'domain': {b'suspicious.com'},
-                    'email': {b'some_guy@suspicious.com'},
-                    'ip': {b'8.8.8.8'},
-                    'url': {b'https://8.8.8.8/gonna/steal/your/money.html'}
+                    'domain': [(b'suspicious.com', 15, 29)],
+                    'email': [(b'some_guy@suspicious.com', 6, 29)],
+                    'ip': [(b'8.8.8.8', 51, 58)],
+                    'url': [(b'https://8.8.8.8/gonna/steal/your/money.html', 43, 86)]
                 }

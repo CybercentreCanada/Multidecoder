@@ -9,8 +9,9 @@ This module contains:
 import re
 
 from ipaddress import AddressValueError, IPv4Address
-from typing import Mapping, Set, Union
+from typing import Dict, List, Union
 
+from multidecoder import Hit
 from multidecoder.domains import TOP_LEVEL_DOMAINS
 from multidecoder.string_helper import make_str, make_bytes
 
@@ -20,20 +21,24 @@ EMAIL_RE = rb'(?i)\b[a-z0-9._%+-]{3,}@(' + DOMAIN_RE[4:] + rb')\b'
 URL_RE = rb'(?i)(?:ftp|https?)://(' + IP_RE + rb'|' + DOMAIN_RE[4:] + rb')(?::[0-9]{1,5})?' \
          rb'(?:/[a-z0-9/\-.&%$#=~?_+]{3,200})?'
 
-def find_network_indicators(data: bytes) -> Mapping[str, Set[bytes]]:
+def match_to_hit(match: re.Match) -> Hit:
+    return Hit(match.group(), match.start(), match.end())
+
+def find_network_indicators(data: bytes) -> Dict[str, List[Hit]]:
     """ Find network indicators in data.
 
     Args:
         data: The data to search.
     """
     return {
-            'domain': {domain for domain in re.findall(DOMAIN_RE, data)
-                       if is_valid_domain(domain)},
-            'email': {match.group(0) for match in re.finditer(EMAIL_RE, data)
-                      if is_valid_domain(match.group(1))},
-            'ip': {ip for ip in re.findall(IP_RE, data) if is_public_ip(ip)},
-            'url': {match.group(0) for match in re.finditer(URL_RE, data)
-                    if is_valid_domain(match.group(1)) or is_public_ip(match.group(1))}
+            'domain': [match_to_hit(match) for match in re.finditer(DOMAIN_RE, data)
+                        if is_valid_domain(match.group())],
+            'email':  [match_to_hit(match) for match in re.finditer(EMAIL_RE, data)
+                        if is_valid_domain(match.group(1))],
+            'ip':     [match_to_hit(match) for match in re.finditer(IP_RE, data)
+                        if is_public_ip(match.group())],
+            'url':    [match_to_hit(match) for match in re.finditer(URL_RE, data)
+                        if is_valid_domain(match.group(1)) or is_public_ip(match.group(1))]
     }
 
 def is_public_ip(ip: Union[str, bytes]) -> bool:
