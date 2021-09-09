@@ -46,14 +46,3 @@ def test_is_public_ip():
     assert not is_public_ip(b'0.0.0.0')
     assert not is_public_ip(b'10.0.192.33')
     assert not is_public_ip(b'127.0.0.1')
-
-def test_find_network_indicators():
-    assert find_network_indicators(
-        b'From: some_guy@suspicious.com,\n'
-        b'click this: https://8.8.8.8/gonna/steal/your/money.html  !!') \
-             == {
-                    'domain': [(b'suspicious.com', 15, 29)],
-                    'email': [(b'some_guy@suspicious.com', 6, 29)],
-                    'ip': [(b'8.8.8.8', 51, 58)],
-                    'url': [(b'https://8.8.8.8/gonna/steal/your/money.html', 43, 86)]
-                }

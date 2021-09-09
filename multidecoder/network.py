@@ -24,22 +24,25 @@ URL_RE = rb'(?i)(?:ftp|https?)://(' + IP_RE + rb'|' + DOMAIN_RE[4:] + rb')(?::[0
 def match_to_hit(match: re.Match) -> Hit:
     return Hit(match.group(), match.start(), match.end())
 
-def find_network_indicators(data: bytes) -> Dict[str, List[Hit]]:
-    """ Find network indicators in data.
+def find_domains(data: bytes) -> List[Hit]:
+    """ Find domains in data """
+    return [match_to_hit(match) for match in re.finditer(DOMAIN_RE, data)
+                if is_valid_domain(match.group())]
 
-    Args:
-        data: The data to search.
-    """
-    return {
-            'domain': [match_to_hit(match) for match in re.finditer(DOMAIN_RE, data)
-                        if is_valid_domain(match.group())],
-            'email':  [match_to_hit(match) for match in re.finditer(EMAIL_RE, data)
-                        if is_valid_domain(match.group(1))],
-            'ip':     [match_to_hit(match) for match in re.finditer(IP_RE, data)
-                        if is_public_ip(match.group())],
-            'url':    [match_to_hit(match) for match in re.finditer(URL_RE, data)
-                        if is_valid_domain(match.group(1)) or is_public_ip(match.group(1))]
-    }
+def find_emails(data: bytes) -> List[Hit]:
+    """ Find email addresses in data """
+    return [match_to_hit(match) for match in re.finditer(EMAIL_RE, data)
+                if is_valid_domain(match.group(1))]
+
+def find_ips(data: bytes) -> List[Hit]:
+    """ Find ip addresses in data """
+    return [match_to_hit(match) for match in re.finditer(IP_RE, data)
+                if is_public_ip(match.group())]
+
+def find_urls(data: bytes) -> List[Hit]:
+    """ Find URLs in data """
+    return [match_to_hit(match) for match in re.finditer(URL_RE, data)
+                if is_valid_domain(match.group(1)) or is_public_ip(match.group(1))]
 
 def is_public_ip(ip: Union[str, bytes]) -> bool:
     """
