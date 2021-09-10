@@ -1,9 +1,10 @@
-from multidecoder import Hit
 import re
 
 from typing import List
 
 import pefile
+
+from multidecoder import Hit
 
 EXEDOS_RE = rb'(?s)This program cannot be run in DOS mode'
 EXEHEADER_RE = rb'(?s)MZ.{32,1024}PE\000\000'
@@ -11,7 +12,7 @@ EXEHEADER_RE = rb'(?s)MZ.{32,1024}PE\000\000'
 def find_pe_files(data: bytes) -> List[Hit]:
     """
     Searches for any PE files within data
-    
+
     Args:
         data: The data to search
     Returns:
