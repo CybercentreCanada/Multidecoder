@@ -1,3 +1,5 @@
+import logging
+
 from itertools import chain
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -69,22 +71,26 @@ def analyze_data(data: bytes,
             if first.start < end:
                 # We have an overlap
                 # Not sure what to do about overlaps yet
-                raise Exception(f'Overlapping hits {first} {context}')
+                # Assume that the second IOC is wrong?
+                logging.error(f'Overlapping hits {first_label}: {data[first.start:first.end]}\n{label}: {context}')
+                break
             # Nest current context in the next down and switch to that context
             context, end, label =_pop_context(stack, context, label)
-        # Now first.end <= end and so first is contained within the current context
-        # Add old context to stack
-        stack.append((context, end, label))
-        if first_label in decoders:
-            # Get new results
-            decoded_results = analyze_data(first.value, depth-1, analyzers, decoders,
-                                           _original=data[first.start:first.end])
-            decoded_results[KEY] = first.value
-            # Decoders are only the context of their decoded results
-            context, end, label = _pop_context(stack, decoded_results, first_label)
         else:
-            # Make first the new context
-            context, end, label = first.value, first.end, first_label
+            # Now first.end <= end and so first is contained within the current context
+            # Add old context to stack
+            stack.append((context, end, label))
+            if first_label in decoders:
+                # Get new results
+                decoded_results = analyze_data(first.value, depth-1, analyzers, decoders,
+                                            _original=data[first.start:first.end])
+                decoded_results[KEY] = first.value
+                decoded_results['raw'] = data[first.start:first.end]
+                # Decoders are only the context of their decoded results
+                context, end, label = _pop_context(stack, decoded_results, first_label)
+            else:
+                # Make first the new context
+                context, end, label = first.value, first.end, first_label
 
     # Clean up context stack
     while stack:
