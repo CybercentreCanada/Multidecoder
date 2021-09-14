@@ -4,7 +4,7 @@ import sys
 
 from typing import Any, Dict, List
 
-from multidecoder.analyze_data import analyze_data
+from multidecoder.analyze_data import MultiDecoder
 
 def main():
     parser = argparse.ArgumentParser()
@@ -19,8 +19,8 @@ def main():
             return
     else:
         data = sys.stdin.buffer.read()
-
-    print(json.dumps(decode_dict(analyze_data(data)), sort_keys=True, indent=4))
+    md = MultiDecoder()
+    print(json.dumps(decode_list(md.analyze_data(data)), indent=4))
 
 def decode_dict(d: Dict[str, Any]) -> Dict[str, Any]:
     for k, v in d.items():
@@ -34,12 +34,12 @@ def decode_dict(d: Dict[str, Any]) -> Dict[str, Any]:
 
 def decode_list(L: List[Any]) -> List[Any]:
     for i in range(len(L)):
-        if isinstance(L[i], bytes):
+        if isinstance(L[i], dict):
+            decode_dict(L[i])
+        elif isinstance(L[i], bytes):
             L[i] = decode_bytes(L[i])
         elif isinstance(L[i], list):
             decode_list(L[i])
-        elif isinstance(L[i], dict):
-            decode_dict(L[i])
     return L
 
 def decode_bytes(b: bytes) -> str:
