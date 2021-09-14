@@ -1,18 +1,45 @@
-from multidecoder.analyze_data import analyze_data, KEY
+import pytest
 
-def test_analyze_data_empty():
-    assert analyze_data(b'') == {}
+from multidecoder.analyze_data import MultiDecoder
 
-def test_analyze_data_url():
-    assert analyze_data(b'https://some.domain.com') == {
-        'network.url': {
-            KEY: b'https://some.domain.com',
-            'network.domain': b'some.domain.com'
+@pytest.fixture
+def md():
+    return MultiDecoder()
+
+def test_analyze_data_empty(md):
+    assert md.analyze_data(b'') == []
+
+def test_analyze_data_url(md):
+    assert md.analyze_data(b'https://some.domain.com') == [
+        {
+            'type': 'network.url',
+            'value': b'https://some.domain.com',
+            'children': [
+                {
+                    'type': 'network.domain',
+                    'value': b'some.domain.com',
+                    'children': []
+                }
+            ]
+
         }
-    }
+    ]
 
-def test_analyze_data_no_overlap():
-    assert analyze_data(b'google.com, amazon.com, 8.8.8.8') == {
-        'network.domain': [b'google.com', b'amazon.com'],
-        'network.ip': b'8.8.8.8'
-    }
+def test_analyze_data_no_overlap(md):
+    assert md.analyze_data(b'google.com, amazon.com, 8.8.8.8') == [
+        {
+            'type': 'network.domain',
+            'value': b'google.com',
+            'children': []
+        },
+        {
+            'type': 'network.domain',
+            'value': b'amazon.com',
+            'children': []
+        },
+        {
+            'type': 'network.ip',
+            'value': b'8.8.8.8',
+            'children': []
+        },
+    ]
