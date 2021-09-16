@@ -1,12 +1,14 @@
 import heapq
 
 from itertools import chain
+from multidecoder.shell import find_shell_strings
 from typing import Any, Callable, Dict, List
 
 from multidecoder import Hit
-from multidecoder.pe_file import find_pe_files
 from multidecoder.base64 import find_base64
 from multidecoder.network import find_domains, find_emails, find_ips, find_urls
+from multidecoder.pe_file import find_pe_files
+from multidecoder.shell import find_shell_strings
 
 # Type declarations
 AnalyzerMap = Dict[str, Callable[[bytes], List[Hit]]]
@@ -20,7 +22,8 @@ ANALYZERS: AnalyzerMap = {
     'network.domain': find_domains,
     'network.email': find_emails,
     'network.ip': find_ips,
-    'network.url': find_urls
+    'network.url': find_urls,
+    'shell strings': find_shell_strings
 }
 
 class MultiDecoder:
