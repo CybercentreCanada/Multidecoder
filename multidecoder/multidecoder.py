@@ -1,10 +1,8 @@
-import heapq
-
 from itertools import chain
 from multidecoder.shell import find_shell_strings
 from typing import Any, Callable, Dict, List
 
-from multidecoder import Hit
+from multidecoder.hit import Hit
 from multidecoder.base64 import find_base64
 from multidecoder.network import find_domains, find_emails, find_ips, find_urls
 from multidecoder.pe_file import find_pe_files
@@ -31,7 +29,7 @@ class MultiDecoder:
         self.analyzers = analyzers
         self.decoders = decoders
 
-    def analyze_data(self, data: bytes, depth: int = 10, _original: bytes = b'') -> List[Dict[str, Any]]:
+    def scan(self, data: bytes, depth: int = 10, _original: bytes = b'') -> List[Dict[str, Any]]:
         """
         Report the combined analysis results.
 
@@ -70,7 +68,7 @@ class MultiDecoder:
             if label in self.decoders:
                 # Children of decoded hits are results on the decoded data
                 child['raw'] = data[hit.start:hit.end]
-                child['children'] = self.analyze_data(child['value'], depth-1, child['raw'])
+                child['children'] = self.scan(child['value'], depth-1, child['raw'])
             else:
                 # Set the current result as the context
                 stack.append((children, end))

@@ -3,7 +3,7 @@ import re
 
 from typing import List
 
-from multidecoder import Hit, match_to_hit
+from multidecoder.hit import Hit, match_to_hit
 
 SHELL_RE = rb'(?i)"\s*(?:powershell|cmd|shell)[^"]+"'
 

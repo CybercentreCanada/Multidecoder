@@ -7,7 +7,7 @@ import re
 
 from typing import List
 
-from multidecoder import Hit
+from multidecoder.hit import Hit
 
 HTML_ESCAPE_RE = rb'&#(?:x[a-fA-F0-9]{1,4}|\d{1,4});'
 BASE64_RE = rb'(?:[A-Za-z0-9+/]{4,}(?:<\x00  \x00)?(?:&#13;|&#xD;)?(?:&#10;|&#xA)?\r?\n?){3,}' \

@@ -4,7 +4,7 @@ from typing import List
 
 import pefile
 
-from multidecoder import Hit
+from multidecoder.hit import Hit
 
 EXEDOS_RE = rb'(?s)This program cannot be run in DOS mode'
 EXEHEADER_RE = rb'(?s)MZ.{32,1024}PE\000\000'

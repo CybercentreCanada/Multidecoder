@@ -1,7 +1,7 @@
 
 from typing import Iterable, List
 
-from multidecoder import Hit
+from multidecoder.hit import Hit
 
 def find_keywords(keywords: Iterable[bytes], data: bytes) -> List[Hit]:
     data = data.lower()
