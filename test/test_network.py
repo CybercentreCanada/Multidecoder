@@ -1,6 +1,6 @@
 import re
 
-from multidecoder.network import *
+from multidecoder.analyzers.network import *
 
 def test_ip_re():
     assert re.match(IP_RE, b'8.8.8.8') # valid ip address
@@ -21,7 +21,8 @@ def test_ip_re():
     assert not re.search(IP_RE, b'.123.123.123')
 
     # ip are found in context
-    assert re.search(IP_RE, b'http://8.8.8.8/something').group() == b'8.8.8.8'
+    ip = re.search(IP_RE, b'http://8.8.8.8/something')
+    assert ip and ip.group() == b'8.8.8.8'
 
 def test_domain_re():
     # normal domain
