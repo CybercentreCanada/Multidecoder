@@ -1,35 +1,22 @@
+from __future__ import annotations
+
 from itertools import chain
-from multidecoder.shell import find_shell_strings
-from typing import Any, Callable, Dict, List
+from typing import Any, Optional
 
 from multidecoder.hit import Hit
-from multidecoder.base64 import find_base64
-from multidecoder.network import find_domains, find_emails, find_ips, find_urls
-from multidecoder.pe_file import find_pe_files
-from multidecoder.shell import find_shell_strings
-
-# Type declarations
-AnalyzerMap = Dict[str, Callable[[bytes], List[Hit]]]
-
-# Analysis maps
-DECODERS: AnalyzerMap = {
-    'base64': find_base64
-}
-ANALYZERS: AnalyzerMap = {
-    'PE file': find_pe_files,
-    'network.domain': find_domains,
-    'network.email': find_emails,
-    'network.ip': find_ips,
-    'network.url': find_urls,
-    'shell strings': find_shell_strings
-}
+from multidecoder.registry import AnalyzerMap, get_analyzers
 
 class MultiDecoder:
-    def __init__(self, analyzers: AnalyzerMap = ANALYZERS, decoders: AnalyzerMap = DECODERS) -> None:
-        self.analyzers = analyzers
-        self.decoders = decoders
+    def __init__(self, detectors: Optional[AnalyzerMap] = None, decoders: Optional[AnalyzerMap] = None) -> None:
+        if detectors or decoders:
+            self.detectors = detectors or {}
+            self.decoders = decoders or {}
+        else:
+            detectors, decoders = get_analyzers()
+            self.detectors = detectors
+            self.decoders = decoders
 
-    def scan(self, data: bytes, depth: int = 10, _original: bytes = b'') -> List[Dict[str, Any]]:
+    def scan(self, data: bytes, depth: int = 10, _original: bytes = b'') -> list[dict[str, Any]]:
         """
         Report the combined analysis results.
 
@@ -50,7 +37,7 @@ class MultiDecoder:
 
         # Get results in sorted order
         for label, hit in sorted(
-                ((label, hit) for label, search in chain(self.analyzers.items(), self.decoders.items())
+                ((label, hit) for label, search in chain(self.detectors.items(), self.decoders.items())
                 for hit in search(data) if hit.value not in _original),
                 key=lambda t: (t[1].start, -t[1].end)):
             child = {
