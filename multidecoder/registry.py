@@ -5,27 +5,21 @@ import importlib
 import os
 import pkgutil
 
-from functools import partial
 from typing import Callable, Iterable, Optional
 
 import multidecoder.analyzers
 from multidecoder.hit import Hit
 from multidecoder.keyword import find_keywords
 
-# Type declarations
+# Registry type
 AnalyzerMap = dict[str, Callable[[bytes], list[Hit]]]
 
 # Decorator to mark functions to load
-def _search_decorator(decodes: bool, label: str):
+def analyzer(label: str):
     def decorator(f):
         f.label = label
-        f.decodes = decodes
         return f
     return decorator
-
-# Sugar to make decorators more legible
-detector = partial(_search_decorator, False)
-decoder = partial(_search_decorator, True)
 
 def get_keywords(directory: str) -> dict[str, Callable[[bytes], list[Hit]]]:
     keyword_map = {}
@@ -47,9 +41,8 @@ def get_keywords(directory: str) -> dict[str, Callable[[bytes], list[Hit]]]:
     return keyword_map
 
 def get_analyzers(include: Optional[Iterable[str]]=None,
-                  exclude: Optional[Iterable[str]]=None) -> tuple[AnalyzerMap, AnalyzerMap]:
-    detectors = {}
-    decoders = {}
+                  exclude: Optional[Iterable[str]]=None) -> AnalyzerMap:
+    analyzers = {}
     for submod_info in pkgutil.iter_modules(multidecoder.analyzers.__path__):
         if include and submod_info.name not in include:
             continue
@@ -57,6 +50,6 @@ def get_analyzers(include: Optional[Iterable[str]]=None,
             continue
         submodule = importlib.import_module('.'+submod_info.name, package=multidecoder.analyzers.__name__)
         for _, function in inspect.getmembers(submodule, inspect.isfunction):
-            if hasattr(function, 'label') and hasattr(function, 'decodes'):
-                (decoders if function.decodes else detectors)[function.label] = function
-    return (detectors, decoders)
+            if hasattr(function, 'label'):
+                analyzers[function.label] = function
+    return analyzers

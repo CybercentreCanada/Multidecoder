@@ -1,19 +1,12 @@
 from __future__ import annotations
 
-from itertools import chain
 from typing import Any, Optional
 
 from multidecoder.registry import AnalyzerMap, get_analyzers
 
 class MultiDecoder:
-    def __init__(self, detectors: Optional[AnalyzerMap] = None, decoders: Optional[AnalyzerMap] = None) -> None:
-        if detectors or decoders:
-            self.detectors = detectors or {}
-            self.decoders = decoders or {}
-        else:
-            detectors, decoders = get_analyzers()
-            self.detectors = detectors
-            self.decoders = decoders
+    def __init__(self, analyzers: Optional[AnalyzerMap] = None) -> None:
+        self.analyzers = analyzers if analyzers else get_analyzers()
 
     def scan(self, data: bytes, depth: int = 10, _original: bytes = b'') -> list[dict[str, Any]]:
         """
@@ -36,13 +29,13 @@ class MultiDecoder:
 
         # Get results in sorted order
         for label, hit in sorted(
-                ((label, hit) for label, search in chain(self.detectors.items(), self.decoders.items())
+                ((label, hit) for label, search in self.analyzers.items()
                 for hit in search(data) if hit.value not in _original),
                 key=lambda t: (t[1].start, -t[1].end)):
             child = {
                 'type': label,
-                'value': hit.value,
-                'children': []
+                'value': data[hit.start:hit.end],
+                'children': [],
             }
             # Return to the context that contains the current hit
             while end < hit.end:
@@ -51,13 +44,12 @@ class MultiDecoder:
             # Add it to the parents list of children
             children.append(child)
 
-            if label in self.decoders:
-                # Children of decoded hits are results on the decoded data
-                child['raw'] = data[hit.start:hit.end]
-                child['children'] = self.scan(child['value'], depth-1, child['raw'])
-            else:
-                # Set the current result as the context
-                stack.append((children, end))
-                children, end = child['children'], hit.end
+            if child['value'] != hit.value:
+                # Add decoded result and check for new IOCs
+                child['decoded'] = hit.value
+                child['decoded_children'] = self.scan(child['value'], depth-1, child['raw'])
+            # Set the current result as the context
+            stack.append((children, end))
+            children, end = child['children'], hit.end
 
         return stack[0][0] if stack else children

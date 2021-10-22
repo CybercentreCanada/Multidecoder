@@ -1,9 +1,10 @@
+from __future__ import annotations
 
-from typing import Iterable, List
+from typing import Iterable
 
 from multidecoder.hit import Hit
 
-def find_keywords(keywords: Iterable[bytes], data: bytes) -> List[Hit]:
+def find_keywords(keywords: Iterable[bytes], data: bytes) -> list[Hit]:
     data = data.lower()
     return [
         Hit(keyword, start, start+len(keyword))
@@ -11,7 +12,7 @@ def find_keywords(keywords: Iterable[bytes], data: bytes) -> List[Hit]:
         for start in find_all(keyword, data)
     ]
 
-def find_all(keyword: bytes, data:bytes) -> List[int]:
+def find_all(keyword: bytes, data:bytes) -> list[int]:
     starts = []
     start = data.find(keyword)
     while start >= 0:

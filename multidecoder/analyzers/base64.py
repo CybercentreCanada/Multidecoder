@@ -8,7 +8,7 @@ import re
 from typing import List
 
 from multidecoder.hit import Hit
-from multidecoder.registry import decoder
+from multidecoder.registry import analyzer
 
 HTML_ESCAPE_RE = rb'&#(?:x[a-fA-F0-9]{1,4}|\d{1,4});'
 BASE64_RE = rb'(?:[A-Za-z0-9+/]{4,}(?:<\x00  \x00)?(?:&#13;|&#xD;)?(?:&#10;|&#xA)?\r?\n?){3,}' \
@@ -19,7 +19,7 @@ HEX_RE = rb'[a-z0-9]+'
 
 MIN_B64_CHARS = 6
 
-@decoder('base64')
+@analyzer('base64')
 def find_base64(data: bytes) -> List[Hit]:
     """
     Find all base64 encoded sections in a text.
