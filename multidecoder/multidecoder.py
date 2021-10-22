@@ -3,7 +3,6 @@ from __future__ import annotations
 from itertools import chain
 from typing import Any, Optional
 
-from multidecoder.hit import Hit
 from multidecoder.registry import AnalyzerMap, get_analyzers
 
 class MultiDecoder:
