@@ -1,7 +1,6 @@
 import binascii
-from types import DynamicClassAttribute
 
-from multidecoder.base64 import find_base64
+from multidecoder.analyzers.base64 import find_base64
 
 def test_find_base64_empty():
     assert find_base64(b'') == []
