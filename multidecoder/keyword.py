@@ -9,10 +9,12 @@ def find_keywords(keywords: Iterable[bytes], data: bytes) -> list[Hit]:
     return [
         Hit(keyword, start, start+len(keyword))
         for keyword in keywords
-        for start in find_all(keyword, data)
+        for start in find_all(keyword.lower(), data)
     ]
 
 def find_all(keyword: bytes, data:bytes) -> list[int]:
+    if not keyword:
+        return []
     starts = []
     start = data.find(keyword)
     while start >= 0:

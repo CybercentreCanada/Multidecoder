@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from multidecoder.registry import AnalyzerMap, get_analyzers
+from multidecoder.registry import AnalyzerMap, build_map
 
 class MultiDecoder:
     def __init__(self, analyzers: Optional[AnalyzerMap] = None) -> None:
-        self.analyzers = analyzers if analyzers else get_analyzers()
+        self.analyzers = analyzers if analyzers else build_map()
 
     def scan(self, data: bytes, depth: int = 10, _original: bytes = b'') -> list[dict[str, Any]]:
         """
@@ -47,7 +47,8 @@ class MultiDecoder:
             if child['value'] != hit.value:
                 # Add decoded result and check for new IOCs
                 child['decoded'] = hit.value
-                child['decoded_children'] = self.scan(child['value'], depth-1, child['raw'])
+                if child['value'].lower() != hit.value.lower():
+                    child['decoded_children'] = self.scan(child['value'], depth-1, child['raw'])
             # Set the current result as the context
             stack.append((children, end))
             children, end = child['children'], hit.end
