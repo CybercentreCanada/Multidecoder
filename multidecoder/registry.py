@@ -26,7 +26,7 @@ def build_map(directory: str = '',
               include: Optional[Iterable[str]]=None,
               exclude: Optional[Iterable[str]]=None) -> AnalyzerMap:
     """ Get both analyzer functions and keyword functions """
-    keywords = get_keywords(directory or os.path.join(multidecoder.__file__, 'keywords'))
+    keywords = get_keywords(directory)
     keywords.update(get_analyzers(include=include, exclude=exclude))
     return keywords
 
@@ -47,15 +47,15 @@ def get_analyzers(include: Optional[Iterable[str]]=None,
                 analyzers[function.label] = function
     return analyzers
 
-def get_keywords(directory: str) -> AnalyzerMap:
+def get_keywords(directory: str = '') -> AnalyzerMap:
     """ Get keyword search functions from a directory """
+    directory = directory or os.path.join(next(iter(multidecoder.__path__)), 'keywords')
     keyword_map = {}
     for subdir, _, files in os.walk(directory):
         for file_name in files:
-            with open(file_name, 'rb') as f:
-                keywords = f.readlines()
+            with open(os.path.join(subdir, file_name), 'rb') as f:
+                keywords = f.read().splitlines()
             if not keywords:
                 continue
-            label = subdir.replace(os.sep, '.') + file_name
-            keyword_map[label] = lambda data: find_keywords(keywords, data)
+            keyword_map[file_name] = lambda data: find_keywords(keywords, data)
     return keyword_map
