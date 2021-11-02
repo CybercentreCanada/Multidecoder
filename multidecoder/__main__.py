@@ -1,10 +1,11 @@
+from __future__ import annotations
 import argparse
 import json
 import sys
 
-from typing import Any, Dict, List
+from typing import Any
 
-from multidecoder.analyze_data import MultiDecoder
+from multidecoder import MultiDecoder
 
 def main():
     parser = argparse.ArgumentParser()
@@ -20,9 +21,9 @@ def main():
     else:
         data = sys.stdin.buffer.read()
     md = MultiDecoder()
-    print(json.dumps(decode_list(md.analyze_data(data)), indent=4))
+    print(json.dumps(decode_list(md.scan(data)), indent=4))
 
-def decode_dict(d: Dict[str, Any]) -> Dict[str, Any]:
+def decode_dict(d: dict[str, Any]) -> dict[str, Any]:
     for k, v in d.items():
         if isinstance(v, bytes):
             d[k] = decode_bytes(v)
@@ -32,7 +33,7 @@ def decode_dict(d: Dict[str, Any]) -> Dict[str, Any]:
             decode_dict(v)
     return d
 
-def decode_list(L: List[Any]) -> List[Any]:
+def decode_list(L: list[Any]) -> list[Any]:
     for i in range(len(L)):
         if isinstance(L[i], dict):
             decode_dict(L[i])

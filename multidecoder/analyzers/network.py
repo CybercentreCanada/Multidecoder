@@ -11,9 +11,10 @@ import re
 from ipaddress import AddressValueError, IPv4Address
 from typing import Dict, List, Union
 
-from multidecoder import Hit
+from multidecoder.hit import Hit, match_to_hit
 from multidecoder.domains import TOP_LEVEL_DOMAINS
 from multidecoder.string_helper import make_str, make_bytes
+from multidecoder.registry import analyzer
 
 IP_RE = rb'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b'
 DOMAIN_RE = rb'(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})\b'
@@ -21,24 +22,25 @@ EMAIL_RE = rb'(?i)\b[a-z0-9._%+-]{3,}@(' + DOMAIN_RE[4:] + rb')\b'
 URL_RE = rb'(?i)(?:ftp|https?)://(' + IP_RE + rb'|' + DOMAIN_RE[4:] + rb')(?::[0-9]{1,5})?' \
          rb'(?:/[a-z0-9/\-.&%$#=~?_+]{3,200})?'
 
-def match_to_hit(match: re.Match) -> Hit:
-    return Hit(match.group(), match.start(), match.end())
-
+@analyzer('network.domain')
 def find_domains(data: bytes) -> List[Hit]:
     """ Find domains in data """
     return [match_to_hit(match) for match in re.finditer(DOMAIN_RE, data)
                 if is_valid_domain(match.group())]
 
+@analyzer('network.email')
 def find_emails(data: bytes) -> List[Hit]:
     """ Find email addresses in data """
     return [match_to_hit(match) for match in re.finditer(EMAIL_RE, data)
                 if is_valid_domain(match.group(1))]
 
+@analyzer('network.ip')
 def find_ips(data: bytes) -> List[Hit]:
     """ Find ip addresses in data """
     return [match_to_hit(match) for match in re.finditer(IP_RE, data)
                 if is_public_ip(match.group())]
 
+@analyzer('network.url')
 def find_urls(data: bytes) -> List[Hit]:
     """ Find URLs in data """
     return [match_to_hit(match) for match in re.finditer(URL_RE, data)
