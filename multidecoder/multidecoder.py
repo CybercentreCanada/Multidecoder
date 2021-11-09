@@ -48,7 +48,7 @@ class MultiDecoder:
                 # Add decoded result and check for new IOCs
                 child['decoded'] = hit.value
                 if child['value'].lower() != hit.value.lower():
-                    child['decoded_children'] = self.scan(child['value'], depth-1, child['raw'])
+                    child['decoded_children'] = self.scan(child['decoded'], depth-1, child['value'])
             # Set the current result as the context
             stack.append((children, end))
             children, end = child['children'], hit.end
