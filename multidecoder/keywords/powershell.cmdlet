@@ -1,6 +1,5 @@
 Add-Content
 Add-PSSnapIn
-AppData
 Clear-Content
 Clear-Host
 Clear-History
@@ -12,7 +11,6 @@ Connect-PSSession
 Copy-Item
 Copy-ItemProperty
 Convert-Path
-cmd
 Disable-PSBreakpoint
 Disconnect-PSSession
 Enable-PSBreakpoint
@@ -99,7 +97,6 @@ Set-Item
 Set-Location
 Set-PSBreakpoint
 Set-Variable
-Shell
 Show-Command
 Start-Job
 Start-Process
