@@ -2,15 +2,19 @@ import binascii
 
 from multidecoder.analyzers.base64 import find_base64
 
-def test_find_base64_empty():
+def test_empty():
     assert find_base64(b'') == []
 
-def test_find_base64_hex():
+def test_hex():
     assert find_base64(b'0123456789abcdef') == []
     assert find_base64(b'2fd4e1c67a2d28fced849ee1bb76e7391b93eb12') == []
 
-def test_find_base64_camel():
+def test_CamelCase():
     assert find_base64(b'CamelCaseTesting') == []
+    assert find_base64(b'WakeAllConditionVariable, GetUserDefaultUILanguage') == []
+
+def test_url():
+    assert find_base64(b'http://schemas.microsoft.com/SMI/2016/WindowsSettings') == []
 
 ENCODED = binascii.b2a_base64(b'Some base64 encoded text')
 TEST_STRINGS = {
