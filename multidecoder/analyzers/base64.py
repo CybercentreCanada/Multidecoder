@@ -43,7 +43,7 @@ def find_base64(data: bytes) -> List[Hit]:
             # Camel case text can be confused for base64
             # It is common in scripts as names
             continue
-        if b64_string.count(b'/')/len(b64_string) > 1/12:
+        if b64_string.count(b'/')/len(b64_string) > 3/32:
             # If there are a lot of / it as more likely a path
             continue
         try:
