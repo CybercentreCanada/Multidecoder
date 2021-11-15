@@ -5,6 +5,7 @@ import importlib
 import os
 import pkgutil
 
+from functools import partial
 from typing import Callable, Iterable, Optional
 
 import multidecoder
@@ -57,5 +58,5 @@ def get_keywords(directory: str = '') -> AnalyzerMap:
                 keywords = f.read().splitlines()
             if not keywords:
                 continue
-            keyword_map[file_name] = lambda data: find_keywords(keywords, data)
+            keyword_map[file_name] = partial(find_keywords, keywords)
     return keyword_map
