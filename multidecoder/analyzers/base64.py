@@ -2,10 +2,11 @@
 Base 64 encoded text
 """
 
+from __future__ import annotations
+
 import binascii
 import re
 
-from typing import List
 
 from multidecoder.hit import Hit
 from multidecoder.registry import analyzer
@@ -19,21 +20,21 @@ HEX_RE = rb'(?i)[a-f0-9]+'
 MIN_B64_CHARS = 6
 
 @analyzer('base64')
-def find_base64(data: bytes) -> List[Hit]:
+def find_base64(data: bytes) -> list[Hit]:
     """
-    Find all base64 encoded sections in a text.
+    Find all base64 encoded sections in some data.
 
     Args:
-        text: The text to search.
+        data: The data to search.
     Returns:
-        A dictionary with the original base64 encoded sections as keys
-        and the corresponding decoded data as values.
+        A list of decoded base64 sections and the location indexes of the section
+        in the original data.
     """
     b64_matches = []
     for b64_match in re.finditer(BASE64_RE, data):
         b64_string = re.sub(HTML_ESCAPE_RE, b'', b64_match.group()).replace(b'\n', b'').replace(b'\r', b'') \
                 .replace(b'<\x00  \x00', b'')
-        if len(b64_string) % 4 != 0 or len(set(b64_string)) > MIN_B64_CHARS:
+        if len(b64_string) % 4 != 0 or len(set(b64_string)) <= MIN_B64_CHARS:
             continue
         if re.fullmatch(HEX_RE, b64_string):
             # Hexadecimal characters are a subset of base64
@@ -43,7 +44,7 @@ def find_base64(data: bytes) -> List[Hit]:
             # Camel case text can be confused for base64
             # It is common in scripts as names
             continue
-        if b64_string.count(b'/')/len(b64_string) > 1/12:
+        if b64_string.count(b'/')/len(b64_string) > 3/32:
             # If there are a lot of / it as more likely a path
             continue
         try:
