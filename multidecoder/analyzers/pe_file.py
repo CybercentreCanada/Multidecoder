@@ -1,6 +1,6 @@
-import re
+from __future__ import annotations
 
-from typing import List
+import re
 
 import pefile
 
@@ -11,7 +11,7 @@ EXEDOS_RE = rb'(?s)This program cannot be run in DOS mode'
 EXEHEADER_RE = rb'(?s)MZ.{32,1024}PE\000\000'
 
 @analyzer('pe_file')
-def find_pe_files(data: bytes) -> List[Hit]:
+def find_pe_files(data: bytes) -> list[Hit]:
     """
     Searches for any PE files within data
 
@@ -20,7 +20,7 @@ def find_pe_files(data: bytes) -> List[Hit]:
     Returns:
         A list of found PE files
     """
-    pe_files: List[Hit] = []
+    pe_files: list[Hit] = []
     offset = 0
     while offset < len(data):
         match = re.search(EXEHEADER_RE, data)

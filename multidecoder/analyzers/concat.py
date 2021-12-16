@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 
-from soupsieve import match
 from multidecoder.hit import Hit
 
 from multidecoder.registry import analyzer
