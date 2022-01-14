@@ -1,0 +1,11 @@
+PdhOpenQuery
+PdhAddCounter
+PdhCollectQueryData
+PdhGetFormattedCounterValue
+PdhCloseQuery
+PdhAdd009CounterA
+PdhAdd009CounterW
+PdhCreateSQLTablesA
+PdhCreateSQLTablesW
+SetSoftwareUpdateAdvertisementState
+GetSoftwareUpdateInfo

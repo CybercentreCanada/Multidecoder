@@ -1,0 +1,10 @@
+DirectSoundCreate
+DirectSoundEnumerate
+DirectSoundEnumerate
+DirectSoundCaptureCreate
+DirectSoundCaptureEnumerate
+DirectSoundCaptureEnumerate
+GetDeviceID
+DirectSoundFullDuplexCreate
+DirectSoundCreate8
+DirectSoundCaptureCreate8

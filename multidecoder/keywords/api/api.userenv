@@ -1,0 +1,14 @@
+ CreateUserProfileEx
+ GetUserProfileDirectory
+ GetAppliedGPOList
+ GetAllUsersProfileDirectory
+ GetProfilesDirectory
+ CreateProfile
+ DeleteProfile
+ ExpandEnvironmentStringsForUser
+ ForceSyncFgPolicy
+ FreeGPOList
+ RsopResetPolicySettingStatus
+ RsopSetPolicySettingStatus
+ RefreshPolicy
+ UnregisterGPNotification

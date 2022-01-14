@@ -1,0 +1,8 @@
+SfcIsFileProtected
+SfcIsKeyProtected
+SfcGetNextProtectedFile
+SfcGetFiles
+SFCDisable
+SFCScan
+SRSetRestorePoint
+SfpVerifyFile

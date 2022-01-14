@@ -1,0 +1,16 @@
+ldap_err2string
+ldap_first_entry
+ldap_next_entry
+ldap_get_dn
+ldap_first_attribute
+ldap_next_attribute
+ldap_get_values_len
+ldap_msgfree
+ldap_unbind_s
+ldap_search_s
+ldap_simple_bind_s
+ldap_value_free_len
+ldap_init
+ldap_memfree
+ldap_set_option
+ber_free

@@ -1,0 +1,7 @@
+IcmpCreateFile
+IcmpParseReplies
+IcmpCloseHandle
+IcmpSendEcho
+IcmpSendEcho2
+do_echo_req
+register_icmp

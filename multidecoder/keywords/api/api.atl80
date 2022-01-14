@@ -1,0 +1,11 @@
+AtlComModuleGetClassObject
+AtlComModuleRegisterServer
+AtlComModuleUnregisterServer
+AtlUpdateRegistryFromResourceD
+AtlComPtrAssign
+AtlComQIPtrAssign
+AtlInternalQueryInterface
+AtlGetVersion
+AtlModuleAddTermFunc
+AtlCreateRegistrar
+AtlCallTermFunc
