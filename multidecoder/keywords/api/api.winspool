@@ -1,0 +1,14 @@
+EnumMonitorsA
+EnumMonitorsW
+GetDefaultPrinterA
+SetDefaultPrinterA
+GetDefaultPrinterW
+SetDefaultPrinterW
+AddPrintProcessor
+DeletePort
+DeletePrinter
+DeletePrinterConnection
+DeletePrintProcessor
+EnumPorts
+GetPrinterDriverDirectory
+GetPrintProcessorDirectory

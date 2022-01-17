@@ -1,0 +1,8 @@
+EncryptMessage
+DecryptMessage
+GetUserNameEx
+DeleteSecurityContext
+DdeSetQualityOfService
+LsaLookupAuthenticationPackage
+LsaDeregisterLogonProcess
+LsaConnectUntrusted

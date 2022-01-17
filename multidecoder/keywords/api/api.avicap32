@@ -1,0 +1,8 @@
+capControlCallback
+capCreateCaptureWindow
+capErrorCallback
+capGetDriverDescription
+capStatusCallback
+capVideoStreamCallback
+capWaveStreamCallback
+capYieldCallback

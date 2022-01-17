@@ -1,0 +1,8 @@
+DeletePort
+MprAdminUserWrite
+MprAdminUserGetInfo
+MprAdminUserUserOpen
+MprAdminUserUserClose
+MprAdminUserRead
+MprAdminUserOpen
+MprAdminUserClose

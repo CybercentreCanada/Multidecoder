@@ -1,0 +1,15 @@
+GetDllVersion
+DllGetVersion
+Extract
+DeleteExtractedFiles
+FCIFlushFolder
+FCIFlushCabinet
+FCIDestroy
+FCIFlushCabinet
+FCIAddFile
+FCICreate
+FDICreate
+FDIIsCabinet
+FDICopy
+FDIDestroy
+FDITruncateCabinet

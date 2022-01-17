@@ -1,0 +1,12 @@
+SCardControl
+SCardDisconnect
+SCardBeginTransaction
+SCardEndTransaction
+SCardEstablishContext
+SCardReconnect
+SCardStatus
+SCardTransmit
+SCardReleaseStartedEvent
+SCardAccessStartedEvent
+SCardReleaseContext
+SCardListReaders

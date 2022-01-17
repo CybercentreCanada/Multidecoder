@@ -1,0 +1,9 @@
+AtlComModuleRegisterClassObjects
+AtlComModuleRevokeClassObjects
+AtlUpdateRegistryFromResourceD
+AtlRegisterClassCategoriesHelper
+AtlLoadTypeLib
+AtlCreateRegistrar
+AtlCallTermFunc
+AtlSetPerUserRegistration
+AtlGetPerUserRegistration

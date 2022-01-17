@@ -1,0 +1,9 @@
+SetupDiGetDeviceRegistryProperty
+SetupDiGetClassDevs
+SetupDiEnumDeviceInfo
+SetupDiEnumDeviceInterfaces
+SetupDiGetDeviceInterfaceDetail
+SetupDiDestroyDeviceInfoList
+SetupDiOpenDevRegKey
+SetupDiClassGuidsFromNameEx
+SetupDiMoveDuplicateDevice

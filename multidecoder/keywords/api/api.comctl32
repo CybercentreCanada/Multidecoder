@@ -1,0 +1,11 @@
+MenuHelp
+ShowHideMenuCtl
+CreateStatusWindowA
+CreateToolbar
+CreateMappedBitmap
+DrawInsert
+CreateUpDownControl
+InitCommonControls
+CreateStatusWindow
+_TrackMouseEvent
+AddMRUStringW

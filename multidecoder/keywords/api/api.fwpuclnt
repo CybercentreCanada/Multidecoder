@@ -1,0 +1,5 @@
+WSASetSocketPeerTargetName
+WSADeleteSocketPeerTargetName
+WSAImpersonateSocketPeer
+WSAQuerySocketSecurity
+WSARevertImpersonation
