@@ -18,6 +18,8 @@ def find_all(keyword: bytes, data:bytes) -> list[int]:
     starts = []
     start = data.find(keyword)
     while start >= 0:
-        starts.append(start)
+        end = start + len(keyword)
+        if (start == 0 or not data[start-1:start].isalnum()) and (end==len(data) or not data[end:end+1].isalnum()):
+            starts.append(start)
         start = data.find(keyword, start+len(keyword))
     return starts

@@ -55,7 +55,8 @@ def get_keywords(directory: str = '') -> AnalyzerMap:
     for subdir, _, files in os.walk(directory):
         for file_name in files:
             with open(os.path.join(subdir, file_name), 'rb') as f:
-                keywords = f.read().splitlines()
+                keywords = set(f.read().splitlines())
+                keywords.discard(b'')
             if not keywords:
                 continue
             keyword_map[file_name] = partial(find_keywords, keywords)
