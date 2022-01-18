@@ -9,7 +9,7 @@ This module contains:
 import re
 
 from ipaddress import AddressValueError, IPv4Address
-from typing import Dict, List, Union
+from typing import List, Union
 
 from multidecoder.hit import Hit, match_to_hit
 from multidecoder.domains import TOP_LEVEL_DOMAINS

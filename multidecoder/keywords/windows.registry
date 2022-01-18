@@ -1,0 +1,51 @@
+\Device\KeyboardClass0
+Software\Skype\Phone
+\registry\machine\system\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\
+Software\Microsoft
+System\WPA\
+HARDWARE\DEVICEMAP\SERIALCOMM
+HARDWARE\DEVICEMAP\PARALLEL PORTS
+Software\Microsoft\Windows\CurrentVersion\Run
+.DEFAULT\Software\Microsoft\Windows\CurrentVersion\RunServices
+.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Runonce
+.DEFAULT\Software\Microsoft\Windows\CurrentVersion\Run
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\UserReset
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run\
+HKEY_CURRENT_USER\Software\Microsoft
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\UserInit
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\Shell
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run\wdfmgr
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\UserRestart
+Software\Policies\Microsoft\Cryptography\AutoEnrollment
+Software\KasperskyLab\protected\AVP9\settings
+Software\KasperskyLab\protected\AVP8\settings
+Software\kingsoft\AntiVirus
+Software\JiangMin
+Software\Norton\SecurityStatusSDK
+Software\ESET\ESET Security\CurrentVersion\Info
+Software\Cisco Systems\VPN Client\AllAccess
+Software\AVAST Software
+Software\ESET
+Software\Classes\TypeLib\{F9043C88-F6F2-101A-A3C9-08002B2F49FB}\1.2\0\win32
+CurrentVersion\Run
+Hardware\Description\System\CentralProcessor
+Hardware\ACPI\DSDT
+HARDWARE\DEVICEMAP
+hklm\SYSTEM\ControlSet001\Control\SafeBoot\Network\{4D36E967-E325-11CE-BFC1-08002BE10318}
+hklm\SYSTEM\ControlSet001\Control\SafeBoot\Minimal\{4D36E967-E325-11CE-BFC1-08002BE10318}
+HARDWARE\DESCRIPTION\System\CentralProcessor\0
+DEFAULT\Software\Microsoft\Windows\CurrentVersion\Run
+DisableTaskManager
+HKCU\Control Panel\Desktop
+LoadAppInit_DLLs
+AppInit_DLLs
+WarnOnIntranet
+NoProtectedModeBanner
+Global\{A3BD3259-3E4F-428a-84C8-F0463A9D3EB5}
+Global\{A64C7F33-DA35-459b-96CA-63B51FB0CDB9}
+CLSID\{6C736DB0-BD94-11D0-8A23-00AA00B58E10}\EnableEvents
+ROOT\SecurityCenter
+ROOT\SecurityCenter2
+\shell\open\command
+\Device\KeyboardClassC
+\DosDevices\KeyboardClassC
