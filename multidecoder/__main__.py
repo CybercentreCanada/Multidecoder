@@ -1,15 +1,17 @@
 from __future__ import annotations
+
 import argparse
 import json
 import sys
 
 from typing import Any
 
-from multidecoder import MultiDecoder
+from multidecoder import MultiDecoder, __version__
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('filepath', nargs='?', metavar='FILE')
+    parser.add_argument('--version', '-V', action='version', version="%(prog)s " + __version__)
     args = parser.parse_args()
     if args.filepath:
         try:
