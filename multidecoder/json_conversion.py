@@ -38,7 +38,7 @@ def check_dict(d: Any) -> dict[str, Any]:
             raise ValueError(f'Invalid object, entry decoded must be str but got {type(d["decoded"])}')
         d['decoded'] = d['decoded'].encode('latin-1')
         if 'decoded_children' in d:
-            check_list(d['children'])
+            check_list(d['decoded_children'])
         else:
             d['decoded_children'] = []
     elif 'decoded_children' in d:
