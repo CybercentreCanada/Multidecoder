@@ -1,58 +1,46 @@
 from __future__ import annotations
 
-import json
+import simplejson
 
 from typing import Any
 
-
 def tree_to_json(tree: list[dict[str, Any]], **kargs) -> str:
-    return json.dumps(decode_list(tree), **kargs)
+    return simplejson.dumps(tree, encoding='latin-1', **kargs)
 
 def json_to_tree(serialized: str, **kargs) -> list[dict[str,Any]]:
-    return encode_list(json.loads(serialized, **kargs))
+    return check_list(simplejson.loads(serialized, encoding='latin-1', **kargs))
 
-def decode_bytes(b: bytes) -> str:
-    return b.decode('latin-1')
-
-def encode_bytes(s: str) -> bytes:
-    return s.encode('latin-1')
-
-def decode_dict(d: dict[str, Any]) -> dict[str, Any]:
-    for k, v in d.items():
-        if isinstance(v, bytes):
-            d[k] = decode_bytes(v)
-        elif isinstance(v, list):
-            decode_list(v)
-        elif isinstance(v, dict):
-            decode_dict(v)
-    return d
-
-def encode_dict(d: dict[str, Any]) -> dict[str, Any]:
-    for k, v in d.items():
-        if isinstance(v, str):
-            d[k] = encode_bytes(v)
-        elif isinstance(v, list):
-            encode_list(v)
-        elif isinstance(v, dict):
-            encode_dict(v)
-    return d
-
-def decode_list(L: list[Any]) -> list[Any]:
-    for i in range(len(L)):
-        if isinstance(L[i], dict):
-            decode_dict(L[i])
-        elif isinstance(L[i], bytes):
-            L[i] = decode_bytes(L[i])
-        elif isinstance(L[i], list):
-            decode_list(L[i])
+def check_list(L: Any) -> list[dict[str, Any]]:
+    if not isinstance(L, list):
+        raise ValueError(f'Invalid object, Expected a list but got {type(L)}.')
+    for entry in L:
+        check_dict(entry)
     return L
 
-def encode_list(L: list[Any]) -> list[Any]:
-    for i in range(len(L)):
-        if isinstance(L[i], dict):
-            encode_dict(L[i])
-        elif isinstance(L[i], str):
-            L[i] = encode_bytes(L[i])
-        elif isinstance(L[i], list):
-            encode_list(L[i])
-    return L
+def check_dict(d: Any) -> dict[str, Any]:
+    if not isinstance(d, dict):
+        raise ValueError(f'Invalid object, entry must be dict but got {type(d)}')
+    if 'type' not in d:
+        raise ValueError('Invalid object, entry missing type')
+    if not isinstance(d['type'], str):
+        raise ValueError(f'Invalid object, entry type must be str but got {type(d["type"])}')
+    if 'value' not in d:
+        raise ValueError('Invalid object, entry missing value')
+    if not isinstance(d['value'], str):
+        raise ValueError(f'Invalid object, entry value must be str but got {type(d["value"])}')
+    d['value'] = d['value'].encode('latin-1')
+    if 'children' in d:
+        check_list(d['children'])
+    else:
+        d['children'] = []
+    if 'decoded' in d:
+        if not isinstance(d['decoded'], str):
+            raise ValueError(f'Invalid object, entry decoded must be str but got {type(d["decoded"])}')
+        d['decoded'] = d['decoded'].encode('latin-1')
+        if 'decoded_children' in d:
+            check_list(d['children'])
+        else:
+            d['decoded_children'] = []
+    elif 'decoded_children' in d:
+        raise ValueError('Invalid object, entry has decoded children but no decoded')
+    return d
