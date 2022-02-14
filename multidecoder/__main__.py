@@ -25,7 +25,8 @@ def main():
     md = MultiDecoder()
     tree = md.scan(data)
     if args.json:
-        print(tree_to_json(tree, indent=4))
+        print(tree_to_json(tree))
+        return
     print('-- Successful Decodings --')
     successful_decodings(tree)
     print('-- Decoded Network Indicators --')
