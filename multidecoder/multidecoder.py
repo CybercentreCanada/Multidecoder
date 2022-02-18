@@ -8,6 +8,64 @@ class MultiDecoder:
     def __init__(self, analyzers: Optional[AnalyzerMap] = None) -> None:
         self.analyzers = analyzers if analyzers else build_map()
 
+    def no_decode(self, data: bytes) -> list[dict[str, Any]]:
+        children = []
+        end = len(data)
+        stack = []
+
+        # Get results in sorted order
+        for label, hit in sorted(
+                ((label, hit) for label, search in self.analyzers.items()
+                for hit in search(data)),
+                key=lambda t: (t[1].start, -t[1].end)):
+            child = {
+                'type': label,
+                'value': data[hit.start:hit.end],
+                'children': [],
+            }
+            # Return to the context that contains the current hit
+            while end < hit.end:
+                children, end = stack.pop()
+
+            # Set the current result as the context
+            stack.append((children, end))
+            children, end = child['children'], hit.end
+
+        return stack[0][0] if stack else children
+
+    def decode_only(self, data: bytes, depth: int=10) -> list[dict[str,Any]]:
+        if depth <= 0: return []
+
+        children = []
+        end = 0
+
+        # Get results in sorted order
+        for label, hit in sorted(
+                ((label, hit) for label, search in self.analyzers.items()
+                for hit in search(data) if hit.value),
+                key=lambda t: (t[1].start, -t[1].end)):
+
+            if data[hit.start:hit.end] == hit.value:
+                continue # Not decoded at all
+            if hit.end <= end:
+                continue # Drop nested values
+            else:
+                end = hit.end
+            child = {
+                'type': label,
+                'value': hit.value,
+                'children': [],
+            }
+
+            # Add decoded result and check for new IOCs
+            if child['value'].lower() != hit.value.lower():
+                child['children'] = self.decode_only(child['decoded'], depth-1)
+
+            # Add it to the parents list of children
+            children.append(child)
+
+        return children
+
     def scan(self, data: bytes, depth: int = 10, _original: bytes = b'') -> list[dict[str, Any]]:
         """
         Report the combined analysis results.
