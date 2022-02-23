@@ -26,7 +26,6 @@ class MultiDecoder:
 
         stack: list[tuple[list, int, int]] = []
         start, end = 0, len(data)
-
         # Get results in sorted order
         results = sorted(
             ((label, hit) for search, label in self.analyzers.items()
@@ -58,7 +57,10 @@ class MultiDecoder:
             if hit.value.lower() != data[hit.start:hit.end].lower():
                 # Add decoded result and check for new IOCs
                 decode_end = hit.end
-                child['children'] = self.scan(hit.value, depth-1, context_type=label)
+                sub = data[:hit.start] + hit.value + data[hit.end:]
+                for subchild in self.scan(sub, depth-1, label):
+                    if subchild['end'] >= hit.start and subchild['start'] <= hit.start + len(hit.value):
+                        child['children'].append(subchild)
             else:
                 # No need to rescan, set as context
                 stack.append((children, start, end))
