@@ -5,7 +5,7 @@ import sys
 
 from multidecoder import MultiDecoder, __version__
 from multidecoder.json_conversion import tree_to_json
-from multidecoder.query import decoded_network, mixed_case, successful_decodings
+from multidecoder.query import string_summary
 
 def main():
     parser = argparse.ArgumentParser()
@@ -27,12 +27,7 @@ def main():
     if args.json:
         print(tree_to_json(tree))
         return
-    print('-- Successful Decodings --')
-    successful_decodings(tree)
-    print('-- Decoded Network Indicators --')
-    decoded_network(tree, [])
-    print('-- Mixed Case Detection --')
-    mixed_case(tree)
+    string_summary(tree)
 
 if __name__ == '__main__':
     main()

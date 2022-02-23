@@ -52,7 +52,6 @@ Your decryption price will
 Everything is fine now decrypting all files.
 All files Decrypted
 Enter Decrypt Key
-WScript.Shell
 System Volume Information
 Boot
 This document was edited in later version of Microsoft Word.
@@ -378,9 +377,7 @@ winsock
 connection failed
 open internet failed
 payload
-Wscript.Shell
 Shell.Application
-createobject
 Extracting
 UltraVnc
 UltraVncSC
@@ -427,7 +424,6 @@ Socket
 GetCode
 Console
 LZStart
-shell
 alert
 reverse
 swap
@@ -562,7 +558,6 @@ Downloader
 ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456790+/
 FPC 3.7.1 [2013/10/22] for i386 - Win32
 pipedatacontinue
-Shell
 IE 9.5
 whoami
 pidrun
@@ -1272,7 +1267,6 @@ PortNumber
 CREATE_SUSPENDED
 VBScript.Encode
 JScript.Encode
-WScript
 ExeScriptPAD
 ExeScript
 silent

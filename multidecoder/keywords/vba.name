@@ -1,2 +1,3 @@
 Scripting.FileSystemObject
 WScript.Shell
+CreateObject

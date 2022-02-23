@@ -14,7 +14,7 @@ from multidecoder.hit import Hit
 from multidecoder.keyword import find_keywords
 
 # Registry type
-AnalyzerMap = dict[str, Callable[[bytes], list[Hit]]]
+AnalyzerMap = dict[Callable[[bytes], list[Hit]], str]
 
 def analyzer(label: str):
     """ Decorator for analysis functions """
@@ -45,7 +45,7 @@ def get_analyzers(include: Optional[Iterable[str]]=None,
         submodule = importlib.import_module('.'+submod_info.name, package=multidecoder.analyzers.__name__)
         for _, function in inspect.getmembers(submodule, inspect.isfunction):
             if hasattr(function, 'label'):
-                analyzers[function.label] = function
+                analyzers[function] = function.label
     return analyzers
 
 def get_keywords(directory: str = '') -> AnalyzerMap:
@@ -59,5 +59,5 @@ def get_keywords(directory: str = '') -> AnalyzerMap:
                 keywords.discard(b'')
             if not keywords:
                 continue
-            keyword_map[file_name] = partial(find_keywords, keywords)
+            keyword_map[partial(find_keywords, keywords)] = file_name
     return keyword_map

@@ -44,7 +44,7 @@ def find_ips(data: bytes) -> List[Hit]:
     for match in re.finditer(IP_RE, data):
         ip = parse_ip(match.group())
         if ip:
-            out.append(Hit(ip, *match.span()))
+            out.append(Hit(ip, *match.span(), 'inet_aton' if ip != match.group() else ''))
     return out
 
 @analyzer('network.url')

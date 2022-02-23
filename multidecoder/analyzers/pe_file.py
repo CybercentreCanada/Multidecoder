@@ -35,7 +35,7 @@ def find_pe_files(data: bytes) -> list[Hit]:
             if size == 0:
                 return pe_files
             end = offset+size
-            pe_files.append(Hit(data[offset:end], offset, end))
+            pe_files.append(Hit(data[offset:end], offset, end, ''))
             offset=end
         except Exception:
             return pe_files

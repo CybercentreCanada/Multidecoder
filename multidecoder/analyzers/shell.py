@@ -15,7 +15,12 @@ def strip_carets(text: bytes):
 
 @analyzer('shell.cmd')
 def find_cmd_strings(data: bytes) -> List[Hit]:
-    return [Hit(strip_carets(match.group()), *match.span()) for match in re.finditer(CMD_RE, data)]
+    return [
+        Hit(strip_carets(match.group()),
+            *match.span(),
+            'powershell.carets' if b'^' in match.group() else '')
+        for match in re.finditer(CMD_RE, data)
+    ]
 
 @analyzer('shell.powershell')
 def find_powershell_strings(data: bytes) -> List[Hit]:
