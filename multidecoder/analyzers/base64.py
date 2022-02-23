@@ -19,7 +19,7 @@ CAMEL_RE = rb'(?i)[a-z]+'
 HEX_RE = rb'(?i)[a-f0-9]+'
 MIN_B64_CHARS = 6
 
-@analyzer('data')
+@analyzer('')
 def find_base64(data: bytes) -> list[Hit]:
     """
     Find all base64 encoded sections in some data.
