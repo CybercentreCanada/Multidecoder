@@ -8,7 +8,7 @@ class MultiDecoder:
     def __init__(self, analyzers: Optional[AnalyzerMap] = None) -> None:
         self.analyzers = analyzers if analyzers else build_map()
 
-    def scan(self, data: bytes, depth: int=10, context_type: str='') -> list[dict[str,Any]]:
+    def scan(self, data: bytes, depth: int=10) -> list[dict[str,Any]]:
         """
         Report the combined analysis results.
 
@@ -31,9 +31,6 @@ class MultiDecoder:
             ((label, hit) for search, label in self.analyzers.items()
             for hit in search(data) if hit.value),
             key=lambda t: (t[1].start, -t[1].end))
-        # Prevent analyzer rematching its own decoded output
-        if results and results[0][0] == context_type and (results[0][1].start, results[0][1].end) == (start, end):
-            results = results[1:]
 
         for label, hit in results:
             # Ignore values if in a decoded context
@@ -57,10 +54,10 @@ class MultiDecoder:
             if hit.value.lower() != data[hit.start:hit.end].lower():
                 # Add decoded result and check for new IOCs
                 decode_end = hit.end
-                sub = data[:hit.start] + hit.value + data[hit.end:]
-                for subchild in self.scan(sub, depth-1, label):
-                    if subchild['end'] >= hit.start and subchild['start'] <= hit.start + len(hit.value):
-                        child['children'].append(subchild)
+                child['children'] = self.scan(hit.value, depth-1)
+                # Prevent analyzer rematching its own decoded output
+                if len(child['children']) == 1 and child['children'][0]['value'] == hit.value and child['children'][0]['type']==label:
+                    child['children'] = child['children'][0]['children']
             else:
                 # No need to rescan, set as context
                 stack.append((children, start, end))
