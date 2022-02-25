@@ -4,12 +4,20 @@ from typing import Iterable
 
 from multidecoder.hit import Hit
 
+def is_mixed_case(value: bytes, raw: bytes) -> bool:
+    return any(chr(v).isupper() and not chr(d).isupper()
+              for v, d in zip(raw, value)) and not raw.isupper()
+
 def find_keywords(keywords: Iterable[bytes], data: bytes) -> list[Hit]:
-    data = data.lower()
+    lower = data.lower()
     return [
-        Hit(keyword, start, start+len(keyword))
+        Hit(keyword,
+            start,
+            start+len(keyword),
+            'MixedCase' if is_mixed_case(keyword, data[start:start+len(keyword)]) else ''
+        )
         for keyword in keywords
-        for start in find_all(keyword.lower(), data)
+        for start in find_all(keyword.lower(), lower)
     ]
 
 def find_all(keyword: bytes, data:bytes) -> list[int]:

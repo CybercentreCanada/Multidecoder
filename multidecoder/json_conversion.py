@@ -29,18 +29,21 @@ def check_dict(d: Any) -> dict[str, Any]:
     if not isinstance(d['value'], str):
         raise ValueError(f'Invalid object, entry value must be str but got {type(d["value"])}')
     d['value'] = d['value'].encode('latin-1')
+    if 'start' not in d:
+        raise ValueError('Invalid object, entry missing start')
+    if not isinstance(d['start'], int):
+        raise ValueError(f'Invalid object, start must be int but got {type(d["start"])}')
+    if 'end' not in d:
+        raise ValueError('Invalid object, entry missing end')
+    if not isinstance(d['end'], int):
+        raise ValueError(f'Invalid object, end must be int but got {type(d["start"])}')
+    if 'obfuscation' in d:
+        if not isinstance(d['obfuscation'], str):
+            raise ValueError(f'Invalid object, obfuscation must be str but got {type(d["obfuscation"])}')
+    else:
+        d['obfuscation'] = ''
     if 'children' in d:
         check_list(d['children'])
     else:
         d['children'] = []
-    if 'decoded' in d:
-        if not isinstance(d['decoded'], str):
-            raise ValueError(f'Invalid object, entry decoded must be str but got {type(d["decoded"])}')
-        d['decoded'] = d['decoded'].encode('latin-1')
-        if 'decoded_children' in d:
-            check_list(d['decoded_children'])
-        else:
-            d['decoded_children'] = []
-    elif 'decoded_children' in d:
-        raise ValueError('Invalid object, entry has decoded children but no decoded')
     return d

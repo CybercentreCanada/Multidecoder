@@ -7,19 +7,22 @@ This module contains:
 """
 
 import re
+import socket
 
 from ipaddress import AddressValueError, IPv4Address
 from typing import List, Union
+from urllib.parse import unquote
 
 from multidecoder.hit import Hit, match_to_hit
 from multidecoder.domains import TOP_LEVEL_DOMAINS
 from multidecoder.string_helper import make_str, make_bytes
 from multidecoder.registry import analyzer
 
-IP_RE = rb'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b'
+_OCTET_RE = rb'(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})'
+IP_RE = rb'(?i)\b(?:' + _OCTET_RE + rb'[.]){3}' + _OCTET_RE + rb'\b'
 DOMAIN_RE = rb'(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})\b'
 EMAIL_RE = rb'(?i)\b[a-z0-9._%+-]{3,}@(' + DOMAIN_RE[4:] + rb')\b'
-URL_RE = rb'(?i)(?:ftp|https?)://(' + IP_RE + rb'|' + DOMAIN_RE[4:] + rb')(?::[0-9]{1,5})?' \
+URL_RE = rb'(?i)(?:ftp|https?)://(' + DOMAIN_RE[6:] + rb'|[0-9a-fx.]+)(?::[0-9]{1,5})?' \
          rb'(?:/[a-z0-9/\-.&%$#=~?_+]{3,200})?'
 
 @analyzer('network.domain')
@@ -37,35 +40,43 @@ def find_emails(data: bytes) -> List[Hit]:
 @analyzer('network.ip')
 def find_ips(data: bytes) -> List[Hit]:
     """ Find ip addresses in data """
-    return [match_to_hit(match) for match in re.finditer(IP_RE, data)
-                if is_public_ip(match.group())]
+    out = []
+    for match in re.finditer(IP_RE, data):
+        ip = parse_ip(match.group())
+        if ip:
+            out.append(Hit(ip, *match.span(), 'inet_aton' if ip != match.group() else ''))
+    return out
 
 @analyzer('network.url')
 def find_urls(data: bytes) -> List[Hit]:
     """ Find URLs in data """
     return [match_to_hit(match) for match in re.finditer(URL_RE, data)
-                if is_valid_domain(match.group(1)) or is_public_ip(match.group(1))]
+                if is_valid_domain(match.group(1)) or parse_ip(unquote(match.group(1)))]
 
-def is_public_ip(ip: Union[str, bytes]) -> bool:
+def parse_ip(ip: Union[str, bytes]) -> bytes:
     """
-    Checks if an ipv4 address is valid and a standard public internet address.
+    Checks if an ipv4 address is valid and a standard public internet address and normalizes it.
 
+    accepts any ipv4 representation accepted by socket.inet_aton
     rejects invalid addresses.
     rejects a valid address if it is:
         - a multicast address,
         - a private address,
-        - a reserved address.
+        - a reserved address
 
     Args:
-        ip: The ipv4 address to check.
+        ip: The ipv4 address to validate.
     Returns:
-        Whether ip is a public ip address.
+        The normalized ip address if it is valid, otherwise the empty string
     """
     try:
-        address = IPv4Address(make_str(ip))
-    except AddressValueError:
-        return False
-    return address.is_global and not address.is_multicast
+        address = IPv4Address(socket.inet_aton(make_str(ip)))
+    except socket.error or AddressValueError:
+        return b''
+    if address.is_global and not address.is_multicast:
+        return address.compressed.encode()
+    else:
+        return b''
 
 def is_valid_domain(domain: Union[str, bytes]) -> bool:
     """ Checks if a domain is valid.

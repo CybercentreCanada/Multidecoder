@@ -16,6 +16,7 @@ def find_xml_hex(data: bytes) -> list[Hit]:
                 for x in match.group().replace(b'&#', b'').split(b';')[:-1]
             ),
             match.start(),
-            match.end()
+            match.end(),
+            'escape.xml'
         ) for match in re.finditer(XML_ESCAPE_RE, data)
     ]
