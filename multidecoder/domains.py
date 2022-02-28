@@ -838,7 +838,7 @@ TOP_LEVEL_DOMAINS = {
     b'NA',
     b'NAB',
     b'NAGOYA',
-    b'NAME',
+    # b'NAME',
     b'NATURA',
     b'NAVY',
     b'NBA',
