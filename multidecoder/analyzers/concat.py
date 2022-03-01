@@ -6,10 +6,17 @@ from multidecoder.hit import Hit
 
 from multidecoder.registry import analyzer
 
-CONCAT_RE = rb'"([^"]+)"\s*(?:&|\+)\s*"([^"]+)"'
+# Single or double quoted strings with various possible escapes for ' or "
+STRING_RE = rb'(?:"(?:\\""|""|\\"|`"|[^"])*"|\'(?:[^\']|\'\')*\')'
+CONCAT_RE = rb'(?:' + STRING_RE + rb'\s*(?:&|\+)\s*)+' + STRING_RE
 
 @analyzer('string')
 def find_concat(data: bytes) -> list[Hit]:
     return [
-        Hit(b'"' + match.group(1) + match.group(2) + b'"', *match.span(0), 'concatenation') for match in re.finditer(CONCAT_RE, data)
+        Hit(
+            b''.join(string[1:-1] for string in re.findall(STRING_RE, match.group())),
+            match.start(),
+            match.end(),
+            'concatenation'
+        ) for match in re.finditer(CONCAT_RE, data)
     ]
