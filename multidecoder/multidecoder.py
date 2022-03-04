@@ -4,11 +4,12 @@ from typing import Any, Optional
 
 from multidecoder.registry import AnalyzerMap, build_map
 
+
 class MultiDecoder:
     def __init__(self, analyzers: Optional[AnalyzerMap] = None) -> None:
         self.analyzers = analyzers if analyzers else build_map()
 
-    def scan(self, data: bytes, depth: int=10) -> list[dict[str,Any]]:
+    def scan(self, data: bytes, depth: int = 10) -> list[dict[str, Any]]:
         """
         Report the combined analysis results.
 
@@ -19,7 +20,8 @@ class MultiDecoder:
             A JSON-like (but with byte values) dictionary structure of the results found,
             with each result nested inside the context it was found in.
         """
-        if depth <= 0: return []
+        if depth <= 0:
+            return []
 
         children = []
         decode_end = 0
@@ -29,8 +31,9 @@ class MultiDecoder:
         # Get results in sorted order
         results = sorted(
             ((label, hit) for search, label in self.analyzers.items()
-            for hit in search(data) if hit.value),
-            key=lambda t: (t[1].start, -t[1].end))
+                for hit in search(data) if hit.value),
+            key=lambda t: (t[1].start, -t[1].end)
+        )
 
         for label, hit in results:
             # Ignore values if in a decoded context
@@ -56,7 +59,8 @@ class MultiDecoder:
                 decode_end = hit.end
                 child['children'] = self.scan(hit.value, depth-1)
                 # Prevent analyzer rematching its own decoded output
-                if len(child['children']) == 1 and child['children'][0]['value'] == hit.value and child['children'][0]['type']==label:
+                if len(child['children']) == 1 and child['children'][0]['value'] == hit.value \
+                        and child['children'][0]['type'] == label:
                     child['children'] = child['children'][0]['children']
             else:
                 # No need to rescan, set as context

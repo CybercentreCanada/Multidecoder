@@ -9,6 +9,7 @@ from multidecoder.registry import analyzer
 
 HEX_RE = rb'((?:[a-f0-9]{2}){10,}|(?:[A-F0-9]{2}){10,})'
 
+
 @analyzer('')
 def find_hex(data: bytes) -> list[Hit]:
     return [

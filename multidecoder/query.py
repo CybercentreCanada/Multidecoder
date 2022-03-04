@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-def make_label(stack, value)-> str:
+
+def make_label(stack, value) -> str:
     label_list = []
     for node in stack:
         if node['obfuscation']:
@@ -10,6 +11,7 @@ def make_label(stack, value)-> str:
         if node['type']:
             label_list.append(node['type'])
     return '/'.join(label_list)
+
 
 def string_summary(tree: list[dict[str, Any]], stack=None) -> None:
     if stack is None:

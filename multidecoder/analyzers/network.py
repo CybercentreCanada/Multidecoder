@@ -25,17 +25,20 @@ EMAIL_RE = rb'(?i)\b[a-z0-9._%+-]{3,}@(' + DOMAIN_RE[4:] + rb')\b'
 URL_RE = rb'(?i)(?:ftp|https?)://(' + DOMAIN_RE[6:] + rb'|[0-9a-fx.]+)(?::[0-9]{1,5})?' \
          rb'(?:/[a-z0-9/\-.&%$#=~?_+]{3,200})?'
 
+
 @analyzer('network.domain')
 def find_domains(data: bytes) -> List[Hit]:
     """ Find domains in data """
     return [match_to_hit(match) for match in re.finditer(DOMAIN_RE, data)
-                if is_valid_domain(match.group())]
+            if is_valid_domain(match.group())]
+
 
 @analyzer('network.email')
 def find_emails(data: bytes) -> List[Hit]:
     """ Find email addresses in data """
     return [match_to_hit(match) for match in re.finditer(EMAIL_RE, data)
-                if is_valid_domain(match.group(1))]
+            if is_valid_domain(match.group(1))]
+
 
 @analyzer('network.ip')
 def find_ips(data: bytes) -> List[Hit]:
@@ -47,11 +50,13 @@ def find_ips(data: bytes) -> List[Hit]:
             out.append(Hit(ip, *match.span(), 'inet_aton' if ip != match.group() else ''))
     return out
 
+
 @analyzer('network.url')
 def find_urls(data: bytes) -> List[Hit]:
     """ Find URLs in data """
     return [match_to_hit(match) for match in re.finditer(URL_RE, data)
-                if is_valid_domain(match.group(1)) or parse_ip(unquote(match.group(1)))]
+            if is_valid_domain(match.group(1)) or parse_ip(unquote(match.group(1)))]
+
 
 def parse_ip(ip: Union[str, bytes]) -> bytes:
     """
@@ -77,6 +82,7 @@ def parse_ip(ip: Union[str, bytes]) -> bytes:
         return address.compressed.encode()
     else:
         return b''
+
 
 def is_valid_domain(domain: Union[str, bytes]) -> bool:
     """ Checks if a domain is valid.

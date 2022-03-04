@@ -7,6 +7,7 @@ from multidecoder import MultiDecoder, __version__
 from multidecoder.json_conversion import tree_to_json
 from multidecoder.query import string_summary
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('filepath', nargs='?', metavar='FILE')
@@ -28,6 +29,7 @@ def main():
         print(tree_to_json(tree))
         return
     string_summary(tree)
+
 
 if __name__ == '__main__':
     main()

@@ -7,6 +7,7 @@ from multidecoder.registry import analyzer
 
 VBA_FUNC_RE = rb'(?i)createobject\('
 
+
 @analyzer('vba.function')
 def find_vba_call(data: bytes) -> list[Hit]:
     out = []
