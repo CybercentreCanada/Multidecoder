@@ -1031,7 +1031,7 @@ TOP_LEVEL_DOMAINS = {
     b'RU',
     b'RUGBY',
     b'RUHR',
-#   b'RUN', causes powershell false positives
+    # b'RUN', causes powershell false positives
     b'RW',
     b'RWE',
     b'RYUKYU',
@@ -1050,7 +1050,7 @@ TOP_LEVEL_DOMAINS = {
     b'SAP',
     b'SARL',
     b'SAS',
-#   b'SAVE', powershell false positives
+    # b'SAVE', powershell false positives
     b'SAXO',
     b'SB',
     b'SBI',
@@ -1088,7 +1088,7 @@ TOP_LEVEL_DOMAINS = {
     b'SHANGRILA',
     b'SHARP',
     b'SHAW',
-#   b'SHELL', causes false positives in powershell and is not a publically available TLD
+    # b'SHELL', causes false positives in powershell and is not a publically available TLD
     b'SHIA',
     b'SHIKSHA',
     b'SHOES',

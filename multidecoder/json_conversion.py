@@ -4,11 +4,14 @@ import simplejson
 
 from typing import Any
 
+
 def tree_to_json(tree: list[dict[str, Any]], **kargs) -> str:
     return simplejson.dumps(tree, encoding='latin-1', **kargs)
 
-def json_to_tree(serialized: str, **kargs) -> list[dict[str,Any]]:
+
+def json_to_tree(serialized: str, **kargs) -> list[dict[str, Any]]:
     return check_list(simplejson.loads(serialized, encoding='latin-1', **kargs))
+
 
 def check_list(L: Any) -> list[dict[str, Any]]:
     if not isinstance(L, list):
@@ -16,6 +19,7 @@ def check_list(L: Any) -> list[dict[str, Any]]:
     for entry in L:
         check_dict(entry)
     return L
+
 
 def check_dict(d: Any) -> dict[str, Any]:
     if not isinstance(d, dict):

@@ -6,15 +6,15 @@ import os
 import pkgutil
 
 from functools import partial
-from typing import Callable, Iterable, Optional
+from typing import Iterable, Optional
 
 import multidecoder
 import multidecoder.analyzers
-from multidecoder.hit import Hit
 from multidecoder.keyword import find_keywords
 
 # Registry type
-AnalyzerMap = dict[Callable[[bytes], list[Hit]], str]
+AnalyzerMap = "dict[Callable[[bytes], list[Hit]], str]"
+
 
 def analyzer(label: str):
     """ Decorator for analysis functions """
@@ -23,16 +23,18 @@ def analyzer(label: str):
         return f
     return decorator
 
+
 def build_map(directory: str = '',
-              include: Optional[Iterable[str]]=None,
-              exclude: Optional[Iterable[str]]=None) -> AnalyzerMap:
+              include: Optional[Iterable[str]] = None,
+              exclude: Optional[Iterable[str]] = None) -> AnalyzerMap:
     """ Get both analyzer functions and keyword functions """
     keywords = get_keywords(directory)
     keywords.update(get_analyzers(include=include, exclude=exclude))
     return keywords
 
-def get_analyzers(include: Optional[Iterable[str]]=None,
-                  exclude: Optional[Iterable[str]]=None) -> AnalyzerMap:
+
+def get_analyzers(include: Optional[Iterable[str]] = None,
+                  exclude: Optional[Iterable[str]] = None) -> AnalyzerMap:
     """ Get all analyzers """
     analyzers = {}
     include = set(include) if include else {}
@@ -47,6 +49,7 @@ def get_analyzers(include: Optional[Iterable[str]]=None,
             if hasattr(function, 'label'):
                 analyzers[function] = function.label
     return analyzers
+
 
 def get_keywords(directory: str = '') -> AnalyzerMap:
     """ Get keyword search functions from a directory """

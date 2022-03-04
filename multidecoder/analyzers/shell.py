@@ -10,8 +10,10 @@ CMD_RE = rb'(?i)\bcmd[^,)"]+'
 POWERSHELL_RE = rb'(?i)"(\s*powershell[^"]+)"'
 SH_RE = rb'"(\s*(?:sh|bash|zsh|csh)[^"]+)"'
 
+
 def strip_carets(text: bytes):
     return bytes(i for i in text if i != ord('^'))
+
 
 @analyzer('shell.cmd')
 def find_cmd_strings(data: bytes) -> List[Hit]:
@@ -21,6 +23,7 @@ def find_cmd_strings(data: bytes) -> List[Hit]:
             'powershell.carets' if b'^' in match.group() else '')
         for match in re.finditer(CMD_RE, data)
     ]
+
 
 @analyzer('shell.powershell')
 def find_powershell_strings(data: bytes) -> List[Hit]:
