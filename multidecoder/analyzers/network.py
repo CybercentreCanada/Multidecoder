@@ -6,6 +6,8 @@ This module contains:
 - find_network_indicators, a function for finding all network indicators for a text.
 """
 
+from __future__ import annotations
+
 import re
 import socket
 
@@ -13,9 +15,11 @@ from ipaddress import AddressValueError, IPv4Address
 from typing import List, Union
 from urllib.parse import unquote
 
+import hyperlink
+
 from multidecoder.hit import Hit, match_to_hit
 from multidecoder.domains import TOP_LEVEL_DOMAINS
-from multidecoder.string_helper import make_str, make_bytes
+from multidecoder.string_helper import make_bytes
 from multidecoder.registry import analyzer
 
 _OCTET_RE = rb'(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})'
@@ -45,20 +49,24 @@ def find_ips(data: bytes) -> List[Hit]:
     """ Find ip addresses in data """
     out = []
     for match in re.finditer(IP_RE, data):
-        ip = parse_ip(match.group())
+        ip, obfuscation = parse_ip(match.group().decode())
         if ip:
-            out.append(Hit(ip, *match.span(), 'inet_aton' if ip != match.group() else ''))
+            out.append(Hit(ip.encode(), *match.span(), obfuscation))
     return out
 
 
 @analyzer('network.url')
 def find_urls(data: bytes) -> List[Hit]:
     """ Find URLs in data """
-    return [match_to_hit(match) for match in re.finditer(URL_RE, data)
-            if is_valid_domain(match.group(1)) or parse_ip(unquote(match.group(1)))]
+    out = []
+    for match in re.finditer(URL_RE, data):
+        url, obfuscation = parse_url(match.group().decode())
+        if url:
+            out.append(Hit(url.encode(), *match.span(), obfuscation))
+    return out
 
 
-def parse_ip(ip: Union[str, bytes]) -> bytes:
+def parse_ip(ip: str) -> tuple[str, str]:
     """
     Checks if an ipv4 address is valid and a standard public internet address and normalizes it.
 
@@ -75,13 +83,13 @@ def parse_ip(ip: Union[str, bytes]) -> bytes:
         The normalized ip address if it is valid, otherwise the empty string
     """
     try:
-        address = IPv4Address(socket.inet_aton(make_str(ip)))
+        address = IPv4Address(socket.inet_aton(ip))
     except socket.error or AddressValueError:
-        return b''
+        return b'', ''
     if address.is_global and not address.is_multicast:
-        return address.compressed.encode()
+        return address.compressed, 'ip_obfuscation' if address.compressed != ip else ''
     else:
-        return b''
+        return b'', ''
 
 
 def is_valid_domain(domain: Union[str, bytes]) -> bool:
@@ -101,3 +109,16 @@ def is_valid_domain(domain: Union[str, bytes]) -> bool:
     if top_level.upper() not in TOP_LEVEL_DOMAINS:
         return False
     return True
+
+
+def parse_url(url_str: str) -> tuple[str, str]:
+    decodings = []
+    url = hyperlink.parse(url_str)
+    host = unquote(url.host)
+    if host != url.host:
+        decodings.append('percent.encoding')
+    ip, obfuscation = parse_ip(host)
+    if ip:
+        decodings.append(obfuscation)
+        url = url.replace(host=ip)
+    return url.to_text(), '/>'.join(decodings)
