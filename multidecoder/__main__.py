@@ -3,7 +3,8 @@ from __future__ import annotations
 import argparse
 import sys
 
-from multidecoder import MultiDecoder, __version__
+from multidecoder import __version__
+from multidecoder.multidecoder import MultiDecoder
 from multidecoder.json_conversion import tree_to_json
 from multidecoder.query import string_summary
 
