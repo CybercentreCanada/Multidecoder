@@ -113,7 +113,10 @@ def is_valid_domain(domain: Union[str, bytes]) -> bool:
 
 def parse_url(url_str: str) -> tuple[str, str]:
     decodings = []
-    url = hyperlink.parse(url_str)
+    try:
+        url = hyperlink.parse(url_str, decoded=False)
+    except UnicodeDecodeError:
+        return url, ''
     host = unquote(url.host)
     if host != url.host:
         decodings.append('percent.encoding')
