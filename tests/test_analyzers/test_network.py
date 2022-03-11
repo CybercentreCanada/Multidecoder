@@ -2,8 +2,8 @@ import re
 
 
 from multidecoder.analyzers.network import DOMAIN_RE, EMAIL_RE, URL_RE, IP_RE
-from multidecoder.analyzers.network import find_domains
 from multidecoder.analyzers.network import is_valid_domain, parse_ip
+from multidecoder.analyzers.network import find_domains
 
 
 # IP --------------------------------------------
@@ -78,6 +78,10 @@ def test_intenational_top_level_domain():
 def test_is_valid_domain_re():
     assert is_valid_domain(b'website.com')
     assert not is_valid_domain(b'website.notatld')
+
+
+def test_is_valid_domain_false_positives():
+    assert not is_valid_domain(b'SET.NAME')
 
 
 def test_find_domain_shell():
