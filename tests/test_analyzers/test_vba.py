@@ -15,5 +15,5 @@ def test_re_wscript():
 def test_find_wscript():
     text = b'X = CreateObject("WScript.Shell")'
     assert find_createobject(text) == [
-        Hit(b'CreateObject("WScript.Shell")', 4, len(text), '')
+        Hit(b'CreateObject("WScript.Shell")', '', 4, len(text))
     ]

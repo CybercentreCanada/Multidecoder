@@ -21,5 +21,5 @@ def test_unescape_external():
 
 def test_find_external():
     assert find_xml_hex(external) == [
-        Hit(b'External', 12, 60, 'escape.xml')
+        Hit(b'External', 'escape.xml', 12, 60)
     ]

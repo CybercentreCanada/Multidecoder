@@ -16,8 +16,8 @@ def find_concat(data: bytes) -> list[Hit]:
     return [
         Hit(
             b''.join(string[1:-1] for string in re.findall(STRING_RE, match.group())),
+            'concatenation',
             match.start(),
             match.end(),
-            'concatenation'
         ) for match in re.finditer(CONCAT_RE, data)
     ]

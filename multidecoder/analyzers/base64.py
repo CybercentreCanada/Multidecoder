@@ -50,7 +50,7 @@ def find_base64(data: bytes) -> list[Hit]:
             continue
         try:
             b64_result = binascii.a2b_base64(b64_string)
-            b64_matches.append(Hit(b64_result, b64_match.start(), b64_match.end(), 'decoded.base64'))
+            b64_matches.append(Hit(b64_result, 'decoded.base64', b64_match.start(), b64_match.end()))
         except binascii.Error:
             pass
     return b64_matches

@@ -37,5 +37,5 @@ def find_createobject(data: bytes) -> list[Hit]:
     for match in re.finditer(CREATE_OBJECT_RE, data):
         index = get_closing_brace(data, match.end())
         if index > 0:
-            out.append(Hit(data[match.start():index], match.start(), index, ''))
+            out.append(Hit(data[match.start():index], '', match.start(), index))
     return out

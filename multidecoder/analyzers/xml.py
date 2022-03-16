@@ -18,6 +18,6 @@ def unescape_xml(data: bytes) -> bytes:
 @analyzer('obfuscation.escape.xml')
 def find_xml_hex(data: bytes) -> list[Hit]:
     return [
-        Hit(unescape_xml(match.group()), match.start(), match.end(), 'escape.xml')
+        Hit(unescape_xml(match.group()), 'escape.xml', match.start(), match.end())
         for match in re.finditer(XML_ESCAPE_RE, data)
     ]
