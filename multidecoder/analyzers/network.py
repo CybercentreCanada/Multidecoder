@@ -51,7 +51,7 @@ def find_ips(data: bytes) -> List[Hit]:
     for match in re.finditer(IP_RE, data):
         ip, obfuscation = parse_ip(match.group().decode())
         if ip:
-            out.append(Hit(ip.encode(), obfuscation, *match.span(), obfuscation))
+            out.append(Hit(ip.encode(), obfuscation, *match.span()))
     return out
 
 
