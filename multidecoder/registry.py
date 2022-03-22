@@ -1,19 +1,18 @@
-from __future__ import annotations
-
 import inspect
 import importlib
 import os
 import pkgutil
 
 from functools import partial
-from typing import Iterable, Optional
+from typing import Callable, Dict, Iterable, List, Optional
 
 import multidecoder
 import multidecoder.analyzers
+from multidecoder.hit import Hit
 from multidecoder.keyword import find_keywords
 
 # Registry type
-AnalyzerMap = "dict[Callable[[bytes], list[Hit]], str]"
+AnalyzerMap = Dict[Callable[[bytes], List[Hit]], str]
 
 
 def analyzer(label: str):
