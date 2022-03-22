@@ -1,5 +1,5 @@
 
-import re
+import regex as re
 
 from typing import List
 

@@ -5,7 +5,7 @@ Base 64 encoded text
 from __future__ import annotations
 
 import binascii
-import re
+import regex as re
 
 
 from multidecoder.hit import Hit

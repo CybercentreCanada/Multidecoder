@@ -8,7 +8,7 @@ This module contains:
 
 from __future__ import annotations
 
-import re
+import regex as re
 import socket
 
 from ipaddress import AddressValueError, IPv4Address
