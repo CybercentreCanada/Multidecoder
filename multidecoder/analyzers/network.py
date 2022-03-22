@@ -85,11 +85,11 @@ def parse_ip(ip: str) -> tuple[str, str]:
     try:
         address = IPv4Address(socket.inet_aton(ip))
     except socket.error or AddressValueError:
-        return b'', ''
+        return '', ''
     if address.is_global and not address.is_multicast:
         return address.compressed, 'ip_obfuscation' if address.compressed != ip else ''
     else:
-        return b'', ''
+        return '', ''
 
 
 def is_valid_domain(domain: Union[str, bytes]) -> bool:
@@ -116,7 +116,7 @@ def parse_url(url_str: str) -> tuple[str, str]:
     try:
         url = hyperlink.parse(url_str, decoded=False)
     except UnicodeDecodeError:
-        return url, ''
+        return url_str, ''
     host = unquote(url.host)
     if host != url.host:
         decodings.append('percent.encoding')
