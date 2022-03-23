@@ -12,6 +12,7 @@ def test_re_empty():
 
 def test_re_external():
     match = re.search(XML_ESCAPE_RE, external)
+    assert match
     assert external[match.start():match.end()] == b'&#x45;&#x78;&#x74;&#x65;&#x72;&#x6e;&#x61;&#x6c;'
 
 
@@ -21,5 +22,5 @@ def test_unescape_external():
 
 def test_find_external():
     assert find_xml_hex(external) == [
-        Hit(b'External', 'escape.xml', 12, 60)
+        Hit(b'External', 'unescape.xml', 12, 60)
     ]

