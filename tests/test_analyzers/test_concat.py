@@ -56,3 +56,8 @@ def test_concat_multiple_concat():
 def test_concat_mixed_multiple():
     test = b'"double" & \'single\' & "double" & \'single\''
     assert find_concat(test) == [Hit(b'doublesingledoublesingle', 'concatenation', 0, len(test))]
+
+
+def test_concat_xml():
+    test = b'<t>"a"&amp;"pp"&amp;"lesauce"&amp;" is "&amp;"a"&amp;" del"&amp;"icio"&amp;"us foo"&amp;"d","</t>'
+    assert find_concat(test) == [Hit(b'applesauce is a delicious food', 'concatenation', 3, len(test)-6)]
