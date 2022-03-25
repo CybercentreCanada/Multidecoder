@@ -24,3 +24,21 @@ NNTP Email Address
 SMTP User Name
 SMTP Server
 SMTP Email Address
+
+EmailAddress
+PopServer
+PopPort
+PopAccount
+PopPassword
+SmtpServer
+SmtpPort
+SmtpAccount
+SmtpPassword
+
+Download.Complete
+Download.Cancelled
+Download.Failed
+
+WebRequest
+WebResponse
+GetResponse

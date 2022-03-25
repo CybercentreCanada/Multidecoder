@@ -1,12 +1,3 @@
-unzip
-inflate
-\\.\SICE
-\\.\SIWVID
-\\.\REGSYS
-\\.\REGVXG
-\\.\FILEVXG
-\\.\FILEM
-\\.\TR
 
 MSXML3.ServerXMLHTTP$
 MSXML3.DOMDocument$
@@ -39,19 +30,6 @@ Windows Installer XML (4.0.5419.0)
 ResponseText
 Macros must be enabled to display the contents of the document.
 
-Your decryption price will
-Your personal files are encrypted!
-!!!Rescue your files!!!
-Any attempt to remove or corrupt this software will result
-Now you have the last chance to decrypt your files.
-Any attempt to remove or corrupt this software will result
-in immediate elimination of the private key by the server.
-the more chances are left to recover the files.
-You must install this browser
-Your decryption price will
-Everything is fine now decrypting all files.
-All files Decrypted
-Enter Decrypt Key
 System Volume Information
 Boot
 This document was edited in later version of Microsoft Word.
@@ -251,10 +229,7 @@ WebRequest
 WebResponse
 GetResponse
 GetVolumeSerial
-ENCRYPtSTRING
-ENCRYPTBYTe
 VBRUN
-Blowfish
 CreateDecryptor
 MD6CryptoServiceProvider
 TripleDESCryptoServiceProvider
@@ -287,8 +262,6 @@ kippohome
 huffman
 DecodeHuffman
 Decode
-Inflate
-Unzip
 ZipAndEncrypt
 ZipAndAES
 LoadFile

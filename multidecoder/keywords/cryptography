@@ -1,0 +1,18 @@
+EncryptString
+EncryptByte
+Blowfish
+CreateDecryptor
+TripleDESCryptoServiceProvider
+MD6CryptoServiceProvider
+PaddingMode
+Huffman
+DecodeHuffman
+Decode
+ZipAndEncrypt
+ZipAndAES
+EncryptFile
+Microsoft Enhanced RSA and AES Cryptographic Provider
+CryptKeyType
+CryptKeyId
+Microsoft Enhanced Cryptographic Provider v2.0
+Microsoft Base Cryptographic Provider v2.0
