@@ -1,5 +1,4 @@
 from __future__ import annotations
-from tokenize import group
 
 import regex as re
 
