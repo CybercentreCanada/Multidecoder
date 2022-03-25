@@ -8,7 +8,7 @@ This module contains:
 
 from __future__ import annotations
 
-import re
+import regex as re
 import socket
 
 from ipaddress import AddressValueError, IPv4Address
@@ -51,7 +51,7 @@ def find_ips(data: bytes) -> List[Hit]:
     for match in re.finditer(IP_RE, data):
         ip, obfuscation = parse_ip(match.group().decode())
         if ip:
-            out.append(Hit(ip.encode(), *match.span(), obfuscation))
+            out.append(Hit(ip.encode(), obfuscation, *match.span()))
     return out
 
 
@@ -62,7 +62,7 @@ def find_urls(data: bytes) -> List[Hit]:
     for match in re.finditer(URL_RE, data):
         url, obfuscation = parse_url(match.group().decode())
         if url:
-            out.append(Hit(url.encode(), *match.span(), obfuscation))
+            out.append(Hit(url.encode(), obfuscation, *match.span()))
     return out
 
 
@@ -85,11 +85,11 @@ def parse_ip(ip: str) -> tuple[str, str]:
     try:
         address = IPv4Address(socket.inet_aton(ip))
     except socket.error or AddressValueError:
-        return b'', ''
+        return '', ''
     if address.is_global and not address.is_multicast:
         return address.compressed, 'ip_obfuscation' if address.compressed != ip else ''
     else:
-        return b'', ''
+        return '', ''
 
 
 def is_valid_domain(domain: Union[str, bytes]) -> bool:
@@ -116,7 +116,7 @@ def parse_url(url_str: str) -> tuple[str, str]:
     try:
         url = hyperlink.parse(url_str, decoded=False)
     except UnicodeDecodeError:
-        return url, ''
+        return url_str, ''
     host = unquote(url.host)
     if host != url.host:
         decodings.append('percent.encoding')
