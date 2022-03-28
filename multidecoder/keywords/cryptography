@@ -1,0 +1,36 @@
+Decrypt
+Encrypt
+EncryptString
+EncryptByte
+Blowfish
+CreateDecryptor
+TripleDESCryptoServiceProvider
+MD6CryptoServiceProvider
+PaddingMode
+Huffman
+DecodeHuffman
+Decode
+ZipAndEncrypt
+ZipAndAES
+EncryptFile
+Microsoft Enhanced RSA and AES Cryptographic Provider
+CryptKeyType
+CryptKeyId
+Microsoft Enhanced Cryptographic Provider v2.0
+Microsoft Base Cryptographic Provider v2.0
+AES128
+AES256
+AES 128
+AES 256
+AES-128
+AES-256
+RSA1024
+RSA2048
+RSA4096
+RSA 1024
+RSA 2048
+RSA 4096
+RSA-1024
+RSA-2048
+RSA-4096
+Private Key

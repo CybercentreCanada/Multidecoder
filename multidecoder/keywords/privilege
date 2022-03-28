@@ -33,3 +33,6 @@ SeTimeZonePrivilege
 SeTrustedCredManAccessPrivilege
 SeUndockPrivilege
 SeUnsolicitedInputPrivilege
+
+DisableAllPrivileges
+SetPrivilege
