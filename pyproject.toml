@@ -8,3 +8,4 @@ build-backend = "setuptools.build_meta"
 
 # setuptools_scm
 [tool.setuptools_scm]
+write_to = "multidecoder/_version.py"
