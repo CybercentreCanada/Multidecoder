@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from multidecoder import __version__
+from multidecoder._version import version
 from multidecoder.multidecoder import MultiDecoder
 from multidecoder.json_conversion import tree_to_json
 from multidecoder.query import string_summary
@@ -12,7 +12,7 @@ from multidecoder.query import string_summary
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('filepath', nargs='?', metavar='FILE')
-    parser.add_argument('--version', '-V', action='version', version="%(prog)s " + __version__)
+    parser.add_argument('--version', '-V', action='version', version="%(prog)s " + version)
     parser.add_argument('--json', '-j', action='store_true')
     args = parser.parse_args()
     if args.filepath:
