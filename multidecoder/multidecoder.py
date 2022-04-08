@@ -5,7 +5,7 @@ from typing import Any, Optional
 from multidecoder.registry import AnalyzerMap, build_map
 
 
-class MultiDecoder:
+class Multidecoder:
     def __init__(self, analyzers: Optional[AnalyzerMap] = None) -> None:
         self.analyzers = analyzers if analyzers else build_map()
 
