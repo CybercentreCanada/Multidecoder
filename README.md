@@ -21,7 +21,7 @@ Deobfuscations and decodings supported:
 
 The latest Multidecoder can be installed from the repository:
 ```
-pip install -U https://github.com/CybercentreCanada/MultiDecoder/archive/main.zip
+pip install -U https://github.com/CybercentreCanada/Multidecoder/archive/main.zip
 ```
 
 ## Command Line
