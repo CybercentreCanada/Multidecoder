@@ -1,11 +1,11 @@
 import pytest
 
-from multidecoder.multidecoder import MultiDecoder
+from multidecoder.multidecoder import Multidecoder
 
 
 @pytest.fixture
 def md():
-    return MultiDecoder()
+    return Multidecoder()
 
 
 def test_scan_empty(md):
