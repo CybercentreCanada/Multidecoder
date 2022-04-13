@@ -12,7 +12,8 @@ pool:
   vmImage: "ubuntu-20.04"
 
 jobs:
-- job: Test, Build and Deploy
+- job: test_build_deploy
+  displayName: Test, Build and Deploy
   variables:
   - group: deployment-information
   steps:
