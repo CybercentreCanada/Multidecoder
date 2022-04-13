@@ -5,7 +5,7 @@ import os
 import sys
 
 from multidecoder._version import version
-from multidecoder.multidecoder import MultiDecoder
+from multidecoder.multidecoder import Multidecoder
 from multidecoder.json_conversion import tree_to_json
 from multidecoder.query import string_summary
 from multidecoder.registry import build_map
@@ -34,7 +34,7 @@ def main():
         analyzers = build_map(args.keywords)
     else:
         analyzers = None
-    md = MultiDecoder(analyzers)
+    md = Multidecoder(analyzers)
     tree = md.scan(data)
     if args.json:
         print(tree_to_json(tree))
