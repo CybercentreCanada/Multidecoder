@@ -23,10 +23,15 @@ jobs:
       versionSpec: 3.9
   - script: | 
       set -x
-      python -m pip install tox
+      python -m pip install -U tox
       python -m tox
+    displayName: Test
+  - script: |
+      set -x
+      python -m pip install -U build
+      python -m build
       ls dist
-    displayName: Test and Build
+    displayName: Build
   - script: |
       set -xv  # Echo commands before they are run
       sudo env "PATH=$PATH" python -m pip install --no-cache-dir twine
