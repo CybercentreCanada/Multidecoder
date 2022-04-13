@@ -1,9 +1,13 @@
 name: publish
 
 trigger:
+  branches:
+    exclude:
+    - '*'
   tags:
     include: ["v*"]
 pr: none
+push: none
 
 pool:
   vmImage: "ubuntu-20.04"
@@ -33,7 +37,7 @@ jobs:
       python -m pip install --upgrade build
       python -m build
       ls dist
-  displayName: Build Python Packages
+    displayName: Build Python Packages
 
 - job: deploy
   displayName: Deploy Package to PyPI
