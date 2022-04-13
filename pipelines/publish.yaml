@@ -13,38 +13,20 @@ pool:
   vmImage: "ubuntu-20.04"
 
 jobs:
-- job: test
-  displayName: Run unit tests
-  steps:
-  - task: UsePythonVersion@0
-    displayName: Set python version
-    inputs:
-      versionSpec: 3.9
-  - script: | 
-      set -x
-      python -m pip install pytest
-      pytest
-
-- job: build
-  displayName: Build Python package
-  steps:
-  - task: UsePythonVersion@0
-    displayName: Set python version
-    inputs:
-      versionSpec: 3.9
-  - script: | 
-      set -x
-      python -m pip install --upgrade build
-      python -m build
-      ls dist
-    displayName: Build Python Packages
-
-- job: deploy
-  displayName: Deploy Package to PyPI
-  dependsOn: []
+- job: Test, Build and Deploy
   variables:
   - group: deployment-information
   steps:
+  - task: UsePythonVersion@0
+    displayName: Set python version
+    inputs:
+      versionSpec: 3.9
+  - script: | 
+      set -x
+      python -m pip install tox
+      python -m tox
+      ls dist
+    displayName: Test and Build
   - script: |
       set -xv  # Echo commands before they are run
       sudo env "PATH=$PATH" python -m pip install --no-cache-dir twine
