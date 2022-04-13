@@ -1,0 +1,61 @@
+name: publish
+
+trigger:
+  tags:
+    include: ["v*"]
+pr: none
+
+pool:
+  vmImage: "ubuntu-20.04"
+
+jobs:
+- job: test
+  displayName: Run unit tests
+  steps:
+  - task: UsePythonVersion@0
+    displayName: Set python version
+    inputs:
+      versionSpec: 3.9
+  - script: | 
+    set -x
+    python -m pip install pytest
+    pytest
+
+- job: build
+  displayName: Build Python package
+  steps:
+  - task: UsePythonVersion@0
+    displayName: Set python version
+    inputs:
+      versionSpec: 3.9
+  - script: | 
+    set -x
+    python -m pip install --upgrade build
+    python -m build
+    ls dist
+  displayName: Build Python Packages
+
+- job: deploy
+  displayName: Deploy Package to PyPI
+  dependsOn: []
+  variables:
+  - group: deployment-information
+  steps:
+  - script: |
+       set -xv  # Echo commands before they are run
+       sudo env "PATH=$PATH" python -m pip install --no-cache-dir twine
+       ls dist
+       twine upload --skip-existing --repository-url $TEST_REPOSITORY_URL dist/*
+     displayName: Deploy to Test PyPI
+     env:
+       TWINE_USERNAME: $(twineUsername)
+       TWINE_PASSWORD: $(twinePassword)
+   - script: |
+       set -xv  # Echo commands before they are run
+       sudo env "PATH=$PATH" python -m pip install --no-cache-dir twine
+       ls dist
+       twine upload --skip-existing dist/*
+     displayName: Deploy to PyPI
+     env:
+       TWINE_USERNAME: $(twineUsername)
+       TWINE_PASSWORD: $(twinePassword)
