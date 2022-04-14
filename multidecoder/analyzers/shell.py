@@ -1,9 +1,6 @@
+from __future__ import annotations
 
-import regex as re
-
-from typing import List
-
-from multidecoder.hit import Hit, match_to_hit, find_and_deobfuscate
+from multidecoder.hit import Hit, find_and_deobfuscate
 from multidecoder.registry import analyzer
 
 CMD_RE = rb'(?i)\bcmd[^,)"]+'
@@ -22,10 +19,10 @@ def deobfuscate_cmd(cmd: bytes):
 
 
 @analyzer('shell.cmd')
-def find_cmd_strings(data: bytes) -> List[Hit]:
+def find_cmd_strings(data: bytes) -> list[Hit]:
     return find_and_deobfuscate(CMD_RE, data, deobfuscate_cmd)
 
 
 @analyzer('shell.powershell')
-def find_powershell_strings(data: bytes) -> List[Hit]:
+def find_powershell_strings(data: bytes) -> list[Hit]:
     return find_and_deobfuscate(POWERSHELL_RE, data, deobfuscate_cmd, group=1)
