@@ -12,8 +12,8 @@ from multidecoder.hit import Hit
 from multidecoder.registry import analyzer
 
 HTML_ESCAPE_RE = rb'&#(?:x[a-fA-F0-9]{1,4}|\d{1,4});'
-BASE64_RE = rb'(?:[A-Za-z0-9+/]{4,}(?:<\x00  \x00)?(?:&#13;|&#xD;)?(?:&#10;|&#xA)?\r?\n?){5,}' \
-            rb'[A-Za-z0-9+/]{2,}={0,2}'
+BASE64_RE = rb'\b(?:[A-Za-z0-9+/]{4,}(?:<\x00  \x00)?(?:&#13;|&#xD;)?(?:&#10;|&#xA)?\r?\n?){5,}' \
+            rb'[A-Za-z0-9+/]{2,}={0,2}\b'
 
 CAMEL_RE = rb'(?i)[a-z]+'
 HEX_RE = rb'(?i)[a-f0-9]+'
