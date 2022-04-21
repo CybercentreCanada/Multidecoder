@@ -39,7 +39,8 @@ def main():
     if args.json:
         print(tree_to_json(tree))
         return
-    string_summary(tree)
+    for string in string_summary(tree):
+        print(string)
 
 
 if __name__ == '__main__':
