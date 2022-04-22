@@ -19,8 +19,8 @@ class Node():
         self.parent = parent
 
 
-def invert_tree(tree: list[dict[str, Any]]):
-    def invert_helper(tree: list[dict[str, Any]], parent: Optional[Node]):
+def invert_tree(tree: list[dict[str, Any]]) -> list[Node]:
+    def invert_helper(tree: list[dict[str, Any]], parent: Optional[Node]) -> list[Node]:
         nodes = []
         for d in tree:
             node = Node(d['type'], d['value'], d['obfuscation'], parent, d['start'], d['end'])
