@@ -1,5 +1,4 @@
 from __future__ import annotations
-from operator import index
 
 import regex as re
 import binascii
