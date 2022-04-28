@@ -1,31 +1,102 @@
+from __future__ import annotations
 
 import regex as re
+import binascii
 
-from typing import List
-
-from multidecoder.hit import Hit, match_to_hit, find_and_deobfuscate
+from multidecoder.analyzers.concat import DOUBLE_QUOTE_ESCAPES
+from multidecoder.hit import Hit, find_and_deobfuscate
 from multidecoder.registry import analyzer
 
-CMD_RE = rb'(?i)\bcmd[^,)"]+'
-POWERSHELL_RE = rb'(?i)"(\s*powershell[^"]+)"'
+
+CMD_RE = rb'(?i)\bc\^?m\^?d(?:' + DOUBLE_QUOTE_ESCAPES + rb'|[^)"])+'
+POWERSHELL_INDICATOR_RE = rb'(?i)(?:^|/c|/k|[\s;,=\'"])(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
 SH_RE = rb'"(\s*(?:sh|bash|zsh|csh)[^"]+)"'
+ENC_RE = rb'(?i)\s\^?(?:-|/)\^?e\^?(?:c|n\^?(?:c\^?(?:o\^?(?:d\^?(?:e\^?(?:d\^?(?:c\^?(?:o\^?(?:m' \
+         rb'\^?(?:m\^?(?:a\^?(?:n\^?d?)?)?)?)?)?)?)?)?)?)?)?)?[\s^]+([a-z0-9+/^]{4,}=?\^?=?\^?)'
 
 
-def strip_carets(text: bytes):
-    return bytes(i for i in text if i != ord('^'))
+def strip_carets(cmd: bytes) -> bytes:
+    in_string = False
+    out = []
+    i = 0
+    while i < len(cmd)-1:
+        if cmd[i] == ord('"'):
+            out.append(ord('"'))
+            in_string = not in_string
+            i += 1
+        elif in_string or cmd[i] != ord('^'):
+            out.append(cmd[i])
+            i += 1
+        elif cmd[i+1] == ord('^'):
+            i += 2
+            out.append(ord('^'))
+        elif cmd[i+1] == ord('\r'):
+            i += 3  # skip ^\r\n
+        else:
+            i += 1
+    if i < len(cmd) and (cmd[i] != ord('^') or in_string):
+        out.append(cmd[i])
+    return bytes(out)
 
 
 def deobfuscate_cmd(cmd: bytes):
-    if b'^' in cmd:
-        return strip_carets(cmd), 'unescape.shell.carets'
-    return cmd, ''
+    stripped = strip_carets(cmd)
+    return stripped, 'unescape.shell.carets' if stripped != cmd else ''
 
 
 @analyzer('shell.cmd')
-def find_cmd_strings(data: bytes) -> List[Hit]:
+def find_cmd_strings(data: bytes) -> list[Hit]:
     return find_and_deobfuscate(CMD_RE, data, deobfuscate_cmd)
 
 
 @analyzer('shell.powershell')
-def find_powershell_strings(data: bytes) -> List[Hit]:
-    return find_and_deobfuscate(POWERSHELL_RE, data, deobfuscate_cmd, group=1)
+def find_powershell_strings(data: bytes) -> list[Hit]:
+    out = []
+    # Find the string PowerShell, possibly obfuscated or shortened to pwsh
+    for indicator in re.finditer(POWERSHELL_INDICATOR_RE, data):
+        # Check for encoded parameter
+        start = indicator.start(1)
+        enc = re.search(ENC_RE, data, pos=start)
+        if enc:
+            powershell = data[start:enc.end()]
+            deobfuscated, ob = deobfuscate_cmd(powershell)
+            split = re.split(rb'\s+', deobfuscated)
+            b64 = (binascii.a2b_base64(_pad(split[-1]))
+                           .decode('utf-16', errors='ignore')
+                           .encode())
+            deobfuscated = b' '.join(split[:-2]) + b' ' + b64
+            obfuscation = ob + ('/>' if ob else '') + 'powershell.base64'
+            out.append(Hit(deobfuscated, obfuscation, start, enc.end()))
+            continue
+        # Look back to find the start of the string or FOR loop
+        bound_match = re.search(rb'(\'\(|[\'"])', data[start::-1])
+        if bound_match:
+            bound = bound_match.group()
+            assert bound in (b"'(", b'"', b"'")
+            if bound == b"'(":
+                # In a cmd FOR loop, find the end paren
+                end = data.find(b"')", start)
+            elif bound == b'"':
+                # In a double quoted string, find the end quote
+                end = data.find(b'"', start)
+            else:
+                # In a single quoted string, find the end quote
+                end = data.find(b"'", start)
+            powershell = data[start:end]
+        else:
+            # No recognizable context, assume rest of file is all powershell
+            end = len(data)-start
+            powershell = data[start:]
+        deobfuscated, obfuscation = deobfuscate_cmd(powershell)
+        out.append(Hit(deobfuscated, obfuscation, start, end))
+    return out
+
+
+def _pad(b64: bytes) -> bytes:
+    padding = -len(b64) % 4
+    if padding == 3:
+        return b64[:-1]  # Corrupted end, just keep the valid part
+    elif padding:
+        return b64 + b'='*padding
+    else:
+        return b64

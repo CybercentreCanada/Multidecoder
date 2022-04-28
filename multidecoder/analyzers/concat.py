@@ -6,8 +6,9 @@ from multidecoder.hit import Hit
 
 from multidecoder.registry import analyzer
 
+DOUBLE_QUOTE_ESCAPES = rb'\\""|""|\\"|`"'
 # Single or double quoted strings with various possible escapes for ' or "
-STRING_RE = rb'(?:"(?:\\""|""|\\"|`"|[^"])*"|\'(?:[^\']|\'\')*\')'
+STRING_RE = rb'(?:"(?:' + DOUBLE_QUOTE_ESCAPES + rb'|[^"])*"|\'(?:[^\']|\'\')*\')'
 CONCAT_RE = rb'(?:' + STRING_RE + rb'\s*(?:&|\+|&amp;)\s*)+' + STRING_RE
 
 
