@@ -83,7 +83,8 @@ def test_find_powershell_strings_enc():
 
 
 def test_find_powershell_for_loop():
-    ex = b"for /f \"tokens=*\" %%a in ('powershell -Command \"hostname | %%{$_ -replace '[^a-zA-Z0-9]+', '_'}\"') do echo prx.%%a"
+    ex = b"for /f \"tokens=*\" %%a in ('powershell -Command \"hostname " \
+         b"| %%{$_ -replace '[^a-zA-Z0-9]+', '_'}\"') do echo prx.%%a"
     assert find_powershell_strings(ex) == [
         Hit(value=b"powershell -Command \"hostname | %%{$_ -replace '[^a-zA-Z0-9]+', '_'}\"",
             obfuscation='',

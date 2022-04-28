@@ -34,12 +34,12 @@ def make_label(node: Optional[Node]) -> str:
     label_list = []
     value = node.value if node else b''
     while node:
-        if node.obfuscation:
-            label_list.append('>'+node.obfuscation)
         if node.type:
             label_list.append(node.type)
+        if node.obfuscation:
+            label_list.append('>'+node.obfuscation)
         node = node.parent
-    return '/'.join(label_list) + ' ' + repr(value)[2:-1]
+    return '/'.join(label_list[::-1]) + ' ' + repr(value)[2:-1]
 
 
 def string_summary(tree: list[dict[str, Any]]) -> list[str]:
