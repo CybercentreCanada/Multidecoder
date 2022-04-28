@@ -1,6 +1,7 @@
 import binascii
+import regex as re
 
-from multidecoder.analyzers.base64 import find_base64
+from multidecoder.analyzers.base64 import find_base64, BASE64_RE
 
 
 def test_empty():
@@ -19,6 +20,13 @@ def test_CamelCase():
 
 def test_url():
     assert find_base64(b'http://schemas.microsoft.com/SMI/2016/WindowsSettings') == []
+
+
+def test_base64_re_matches_equals():
+    ex = b'bmljZSBkYXksIGlzbid0IGl0Pw=='
+    match = re.search(BASE64_RE, ex)
+    assert match
+    assert match.group() == ex
 
 
 ENCODED = binascii.b2a_base64(b'Some base64 encoded text')
