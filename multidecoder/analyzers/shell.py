@@ -13,6 +13,7 @@ POWERSHELL_INDICATOR_RE = rb'(?i)(?:^|/c|/k|[\s;,=\'"])(\^?p\^?(?:o\^?w\^?e\^?r\
 SH_RE = rb'"(\s*(?:sh|bash|zsh|csh)[^"]+)"'
 ENC_RE = rb'(?i)\s\^?(?:-|/)\^?e\^?(?:c|n\^?(?:c\^?(?:o\^?(?:d\^?(?:e\^?(?:d\^?(?:c\^?(?:o\^?(?:m' \
          rb'\^?(?:m\^?(?:a\^?(?:n\^?d?)?)?)?)?)?)?)?)?)?)?)?)?[\s^]+([a-z0-9+/^]{4,}=?\^?=?\^?)'
+POWERSHELL_ARGS_RE = rb'\s*(powershell|pwsh)?(.exe)?\s*((-|/)[^\s]+\s+)*'
 
 
 def strip_carets(cmd: bytes) -> bytes:
@@ -64,7 +65,7 @@ def find_powershell_strings(data: bytes) -> list[Hit]:
             b64 = (binascii.a2b_base64(_pad(split[-1]))
                            .decode('utf-16', errors='ignore')
                            .encode())
-            deobfuscated = b' '.join(split[:-2]) + b' ' + b64
+            deobfuscated = b' '.join(split[:-2]) + b' -Command ' + b64
             obfuscation = ob + ('/>' if ob else '') + 'powershell.base64'
             out.append(Hit(deobfuscated, obfuscation, start, enc.end()))
             continue
@@ -100,3 +101,29 @@ def _pad(b64: bytes) -> bytes:
         return b64 + b'='*padding
     else:
         return b64
+
+
+def get_cmd_command(cmd: bytes):
+    # Find end of argument string
+    lcmd = cmd.lower()
+    arg_end = len(cmd)
+    c = lcmd.find(b'/c')
+    if c > 0:
+        arg_end = min(arg_end, c+2)
+    k = lcmd.find(b'/k')
+    if k > 0:
+        arg_end = min(arg_end, k+2)
+    amp = lcmd.find(b'&')
+    if amp > 0:
+        arg_end = min(arg_end, amp+1)
+
+    # return everything after the arguments
+    return cmd[arg_end:]
+
+
+def get_powershell_command(powershell: bytes):
+    match = re.match(POWERSHELL_ARGS_RE, powershell)
+    if match:
+        return powershell[match.end():]
+    else:
+        return powershell
