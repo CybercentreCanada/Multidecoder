@@ -81,7 +81,7 @@ def test_find_cmd_strings():
 def test_find_powershell_strings_enc():
     ex = b'powershell /e ZQBj^AGgAbwAgAGIAZQ^BlAA=='
     assert find_powershell_strings(ex) == [
-        Hit(value=b'powershell echo bee',
+        Hit(value=b'powershell -Command echo bee',
             obfuscation='unescape.shell.carets/>powershell.base64',
             start=0,
             end=len(ex))
