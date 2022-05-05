@@ -19,9 +19,19 @@ Deobfuscations and decodings supported:
 
 ## Installing
 
-The latest Multidecoder can be installed from the repository:
+Multidecoder can be installed from pypi using pip:
+```
+pip install -U multidecoder
+```
+
+Alternatly, it can also be installed from the repository:
 ```
 pip install -U https://github.com/CybercentreCanada/Multidecoder/archive/main.zip
+```
+
+To test the latest development version, install from the dev branch:
+```
+pip install -U https://github.com/CybercenterCanada/Multidecoder/archive/dev.zip
 ```
 
 ## Command Line
