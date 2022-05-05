@@ -134,10 +134,22 @@ def test_get_cmd_command_upper():
 
 
 def test_get_cmd_command_nested():
-    assert get_cmd_command(b'cmd /c cmd /c command') == b' cmd /c command'
-    assert get_cmd_command(b'cmd /c cmd /k command') == b' cmd /k command'
-    assert get_cmd_command(b'cmd /k cmd /c command') == b' cmd /c command'
-    assert get_cmd_command(b'cmd /k cmd /k command') == b' cmd /k command'
+    assert get_cmd_command(b'cmd /c cmd /c command') == b'cmd /c command'
+    assert get_cmd_command(b'cmd /c cmd /k command') == b'cmd /k command'
+    assert get_cmd_command(b'cmd /k cmd /c command') == b'cmd /c command'
+    assert get_cmd_command(b'cmd /k cmd /k command') == b'cmd /k command'
+
+
+def test_get_cmd_command_strip_quotes():
+    assert get_cmd_command(b'cmd /c   "command"') == b'command'
+
+
+def test_get_cmd_command_last_quote_only():
+    assert get_cmd_command(b'cmd /c "comm"an"d') == b'comm"and'
+
+
+def test_get_cmd_command_strip_only_if_first_quote():
+    assert get_cmd_command(b'cmd /c command"') == b'command"'
 
 
 # get_powershell_command
