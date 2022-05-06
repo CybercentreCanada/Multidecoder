@@ -117,8 +117,17 @@ def get_cmd_command(cmd: bytes):
     if amp > 0:
         arg_end = min(arg_end, amp+1)
 
+    arg = cmd[arg_end:].strip()
+    if arg.startswith(b'"'):
+        # strip leading and final quote
+        index = arg.rfind(b'"')
+        if index > 0:
+            arg = arg[1:index] + arg[index+1:]
+        else:
+            arg = arg[1:]
+
     # return everything after the arguments
-    return cmd[arg_end:]
+    return arg
 
 
 def get_powershell_command(powershell: bytes):
