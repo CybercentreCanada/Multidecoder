@@ -46,3 +46,16 @@ def string_summary(tree: list[dict[str, Any]]) -> list[str]:
     return [
         make_label(node) for node in invert_tree(tree)
     ]
+
+
+def squash_replace(data: bytes, tree: list[dict[str, Any]]) -> bytes:
+    offset = 0
+    output = []
+    for node in tree:
+        node_data = squash_replace(node['value'], node['children'])
+        if node_data != data[node['start']:node['end']]:
+            output.append(data[offset:node['start']])
+            output.append(node_data)
+            offset = node['end']
+    output.append(data[offset:])
+    return b''.join(output)
