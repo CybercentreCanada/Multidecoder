@@ -103,22 +103,13 @@ def _pad(b64: bytes) -> bytes:
         return b64
 
 
-def get_cmd_command(cmd: bytes):
+def get_cmd_command(cmd: bytes) -> bytes:
     # Find end of argument string
-    lcmd = cmd.lower()
-    arg_end = len(cmd)
-    c = lcmd.find(b'/c')
-    if c > 0:
-        arg_end = min(arg_end, c+2)
-    k = lcmd.find(b'/k')
-    if k > 0:
-        arg_end = min(arg_end, k+2)
-    amp = lcmd.find(b'&')
-    if amp > 0:
-        arg_end = min(arg_end, amp+1)
-
-    arg = cmd[arg_end:].strip()
-    if arg.startswith(b'"'):
+    end = re.search(rb'(?i)&|/(c|k|r)', cmd)
+    if end is None:
+        return b''
+    arg = cmd[end.end():].strip()
+    if end.group() != b'"' and arg.startswith(b'"'):
         # strip leading and final quote
         index = arg.rfind(b'"')
         if index > 0:
@@ -130,7 +121,7 @@ def get_cmd_command(cmd: bytes):
     return arg
 
 
-def get_powershell_command(powershell: bytes):
+def get_powershell_command(powershell: bytes) -> bytes:
     match = re.match(POWERSHELL_ARGS_RE, powershell)
     if match:
         return powershell[match.end():]
