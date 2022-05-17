@@ -14,11 +14,11 @@ def test_cmd_re_empty():
 
 
 def test_cmd_re_command():
-    assert re.match(CMD_RE, b'cmd command')
+    assert re.match(CMD_RE, b'cmd arguments')
 
 
 def test_cmd_re_mixed_case():
-    assert re.match(CMD_RE, b'CmD CoMMaNd')
+    assert re.match(CMD_RE, b'CmD ArgUmenTs')
 
 
 def test_cmd_re_carets():
@@ -27,6 +27,12 @@ def test_cmd_re_carets():
 
 def test_cmd_re_quotes():
     assert re.match(CMD_RE, b'cmd /c ""echo bee""')
+
+
+def test_cmd_re_null():
+    match = re.match(CMD_RE, b'cmd.exe\x00somethingelse')
+    assert match
+    assert match.span() == (0, 7)
 
 
 def test_cmd_re_ex1():

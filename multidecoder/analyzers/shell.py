@@ -4,12 +4,12 @@ import regex as re
 import binascii
 
 from multidecoder.analyzers.concat import DOUBLE_QUOTE_ESCAPES
-from multidecoder.hit import Hit, find_and_deobfuscate
+from multidecoder.hit import Hit
 from multidecoder.registry import analyzer
 
 
-CMD_RE = rb'(?i)\bc\^?m\^?d(?:' + DOUBLE_QUOTE_ESCAPES + rb'|[^)"])+'
-POWERSHELL_INDICATOR_RE = rb'(?i)(?:^|/c|/k|[\s;,=&\'"])(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
+CMD_RE = b'(?i)\\bc\\^?m\\^?d(?:' + DOUBLE_QUOTE_ESCAPES + rb'|[^)"\x00])*'
+POWERSHELL_INDICATOR_RE = rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
 SH_RE = rb'"(\s*(?:sh|bash|zsh|csh)[^"]+)"'
 ENC_RE = rb'(?i)\s\^?(?:-|/)\^?e\^?(?:c|n\^?(?:c\^?(?:o\^?(?:d\^?(?:e\^?(?:d\^?(?:c\^?(?:o\^?(?:m' \
          rb'\^?(?:m\^?(?:a\^?(?:n\^?d?)?)?)?)?)?)?)?)?)?)?)?)?[\s^]+([a-z0-9+/^]{4,}=?\^?=?\^?)'
@@ -47,7 +47,11 @@ def deobfuscate_cmd(cmd: bytes):
 
 @analyzer('shell.cmd')
 def find_cmd_strings(data: bytes) -> list[Hit]:
-    return find_and_deobfuscate(CMD_RE, data, deobfuscate_cmd)
+    return [
+        Hit(*deobfuscate_cmd(match.group()), *match.span())
+        for match in re.finditer(CMD_RE, data)
+        if match.group().lower().strip() not in (b'cmd', b'cmd.exe')
+    ]
 
 
 @analyzer('shell.powershell')
