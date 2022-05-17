@@ -124,6 +124,11 @@ def test_get_cmd_command_k():
     assert get_cmd_command(b'cmd.exe/kcommand') == b'command'
 
 
+def test_get_cmd_command_r():
+    assert get_cmd_command(b'cmd/rcommand') == b'command'
+    assert get_cmd_command(b'cmd.exe/rcommand') == b'command'
+
+
 def test_get_cmd_command_amp():
     assert get_cmd_command(b'cmd&command&command2&command3') == b'command&command2&command3'
 
