@@ -55,6 +55,8 @@ def squash_replace(data: bytes, tree: list[dict[str, Any]]) -> bytes:
         node_data = squash_replace(node['value'], node['children'])
         if node_data != data[node['start']:node['end']]:
             output.append(data[offset:node['start']])
+            if node['type'].endswith('string'):
+                node_data = b'"' + node_data + b'"'
             output.append(node_data)
             offset = node['end']
     output.append(data[offset:])

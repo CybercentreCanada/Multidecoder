@@ -12,6 +12,6 @@ def find_path(data: bytes) -> list[Hit]:
     return regex_hits(PATH_RE, data)
 
 
-@analyzer('path.windows')
+@analyzer('windows.path')
 def find_windows_path(data: bytes) -> list[Hit]:
     return regex_hits(WINDOWS_PATH_RE, data)
