@@ -67,6 +67,7 @@ def squash_replace(data: bytes, tree: list[dict[str, Any]]) -> bytes:
 def obfuscation_counts(tree: list[dict[str, Any]]) -> Counter[str]:
     counts: Counter[str] = Counter()
     for node in tree:
-        counts.update(node['obfuscation'].split('/>'))
+        if node['obfuscation']:
+            counts.update(node['obfuscation'].split('/>'))
         counts.update(obfuscation_counts(tree))
     return counts
