@@ -1,4 +1,3 @@
-from regex import D
 from multidecoder.analyzers.chr import find_chr
 
 
