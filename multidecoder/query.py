@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any, Optional
 
 
@@ -61,3 +62,12 @@ def squash_replace(data: bytes, tree: list[dict[str, Any]]) -> bytes:
             offset = node['end']
     output.append(data[offset:])
     return b''.join(output)
+
+
+def obfuscation_counts(tree: list[dict[str, Any]]) -> Counter[str]:
+    counts: Counter[str] = Counter()
+    for node in tree:
+        if node['obfuscation']:
+            counts.update(node['obfuscation'].split('/>'))
+        counts.update(obfuscation_counts(tree))
+    return counts
