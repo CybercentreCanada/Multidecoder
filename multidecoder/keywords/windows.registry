@@ -1,7 +1,7 @@
 \Device\KeyboardClass0
 Software\Skype\Phone
 \registry\machine\system\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\
-Software\Microsoft
+SOFTWARE\Microsoft
 System\WPA\
 HARDWARE\DEVICEMAP\SERIALCOMM
 HARDWARE\DEVICEMAP\PARALLEL PORTS
