@@ -69,5 +69,5 @@ def obfuscation_counts(tree: list[dict[str, Any]]) -> Counter[str]:
     for node in tree:
         if node['obfuscation']:
             counts.update(node['obfuscation'].split('/>'))
-        counts.update(obfuscation_counts(tree))
+        counts.update(obfuscation_counts(node['children']))
     return counts
