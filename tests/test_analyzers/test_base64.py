@@ -1,7 +1,8 @@
 import binascii
 import regex as re
 
-from multidecoder.analyzers.base64 import find_base64, BASE64_RE
+from multidecoder.analyzers.base64 import find_FromBase64String, find_base64, BASE64_RE
+from multidecoder.hit import Hit
 
 
 def test_empty():
@@ -41,3 +42,23 @@ def test_base64_search_texts():
     for data, expected in TEST_STRINGS.items():
         response = find_base64(data)
         assert response == expected, f'{data} Failed'
+
+
+# -- FromBase64String --
+
+def test_fromb64string_no_xor():
+    test = b"FromBase64String('ZHVjaw==')"
+    test2 = b"[System.Convert]::FromBase64String('ZHVjaw==')"
+    assert find_FromBase64String(test) == [
+        Hit(value=b'duck', obfuscation='decode.base64', start=0, end=len(test))
+    ]
+    assert find_FromBase64String(test2) == [
+        Hit(value=b'duck', obfuscation='decode.base64', start=0, end=len(test2))
+    ]
+
+
+def test_fromb64string_xor():
+    test = b"FromBase64String('R1ZASA==')\n-bxor 35"
+    assert find_FromBase64String(test) == [
+        Hit(value=b'duck', obfuscation='decode.base64/>xor35', start=0, end=test.find(b'\n'))
+    ]

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import regex as re
 
-from multidecoder.hit import Hit
+from multidecoder.analyzers.concat import STRING_RE
+from multidecoder.hit import Hit, find_and_deobfuscate
 from multidecoder.registry import analyzer
 
 CREATE_OBJECT_RE = rb'(?i)createobject\('
+STRREVERSE_RE = rb'(?i)StrReverse\(\s*(' + STRING_RE + rb')\s*\)'
 
 OPEN_TO_CLOSE_MAP = {
     ord('('): ord(')'),
@@ -39,3 +41,8 @@ def find_createobject(data: bytes) -> list[Hit]:
         if index > 0:
             out.append(Hit(data[match.start():index], '', match.start(), index))
     return out
+
+
+@analyzer('vba.string')
+def find_strreverse(data: bytes) -> list[Hit]:
+    return find_and_deobfuscate(STRREVERSE_RE, data, lambda s: (s[-2:0:-1], 'vba.replace'), 1)

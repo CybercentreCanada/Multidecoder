@@ -13,16 +13,21 @@ def test_scan_empty(md):
 
 
 def test_analyze_data_url(md):
-    assert md.scan(b'https://some.domain.com') == [
-        {
+    assert md.scan(b'https://some.domain.com') == [{
+        'obfuscation': '',
+        'type': 'network.url',
+        'value': b'https://some.domain.com/',
+        'start': 0,
+        'end': 23,
+        'children': [{
             'obfuscation': '',
-            'type': 'network.url',
-            'value': b'https://some.domain.com/',
-            'start': 0,
+            'type': 'network.domain',
+            'value': b'some.domain.com',
+            'start': 8,
             'end': 23,
             'children': []
-        }
-    ]
+        }]
+    }]
 
 
 def test_scan_no_overlap(md):

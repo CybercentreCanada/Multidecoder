@@ -26,8 +26,8 @@ _OCTET_RE = rb'(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})'
 IP_RE = rb'(?i)\b(?:' + _OCTET_RE + rb'[.]){3}' + _OCTET_RE + rb'\b'
 DOMAIN_RE = rb'(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})\b'
 EMAIL_RE = rb'(?i)\b[a-z0-9._%+-]{3,}@(' + DOMAIN_RE[4:] + rb')\b'
-URL_RE = rb'(?i)(?:ftp|https?)://[a-z0-9-%.]+(?::[0-9]{1,5})?' \
-         rb'(?:/[a-z0-9/\-.&%$#=~?_+]{3,200})?'
+URL_RE = rb'(?i)(?:ftp|https?)://[a-z0-9-%.]+(?::[0-9]{1,5})?/?' \
+         rb'(?:[a-z0-9/\-.&%$#=~?_+]{3,200})?'
 
 
 @analyzer('network.domain')

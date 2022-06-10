@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any, Optional
 
 
@@ -46,3 +47,27 @@ def string_summary(tree: list[dict[str, Any]]) -> list[str]:
     return [
         make_label(node) for node in invert_tree(tree)
     ]
+
+
+def squash_replace(data: bytes, tree: list[dict[str, Any]]) -> bytes:
+    offset = 0
+    output = []
+    for node in tree:
+        node_data = squash_replace(node['value'], node['children'])
+        if node_data != data[node['start']:node['end']]:
+            output.append(data[offset:node['start']])
+            if node['type'].endswith('string'):
+                node_data = b'"' + node_data + b'"'
+            output.append(node_data)
+            offset = node['end']
+    output.append(data[offset:])
+    return b''.join(output)
+
+
+def obfuscation_counts(tree: list[dict[str, Any]]) -> Counter[str]:
+    counts: Counter[str] = Counter()
+    for node in tree:
+        if node['obfuscation']:
+            counts.update(node['obfuscation'].split('/>'))
+        counts.update(obfuscation_counts(tree))
+    return counts

@@ -8,8 +8,11 @@ from multidecoder.registry import analyzer
 
 DOUBLE_QUOTE_ESCAPES = rb'\\""|""|\\"|`"'
 # Single or double quoted strings with various possible escapes for ' or "
-STRING_RE = rb'(?:"(?:' + DOUBLE_QUOTE_ESCAPES + rb'|[^"])*"|\'(?:[^\']|\'\')*\')'
-CONCAT_RE = rb'(?:' + STRING_RE + rb'\s*(?:&|\+|&amp;)\s*)+' + STRING_RE
+DOUBLE_QUOTE_STRING_RE = rb'"(?:' + DOUBLE_QUOTE_ESCAPES + rb'|[^"])*"'
+SINGLE_QUOTE_STRING_RE = rb"'(?:[^']|'')*'"
+STRING_RE = rb'(?:' + DOUBLE_QUOTE_STRING_RE + rb'|' + SINGLE_QUOTE_STRING_RE + rb')'
+# _ is VB line continuation character
+CONCAT_RE = rb'(?:' + STRING_RE + rb'[\s_]*(?:&|\+|&amp;)[\s_]*)+' + STRING_RE
 
 
 @analyzer('string')
