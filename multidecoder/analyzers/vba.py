@@ -45,4 +45,4 @@ def find_createobject(data: bytes) -> list[Hit]:
 
 @analyzer('vba.string')
 def find_strreverse(data: bytes) -> list[Hit]:
-    return find_and_deobfuscate(STRREVERSE_RE, data, lambda s: (s[-2:0:-1], 'vba.replace'), 1)
+    return find_and_deobfuscate(STRREVERSE_RE, data, lambda s: (s[-2:0:-1], 'vba.reverse'), 1)

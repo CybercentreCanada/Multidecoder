@@ -25,3 +25,9 @@ def test_find_strreverse_empty():
 
 def test_find_strreverse_duck():
     assert find_strreverse(b'StrReverse("kcud")')[0].value == b'duck'
+
+
+def test_find_strreverse_endpoints():
+    string = b'StrReverse("kcud")'
+    hit = find_strreverse(string)[0]
+    assert hit.start == 0 and hit.end == len(string)

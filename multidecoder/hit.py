@@ -18,7 +18,8 @@ def regex_hits(regex: bytes, data: bytes, group: int = 0) -> list[Hit]:
 def find_and_deobfuscate(regex: bytes,
                          data: bytes,
                          deobfuscation: Callable[[bytes], tuple[bytes, str]],
-                         group: int = 0) -> list[Hit]:
+                         deob_group: int = 0,
+                         context_group: int = 0) -> list[Hit]:
     return [
-        Hit(*deobfuscation(match.group(group)), *match.span(group)) for match in re.finditer(regex, data)
+        Hit(*deobfuscation(match.group(deob_group)), *match.span(context_group)) for match in re.finditer(regex, data)
     ]
