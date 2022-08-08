@@ -16,7 +16,7 @@ JS_REGEX_REPLACE_RE = rb'(?i)(' + STRING_RE + rb')\.replace\(/([^/[\](){}\\.+*?^
 @analyzer('string')
 def find_replace(data: bytes) -> list[Hit]:
     return [
-        Hit(match.group(1)[1:-1].replace(match.group(2)[1:-1], match.group(3)[1:-1]), 'replace', *match.span())
+        Hit(match.group(1)[1:-1].replace(match.group(2)[1:-1], match.group(3)[1:-1]), ['replace'], *match.span())
         for match in re.finditer(REPLACE_RE, data)
     ]
 
@@ -24,7 +24,7 @@ def find_replace(data: bytes) -> list[Hit]:
 @analyzer('powershell.string')
 def find_powershell_replace(data: bytes) -> list[Hit]:
     return [
-        Hit(match.group(1)[1:-1].replace(match.group(2)[1:-1], match.group(3)[1:-1]), 'replace', *match.span())
+        Hit(match.group(1)[1:-1].replace(match.group(2)[1:-1], match.group(3)[1:-1]), ['replace'], *match.span())
         for match in re.finditer(POWERSHELL_REPLACE_RE, data)
     ]
 
@@ -32,7 +32,7 @@ def find_powershell_replace(data: bytes) -> list[Hit]:
 @analyzer('vba.string')
 def find_vba_replace(data: bytes) -> list[Hit]:
     return [
-        Hit(match.group(1)[1:-1].replace(match.group(2)[1:-1], match.group(3)[1:-1]), 'vba.replace', *match.span())
+        Hit(match.group(1)[1:-1].replace(match.group(2)[1:-1], match.group(3)[1:-1]), ['vba.replace'], *match.span())
         for match in re.finditer(VBA_REPLACE_RE, data)
     ]
 
@@ -40,6 +40,6 @@ def find_vba_replace(data: bytes) -> list[Hit]:
 @analyzer('javascript.string')
 def find_js_regex_replace(data: bytes) -> list[Hit]:
     return [
-        Hit(match.group(1)[1:-1].replace(match.group(2), match.group(3)[1:-1]), 'replace', *match.span())
+        Hit(match.group(1)[1:-1].replace(match.group(2), match.group(3)[1:-1]), ['replace'], *match.span())
         for match in re.finditer(JS_REGEX_REPLACE_RE, data)
     ]

@@ -18,6 +18,6 @@ def unescape_xml(data: bytes) -> bytes:
 @analyzer('')
 def find_xml_hex(data: bytes) -> list[Hit]:
     return [
-        Hit(unescape_xml(match.group()), 'unescape.xml', match.start(), match.end())
+        Hit(unescape_xml(match.group()), ['unescape.xml'], match.start(), match.end())
         for match in re.finditer(XML_ESCAPE_RE, data)
     ]

@@ -66,7 +66,7 @@ def find_urls(data: bytes) -> List[Hit]:
     return out
 
 
-def parse_ip(ip: str) -> tuple[str, str]:
+def parse_ip(ip: str) -> tuple[str, list[str]]:
     """
     Checks if an ipv4 address is valid and a standard public internet address and normalizes it.
 
@@ -85,11 +85,11 @@ def parse_ip(ip: str) -> tuple[str, str]:
     try:
         address = IPv4Address(socket.inet_aton(ip))
     except socket.error or AddressValueError:
-        return '', ''
+        return '', []
     if address.is_global and not address.is_multicast:
-        return address.compressed, 'ip_obfuscation' if address.compressed != ip else ''
+        return address.compressed, ['ip_obfuscation'] if address.compressed != ip else []
     else:
-        return '', ''
+        return '', []
 
 
 def is_valid_domain(domain: Union[str, bytes]) -> bool:
@@ -111,17 +111,17 @@ def is_valid_domain(domain: Union[str, bytes]) -> bool:
     return True
 
 
-def parse_url(url_str: str) -> tuple[str, str]:
+def parse_url(url_str: str) -> tuple[str, list[str]]:
     decodings = []
     try:
         url = hyperlink.parse(url_str, decoded=False)
     except UnicodeDecodeError:
-        return url_str, ''
+        return url_str, []
     host = unquote(url.host)
     if host != url.host:
         decodings.append('percent.encoding')
     ip, obfuscation = parse_ip(host)
     if ip:
-        decodings.append(obfuscation)
+        decodings.extend(obfuscation)
         url = url.replace(host=ip)
-    return url.normalize().to_text(), '/>'.join(decodings)
+    return url.normalize().to_text(), decodings

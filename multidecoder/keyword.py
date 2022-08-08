@@ -14,7 +14,7 @@ def find_keywords(keywords: Iterable[bytes], data: bytes) -> list[Hit]:
     lower = data.lower()
     return [
         Hit(keyword,
-            'MixedCase' if is_mixed_case(keyword, data[start:start+len(keyword)]) else '',
+            ['MixedCase'] if is_mixed_case(keyword, data[start:start+len(keyword)]) else [''],
             start,
             start+len(keyword))
         for keyword in keywords

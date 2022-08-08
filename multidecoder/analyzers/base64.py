@@ -52,7 +52,7 @@ def find_base64(data: bytes) -> list[Hit]:
             continue
         try:
             b64_result = binascii.a2b_base64(b64_string)
-            b64_matches.append(Hit(b64_result, 'decoded.base64', b64_match.start(), b64_match.end()))
+            b64_matches.append(Hit(b64_result, ['decoded.base64'], b64_match.start(), b64_match.end()))
         except binascii.Error:
             pass
     return b64_matches
@@ -64,7 +64,7 @@ def find_Base64Decode(data: bytes) -> list[Hit]:
     for match in re.finditer(BASE64DECODE_RE, data):
         try:
             b64 = binascii.a2b_base64(match.group(1))
-            out.append(Hit(b64, 'decode.base64', *match.span()))
+            out.append(Hit(b64, ['decode.base64'], *match.span()))
         except binascii.Error:
             continue
     return out
@@ -73,6 +73,7 @@ def find_Base64Decode(data: bytes) -> list[Hit]:
 @analyzer('powershell.bytes')
 def find_FromBase64String(data: bytes) -> list[Hit]:
     out: list[Hit] = []
+    obfuscation = ['decode.base64']
     for match in re.finditer(FROMB64STRING_RE, data):
         try:
             b64 = binascii.a2b_base64(match.group(2))
@@ -80,9 +81,7 @@ def find_FromBase64String(data: bytes) -> list[Hit]:
             if xorkey:
                 key = int(xorkey.group(1))
                 b64 = bytes(b ^ key for b in b64)
-                obfuscation = 'decode.base64/>xor'+str(key)
-            else:
-                obfuscation = 'decode.base64'
+                obfuscation.append('xor'+str(key))
             out.append(Hit(b64, obfuscation, *match.span()))
         except binascii.Error:
             continue

@@ -1,15 +1,33 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Optional
 
 from multidecoder.registry import AnalyzerMap, build_map
+
+
+class Node():
+    def __init__(self,
+                 type: str,
+                 value: bytes,
+                 obfuscation: list[str],
+                 parent: Optional[Node] = None,
+                 start: int = 0,
+                 end: int = 0):
+        self.type = type
+        self.value = value
+        self.obfuscation = obfuscation
+        self.start = start
+        self.end = end
+        self.parent = parent
+
+        self.children: list[Node] = []
 
 
 class Multidecoder:
     def __init__(self, analyzers: Optional[AnalyzerMap] = None) -> None:
         self.analyzers = analyzers if analyzers else build_map()
 
-    def scan(self, data: bytes, depth: int = 10) -> list[dict[str, Any]]:
+    def scan(self, data: bytes, depth: int = 10) -> list[Node]:
         """
         Report the combined analysis results.
 
@@ -23,7 +41,7 @@ class Multidecoder:
         if depth <= 0:
             return []
 
-        children = []
+        children: list[Node] = []
         decode_end = 0
 
         stack: list[tuple[list, int, int]] = []
@@ -43,28 +61,25 @@ class Multidecoder:
             while end < hit.end:
                 children, start, end = stack.pop()
             # Create the child structure
-            child = {
-                'obfuscation': hit.obfuscation,
-                'type': label,
-                'value': hit.value,
-                'start': hit.start-start,
-                'end': hit.end-start,
-                'children': [],
-            }
+            child = Node(type=label,
+                         value=hit.value,
+                         obfuscation=hit.obfuscation,
+                         start=hit.start-start,
+                         end=hit.end-start)
             # Add it to the parent's list of children
             children.append(child)
 
             if hit.value.lower() != data[hit.start:hit.end].lower():
                 # Add decoded result and check for new IOCs
                 decode_end = hit.end
-                child['children'] = self.scan(hit.value, depth-1)
+                child.children = self.scan(hit.value, depth-1)
                 # Prevent analyzer rematching its own decoded output
-                if len(child['children']) == 1 and child['children'][0]['value'] == hit.value \
-                        and child['children'][0]['type'] == label:
-                    child['children'] = child['children'][0]['children']
+                if len(child.children) == 1 and child.children[0].value == hit.value \
+                        and child.children[0].type == label:
+                    child.children = child.children[0].children
             else:
                 # No need to rescan, set as context
                 stack.append((children, start, end))
-                children, start, end = child['children'], hit.start, hit.end
+                children, start, end = child.children, hit.start, hit.end
 
         return stack[0][0] if stack else children

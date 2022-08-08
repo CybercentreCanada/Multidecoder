@@ -39,10 +39,10 @@ def find_createobject(data: bytes) -> list[Hit]:
     for match in re.finditer(CREATE_OBJECT_RE, data):
         index = get_closing_brace(data, match.end())
         if index > 0:
-            out.append(Hit(data[match.start():index], '', match.start(), index))
+            out.append(Hit(data[match.start():index], [], match.start(), index))
     return out
 
 
 @analyzer('vba.string')
 def find_strreverse(data: bytes) -> list[Hit]:
-    return find_and_deobfuscate(STRREVERSE_RE, data, lambda s: (s[-2:0:-1], 'vba.reverse'), 1)
+    return find_and_deobfuscate(STRREVERSE_RE, data, lambda s: (s[-2:0:-1], ['vba.reverse']), 1)

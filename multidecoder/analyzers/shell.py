@@ -42,7 +42,7 @@ def strip_carets(cmd: bytes) -> bytes:
 
 def deobfuscate_cmd(cmd: bytes):
     stripped = strip_carets(cmd)
-    return stripped, 'unescape.shell.carets' if stripped != cmd else ''
+    return stripped, ['unescape.shell.carets'] if stripped != cmd else ['']
 
 
 @analyzer('shell.cmd')
@@ -64,13 +64,13 @@ def find_powershell_strings(data: bytes) -> list[Hit]:
         enc = re.search(ENC_RE, data, pos=start)
         if enc:
             powershell = data[start:enc.end()]
-            deobfuscated, ob = deobfuscate_cmd(powershell)
+            deobfuscated, obfuscation = deobfuscate_cmd(powershell)
             split = re.split(rb'\s+', deobfuscated)
             b64 = (binascii.a2b_base64(_pad(split[-1]))
                            .decode('utf-16', errors='ignore')
                            .encode())
             deobfuscated = b' '.join(split[:-2]) + b' -Command ' + b64
-            obfuscation = ob + ('/>' if ob else '') + 'powershell.base64'
+            obfuscation.append('powershell.base64')
             out.append(Hit(deobfuscated, obfuscation, start, enc.end()))
             continue
         # Look back to find the start of the string or FOR loop
