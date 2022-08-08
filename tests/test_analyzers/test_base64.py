@@ -50,15 +50,15 @@ def test_fromb64string_no_xor():
     test = b"FromBase64String('ZHVjaw==')"
     test2 = b"[System.Convert]::FromBase64String('ZHVjaw==')"
     assert find_FromBase64String(test) == [
-        Hit(value=b'duck', obfuscation='decode.base64', start=0, end=len(test))
+        Hit(value=b'duck', obfuscation=['decode.base64'], start=0, end=len(test))
     ]
     assert find_FromBase64String(test2) == [
-        Hit(value=b'duck', obfuscation='decode.base64', start=0, end=len(test2))
+        Hit(value=b'duck', obfuscation=['decode.base64'], start=0, end=len(test2))
     ]
 
 
 def test_fromb64string_xor():
     test = b"FromBase64String('R1ZASA==')\n-bxor 35"
     assert find_FromBase64String(test) == [
-        Hit(value=b'duck', obfuscation='decode.base64/>xor35', start=0, end=test.find(b'\n'))
+        Hit(value=b'duck', obfuscation=['decode.base64', 'xor35'], start=0, end=test.find(b'\n'))
     ]
