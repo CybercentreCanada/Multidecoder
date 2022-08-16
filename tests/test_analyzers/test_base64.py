@@ -32,9 +32,9 @@ def test_base64_re_matches_equals():
 
 ENCODED = binascii.b2a_base64(b'Some base64 encoded text')
 TEST_STRINGS = {
-    ENCODED: [(b'Some base64 encoded text', 'decoded.base64', 0, 32)],
+    ENCODED: [(b'Some base64 encoded text', ['decoded.base64'], 0, 32)],
     b'lorem ipsum lorum asdf\nhjkl\nASDF\nasdf\nhjkl\nASDF\n44==lorum ipsum':
-        [(b'j\xc7_\x869%\x01 \xc5j\xc7_\x869%\x01 \xc5\xe3', 'decoded.base64', 18, 52)]
+        [(b'j\xc7_\x869%\x01 \xc5j\xc7_\x869%\x01 \xc5\xe3', ['decoded.base64'], 18, 52)]
 }
 
 
