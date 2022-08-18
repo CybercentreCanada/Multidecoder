@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from typing import Optional
 
-from multidecoder.multidecoder import Node
+from multidecoder.node import Node
 
 
 def invert_tree(tree: list[Node]) -> list[Node]:

@@ -1,53 +1,45 @@
 from __future__ import annotations
 
-import simplejson
+import json
 
-from typing import Any
-
-
-def tree_to_json(tree: list[dict[str, Any]], **kargs) -> str:
-    return simplejson.dumps(tree, encoding='latin-1', **kargs)
+from typing import Optional
+from multidecoder.node import Node
 
 
-def json_to_tree(serialized: str, **kargs) -> list[dict[str, Any]]:
-    return check_list(simplejson.loads(serialized, encoding='latin-1', **kargs))
+def node_to_dict(node: Node):
+    return {
+        'type': node.type,
+        'value': node.value.hex(),
+        'obfuscation': node.obfuscation,
+        'start': node.start,
+        'end': node.end,
+        # Ignore parent to avoid circularity
+        'children': [node_to_dict(child) for child in node.children]
+    }
 
 
-def check_list(L: Any) -> list[dict[str, Any]]:
-    if not isinstance(L, list):
-        raise ValueError(f'Invalid object, Expected a list but got {type(L)}.')
-    for entry in L:
-        check_dict(entry)
-    return L
+class NodeEncoder(json.JSONEncoder):
+    def default(self, node):
+        if isinstance(node, Node):
+            return node_to_dict(node)
+        return json.JSONEncoder.default(self, node)
 
 
-def check_dict(d: Any) -> dict[str, Any]:
-    if not isinstance(d, dict):
-        raise ValueError(f'Invalid object, entry must be dict but got {type(d)}')
-    if 'type' not in d:
-        raise ValueError('Invalid object, entry missing type')
-    if not isinstance(d['type'], str):
-        raise ValueError(f'Invalid object, entry type must be str but got {type(d["type"])}')
-    if 'value' not in d:
-        raise ValueError('Invalid object, entry missing value')
-    if not isinstance(d['value'], str):
-        raise ValueError(f'Invalid object, entry value must be str but got {type(d["value"])}')
-    d['value'] = d['value'].encode('latin-1')
-    if 'start' not in d:
-        raise ValueError('Invalid object, entry missing start')
-    if not isinstance(d['start'], int):
-        raise ValueError(f'Invalid object, start must be int but got {type(d["start"])}')
-    if 'end' not in d:
-        raise ValueError('Invalid object, entry missing end')
-    if not isinstance(d['end'], int):
-        raise ValueError(f'Invalid object, end must be int but got {type(d["start"])}')
-    if 'obfuscation' in d:
-        if not isinstance(d['obfuscation'], str):
-            raise ValueError(f'Invalid object, obfuscation must be str but got {type(d["obfuscation"])}')
-    else:
-        d['obfuscation'] = ''
-    if 'children' in d:
-        check_list(d['children'])
-    else:
-        d['children'] = []
-    return d
+def as_node(d, parent: Optional[Node] = None) -> Node:
+    node = Node(
+        type=d['type'],
+        value=bytes.fromhex(d['value']),
+        obfuscation=d['obfuscation'],
+        start=d['start'],
+        end=d['end'],
+        parent=parent)
+    node.children = [as_node(child, node) for child in d['children']]
+    return node
+
+
+def tree_to_json(tree: list[Node], **kargs) -> str:
+    return json.dumps(tree, cls=NodeEncoder, **kargs)
+
+
+def json_to_tree(serialized: str, **kargs) -> list[Node]:
+    return json.loads(serialized, default=as_node)

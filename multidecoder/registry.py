@@ -53,7 +53,7 @@ def get_analyzers(include: Optional[Iterable[str]] = None,
 def get_keywords(directory: str = '') -> AnalyzerMap:
     """ Get keyword search functions from a directory """
     directory = directory or os.path.join(next(iter(multidecoder.__path__)), 'keywords')
-    keyword_map = {}
+    keyword_map: AnalyzerMap = {}
     for subdir, _, files in os.walk(directory):
         for file_name in files:
             with open(os.path.join(subdir, file_name), 'rb') as f:
