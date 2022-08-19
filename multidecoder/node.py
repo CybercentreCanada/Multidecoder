@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Iterable, Iterator, Optional
 
 
 class Node():
@@ -29,3 +29,14 @@ class Node():
                 and self.start == other.start
                 and self.end == other.end
                 and self.children == other.children)
+
+    def __iter__(self) -> Iterator[Node]:
+        """Depth first iteration over the entire tree of children of the node, starting with the node itself.
+
+        If only the direct children are wanted iterating over node.children can be used instead"""
+        def node_generator(node: Node) -> Iterable[Node]:
+            yield node
+            for child in node.children:
+                for subchild in node_generator(child):
+                    yield subchild
+        return iter(node_generator(self))
