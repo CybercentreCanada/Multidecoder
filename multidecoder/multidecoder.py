@@ -10,7 +10,10 @@ class Multidecoder:
     def __init__(self, analyzers: Optional[AnalyzerMap] = None) -> None:
         self.analyzers = analyzers if analyzers else build_map()
 
-    def scan(self, data: bytes, depth: int = 10) -> list[Node]:
+    def scan(self, data: bytes) -> list[Node]:
+        return self.scan_node(Node('', data, [], 0, len(data))).children
+
+    def scan_node(self, node: Node, depth: int = 10) -> Node:
         """
         Report the combined analysis results.
 
@@ -22,17 +25,16 @@ class Multidecoder:
             with each result nested inside the context it was found in.
         """
         if depth <= 0:
-            return []
+            return node
 
-        children: list[Node] = []
-        decode_end = 0
+        stack: list[Node] = []
+        decode_end = 0  # end of the last decoded context
+        offset = 0  # start of the current node relative to the start of the original node
 
-        stack: list[tuple[list, int, int]] = []
-        start, end = 0, len(data)
         # Get results in sorted order
         results = sorted(
             ((label, hit) for search, label in self.analyzers.items()
-                for hit in search(data) if hit.value),
+                for hit in search(node.value) if hit.value),
             key=lambda t: (t[1].start, -t[1].end)
         )
 
@@ -41,28 +43,29 @@ class Multidecoder:
             if hit.end <= decode_end:
                 continue
             # Return to the context that contains the current hit
-            while end < hit.end:
-                children, start, end = stack.pop()
+            while offset + len(node.value) < hit.end:
+                offset -= node.start
+                node = stack.pop()
             # Create the child structure
             child = Node(type=label,
                          value=hit.value,
                          obfuscation=hit.obfuscation,
-                         start=hit.start-start,
-                         end=hit.end-start)
-            # Add it to the parent's list of children
-            children.append(child)
+                         start=hit.start-offset,
+                         end=hit.end-offset,
+                         parent=node)
+            node.children.append(child)
 
-            if hit.value.lower() != data[hit.start:hit.end].lower():
+            if hit.value.lower() != node.value[hit.start:hit.end].lower():
                 # Add decoded result and check for new IOCs
                 decode_end = hit.end
-                child.children = self.scan(hit.value, depth-1)
+                child = self.scan_node(child, depth-1)
                 # Prevent analyzer rematching its own decoded output
                 if len(child.children) == 1 and child.children[0].value == hit.value \
                         and child.children[0].type == label:
                     child.children = child.children[0].children
             else:
                 # No need to rescan, set as context
-                stack.append((children, start, end))
-                children, start, end = child.children, hit.start, hit.end
+                stack.append(node)
+                node, offset = child, hit.start
 
-        return stack[0][0] if stack else children
+        return stack[0] if stack else node

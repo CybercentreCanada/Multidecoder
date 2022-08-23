@@ -20,6 +20,9 @@ class Node():
         self.children: list[Node] = children if children else []
         self.parent = parent
 
+    def __repr__(self) -> str:
+        return f'Node({self.type}, {self.value!r}, {self.obfuscation}, {self.start}, {self.end})'
+
     def __eq__(self, other):
         # Ignoring parent in eq to allow unit tests to not construct backreferences
         # and to avoid potential infinite loop problems
