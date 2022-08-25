@@ -7,14 +7,10 @@ from multidecoder.node import Node
 
 
 def invert_tree(tree: list[Node]) -> list[Node]:
-    def invert_helper(tree: list[Node], parent: Optional[Node]) -> list[Node]:
-        nodes = []
-        for node in tree:
-            node.parent = parent
-            nodes.append(node)
-            nodes.extend(invert_helper(node.children, node))
-        return nodes
-    return invert_helper(tree, None)
+    nodes: list[Node] = []
+    for node in tree:
+        nodes.extend(node)
+    return nodes
 
 
 def make_label(node: Optional[Node]) -> str:
