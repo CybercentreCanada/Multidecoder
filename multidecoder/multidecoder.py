@@ -10,8 +10,8 @@ class Multidecoder:
     def __init__(self, analyzers: Optional[AnalyzerMap] = None) -> None:
         self.analyzers = analyzers if analyzers else build_map()
 
-    def scan(self, data: bytes) -> list[Node]:
-        return self.scan_node(Node('', data, [], 0, len(data))).children
+    def scan(self, data: bytes) -> Node:
+        return self.scan_node(Node('', data, [], 0, len(data)))
 
     def scan_node(self, node: Node, depth: int = 10) -> Node:
         """

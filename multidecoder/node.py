@@ -20,6 +20,13 @@ class Node():
         self.children: list[Node] = children if children else []
         self.parent = parent
 
+    @property
+    def original(self):
+        # Value before decoding
+        if self.parent:
+            return self.parent.value[self.start:self.end]
+        return self.value
+
     def __repr__(self) -> str:
         return f'Node({self.type}, {self.value!r}, {self.obfuscation}, {self.start}, {self.end})'
 
