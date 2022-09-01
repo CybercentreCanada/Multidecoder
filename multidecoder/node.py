@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import Iterable, Iterator, Optional
 
 
-class Node():
+class Node:
+    __slots__ = 'type', 'value', 'obfuscation', 'start', 'end', 'parent', 'children'
+
     def __init__(self,
                  type: str,
                  value: bytes,
