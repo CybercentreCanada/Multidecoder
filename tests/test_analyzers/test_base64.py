@@ -1,7 +1,8 @@
 import binascii
+
 import regex as re
 
-from multidecoder.analyzers.base64 import find_FromBase64String, find_base64, BASE64_RE
+from multidecoder.analyzers.base64 import BASE64_RE, find_base64, find_FromBase64String
 from multidecoder.hit import Hit
 
 

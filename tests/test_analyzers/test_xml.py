@@ -1,7 +1,7 @@
 import re
 
-from multidecoder.hit import Hit
 from multidecoder.analyzers.xml import XML_ESCAPE_RE, find_xml_hex, unescape_xml
+from multidecoder.hit import Hit
 
 external = b'TargetMode="&#x45;&#x78;&#x74;&#x65;&#x72;&#x6e;&#x61;&#x6c;"'
 

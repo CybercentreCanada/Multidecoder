@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import regex as re
-
 from typing import Callable, NamedTuple
+
+import regex as re
 
 Hit = NamedTuple(
     "Hit", [("value", bytes), ("obfuscation", list[str]), ("start", int), ("end", int)]

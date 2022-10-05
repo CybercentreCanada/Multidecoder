@@ -13,3 +13,6 @@ fallback_version = "0.0.0"
 
 [tool.pylint.format]
 max-line-length = "88"
+
+[tool.isort]
+profile = "black"

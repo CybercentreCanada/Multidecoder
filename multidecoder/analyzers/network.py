@@ -8,19 +8,18 @@ This module contains:
 
 from __future__ import annotations
 
-import regex as re
 import socket
-
 from ipaddress import AddressValueError, IPv4Address
 from typing import List, Union
 from urllib.parse import unquote
 
 import hyperlink
+import regex as re
 
-from multidecoder.hit import Hit, match_to_hit
 from multidecoder.domains import TOP_LEVEL_DOMAINS
-from multidecoder.string_helper import make_bytes
+from multidecoder.hit import Hit, match_to_hit
 from multidecoder.registry import analyzer
+from multidecoder.string_helper import make_bytes
 
 _OCTET_RE = rb"(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})"
 IP_RE = rb"(?i)\b(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"\b"

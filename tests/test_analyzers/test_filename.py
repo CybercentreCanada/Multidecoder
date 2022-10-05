@@ -1,5 +1,5 @@
-from multidecoder.hit import Hit
 from multidecoder.analyzers.filename import find_executable_name
+from multidecoder.hit import Hit
 
 
 def test_find_executable_iexplore():

@@ -3,7 +3,6 @@ from __future__ import annotations
 import regex as re
 
 from multidecoder.hit import Hit
-
 from multidecoder.registry import analyzer
 
 DOUBLE_QUOTE_ESCAPES = rb'\\""|""|\\"|`"'

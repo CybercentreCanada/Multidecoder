@@ -5,9 +5,9 @@ import os
 import sys
 
 from multidecoder._version import version
-from multidecoder.multidecoder import Multidecoder
 from multidecoder.json_conversion import tree_to_json
-from multidecoder.query import string_summary, squash_replace
+from multidecoder.multidecoder import Multidecoder
+from multidecoder.query import squash_replace, string_summary
 from multidecoder.registry import build_map
 
 

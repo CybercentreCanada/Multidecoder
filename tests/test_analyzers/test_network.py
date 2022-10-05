@@ -1,9 +1,14 @@
 import re
 
-
-from multidecoder.analyzers.network import DOMAIN_RE, EMAIL_RE, URL_RE, IP_RE
-from multidecoder.analyzers.network import is_valid_domain, parse_ip
-from multidecoder.analyzers.network import find_domains
+from multidecoder.analyzers.network import (
+    DOMAIN_RE,
+    EMAIL_RE,
+    IP_RE,
+    URL_RE,
+    find_domains,
+    is_valid_domain,
+    parse_ip,
+)
 
 
 # IP --------------------------------------------

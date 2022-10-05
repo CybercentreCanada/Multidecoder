@@ -1,6 +1,7 @@
+import itertools
+
 import regex as re
 
-import itertools
 from multidecoder.analyzers.encoding import UTF16_RE, find_utf16
 
 test_bytes = bytes(

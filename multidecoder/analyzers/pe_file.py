@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import regex as re
-
 import pefile
+import regex as re
 
 from multidecoder.hit import Hit
 from multidecoder.registry import analyzer

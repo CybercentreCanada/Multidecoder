@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import regex as re
 import binascii
+
+import regex as re
 
 from multidecoder.analyzers.concat import DOUBLE_QUOTE_ESCAPES
 from multidecoder.hit import Hit
 from multidecoder.registry import analyzer
-
 
 CMD_RE = b"(?i)\\bc\\^?m\\^?d(?:" + DOUBLE_QUOTE_ESCAPES + rb'|[^)"\x00])*'
 POWERSHELL_INDICATOR_RE = rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'

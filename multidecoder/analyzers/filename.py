@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from multidecoder.registry import analyzer
 from multidecoder.hit import Hit, regex_hits
+from multidecoder.registry import analyzer
 
 EXECUTABLE_RE = rb"(?i)\b\w+[.]exe\b"
 LIBRARY_RE = rb"(?i)\b\w+[.]dll\b"

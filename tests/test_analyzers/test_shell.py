@@ -1,8 +1,9 @@
 import regex as re
 
-from multidecoder.analyzers.shell import CMD_RE
-from multidecoder.analyzers.shell import find_cmd_strings, find_powershell_strings
 from multidecoder.analyzers.shell import (
+    CMD_RE,
+    find_cmd_strings,
+    find_powershell_strings,
     get_cmd_command,
     get_powershell_command,
     strip_carets,

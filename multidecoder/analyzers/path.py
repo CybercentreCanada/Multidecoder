@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from multidecoder.registry import analyzer
 from multidecoder.hit import Hit, regex_hits
+from multidecoder.registry import analyzer
 
 PATH_RE = rb"[.]?[.]?/(\w{3,}/)+[\w.]{3,}"
 WINDOWS_PATH_RE = rb"(?:[A-Z]:\\?|[.]\\|[.][.]\\|\\)(?:\w{3,}\\)+[\w.]{3,}"

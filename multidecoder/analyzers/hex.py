@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import regex as re
-
 from binascii import unhexlify
+
+import regex as re
 
 from multidecoder.hit import Hit
 from multidecoder.registry import analyzer
