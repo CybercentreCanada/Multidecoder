@@ -7,11 +7,11 @@ import pefile
 from multidecoder.hit import Hit
 from multidecoder.registry import analyzer
 
-EXEDOS_RE = rb'(?s)This program cannot be run in DOS mode'
-EXEHEADER_RE = rb'(?s)MZ.{32,1024}PE\000\000'
+EXEDOS_RE = rb"(?s)This program cannot be run in DOS mode"
+EXEHEADER_RE = rb"(?s)MZ.{32,1024}PE\000\000"
 
 
-@analyzer('pe_file')
+@analyzer("pe_file")
 def find_pe_files(data: bytes) -> list[Hit]:
     """
     Searches for any PE files within data
@@ -32,10 +32,13 @@ def find_pe_files(data: bytes) -> list[Hit]:
             return pe_files
         try:
             pe = pefile.PE(data=pe_data)
-            size = max(section.PointerToRawData + section.SizeOfRawData for section in pe.sections)
+            size = max(
+                section.PointerToRawData + section.SizeOfRawData
+                for section in pe.sections
+            )
             if size == 0:
                 return pe_files
-            end = offset+size
+            end = offset + size
             pe_files.append(Hit(data[offset:end], [], offset, end))
             offset = end
         except Exception:

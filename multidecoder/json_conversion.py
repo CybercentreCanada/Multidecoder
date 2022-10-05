@@ -8,13 +8,13 @@ from multidecoder.node import Node
 
 def node_to_dict(node: Node):
     return {
-        'type': node.type,
-        'value': node.value.hex(),
-        'obfuscation': node.obfuscation,
-        'start': node.start,
-        'end': node.end,
+        "type": node.type,
+        "value": node.value.hex(),
+        "obfuscation": node.obfuscation,
+        "start": node.start,
+        "end": node.end,
         # Ignore parent to avoid circularity
-        'children': [node_to_dict(child) for child in node.children]
+        "children": [node_to_dict(child) for child in node.children],
     }
 
 
@@ -27,13 +27,14 @@ class NodeEncoder(json.JSONEncoder):
 
 def as_node(d, parent: Optional[Node] = None) -> Node:
     node = Node(
-        type=d['type'],
-        value=bytes.fromhex(d['value']),
-        obfuscation=d['obfuscation'],
-        start=d['start'],
-        end=d['end'],
-        parent=parent)
-    node.children = [as_node(child, node) for child in d['children']]
+        type=d["type"],
+        value=bytes.fromhex(d["value"]),
+        obfuscation=d["obfuscation"],
+        start=d["start"],
+        end=d["end"],
+        parent=parent,
+    )
+    node.children = [as_node(child, node) for child in d["children"]]
     return node
 
 

@@ -10,3 +10,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 write_to = "multidecoder/_version.py"
 fallback_version = "0.0.0"
+
+[tool.pylint.format]
+max-line-length = "88"
