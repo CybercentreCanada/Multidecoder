@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Callable, NamedTuple
+from typing import Callable, List, NamedTuple
 
 import regex as re
 
 Hit = NamedTuple(
-    "Hit", [("value", bytes), ("obfuscation", list[str]), ("start", int), ("end", int)]
+    "Hit", [("value", bytes), ("obfuscation", List[str]), ("start", int), ("end", int)]
 )
 
 
