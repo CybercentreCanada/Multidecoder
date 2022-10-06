@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 # setuptools_scm
 [tool.setuptools_scm]
-write_to = "multidecoder/_version.py"
+write_to = "src/multidecoder/_version.py"
 fallback_version = "0.0.0"
 
 [tool.pylint.format]
