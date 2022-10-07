@@ -42,7 +42,7 @@ def strip_carets(cmd: bytes) -> bytes:
     return bytes(out)
 
 
-def deobfuscate_cmd(cmd: bytes):
+def deobfuscate_cmd(cmd: bytes) -> tuple[bytes, list[str]]:
     stripped = strip_carets(cmd)
     return stripped, ["unescape.shell.carets"] if stripped != cmd else []
 
