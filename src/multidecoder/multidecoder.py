@@ -11,7 +11,7 @@ class Multidecoder:
         self.analyzers = analyzers if analyzers else build_map()
 
     def scan(self, data: bytes) -> Node:
-        return self.scan_node(Node('', data, [], 0, len(data)))
+        return self.scan_node(Node("", data, [], 0, len(data)))
 
     def scan_node(self, node: Node, depth: int = 10) -> Node:
         """
@@ -29,13 +29,19 @@ class Multidecoder:
 
         stack: list[Node] = []
         decode_end = 0  # end of the last decoded context
-        offset = 0  # start of the current node relative to the start of the original node
+        offset = (
+            0  # start of the current node relative to the start of the original node
+        )
 
         # Get results in sorted order
         results = sorted(
-            ((label, hit) for search, label in self.analyzers.items()
-                for hit in search(node.value) if hit.value),
-            key=lambda t: (t[1].start, -t[1].end)
+            (
+                (label, hit)
+                for search, label in self.analyzers.items()
+                for hit in search(node.value)
+                if hit.value
+            ),
+            key=lambda t: (t[1].start, -t[1].end),
         )
 
         for label, hit in results:
@@ -47,21 +53,26 @@ class Multidecoder:
                 offset -= node.start
                 node = stack.pop()
             # Create the child structure
-            child = Node(type=label,
-                         value=hit.value,
-                         obfuscation=hit.obfuscation,
-                         start=hit.start-offset,
-                         end=hit.end-offset,
-                         parent=node)
+            child = Node(
+                type=label,
+                value=hit.value,
+                obfuscation=hit.obfuscation,
+                start=hit.start - offset,
+                end=hit.end - offset,
+                parent=node,
+            )
             node.children.append(child)
 
-            if hit.value.lower() != node.value[hit.start:hit.end].lower():
+            if hit.value.lower() != node.value[hit.start : hit.end].lower():
                 # Add decoded result and check for new IOCs
                 decode_end = hit.end
-                child = self.scan_node(child, depth-1)
+                child = self.scan_node(child, depth - 1)
                 # Prevent analyzer rematching its own decoded output
-                if len(child.children) == 1 and child.children[0].value == hit.value \
-                        and child.children[0].type == label:
+                if (
+                    len(child.children) == 1
+                    and child.children[0].value == hit.value
+                    and child.children[0].type == label
+                ):
                     child.children = child.children[0].children
             else:
                 # No need to rescan, set as context

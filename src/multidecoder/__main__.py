@@ -5,24 +5,26 @@ import os
 import sys
 
 from multidecoder._version import version
-from multidecoder.multidecoder import Multidecoder
 from multidecoder.json_conversion import tree_to_json
-from multidecoder.query import string_summary, squash_replace
+from multidecoder.multidecoder import Multidecoder
+from multidecoder.query import squash_replace, string_summary
 from multidecoder.registry import build_map
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('filepath', nargs='?', metavar='FILE')
-    parser.add_argument('--version', '-V', action='version', version="%(prog)s " + version)
-    parser.add_argument('--keywords', '-k')
+    parser.add_argument("filepath", nargs="?", metavar="FILE")
+    parser.add_argument(
+        "--version", "-V", action="version", version="%(prog)s " + version
+    )
+    parser.add_argument("--keywords", "-k")
     output_format = parser.add_mutually_exclusive_group()
-    output_format.add_argument('--json', '-j', action='store_true')
-    output_format.add_argument('--replace', '-r', action='store_true')
+    output_format.add_argument("--json", "-j", action="store_true")
+    output_format.add_argument("--replace", "-r", action="store_true")
     args = parser.parse_args()
     if args.filepath:
         try:
-            with open(args.filepath, 'rb') as f:
+            with open(args.filepath, "rb") as f:
                 data = f.read()
         except Exception as e:
             print(e, file=sys.stderr)
@@ -31,7 +33,7 @@ def main():
         data = sys.stdin.buffer.read()
     if args.keywords:
         if not os.path.isdir(args.keywords):
-            print('--keywords argument must be a directory', file=sys.stderr)
+            print("--keywords argument must be a directory", file=sys.stderr)
             return
         analyzers = build_map(args.keywords)
     else:
@@ -47,5 +49,5 @@ def main():
             print(string)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

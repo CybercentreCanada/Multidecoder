@@ -8,45 +8,52 @@ This module contains:
 
 from __future__ import annotations
 
-import regex as re
 import socket
-
 from ipaddress import AddressValueError, IPv4Address
 from typing import List, Union
 from urllib.parse import unquote
 
 import hyperlink
+import regex as re
 
-from multidecoder.hit import Hit, match_to_hit
 from multidecoder.domains import TOP_LEVEL_DOMAINS
-from multidecoder.string_helper import make_bytes
+from multidecoder.hit import Hit, match_to_hit
 from multidecoder.registry import analyzer
+from multidecoder.string_helper import make_bytes
 
-_OCTET_RE = rb'(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})'
-IP_RE = rb'(?i)\b(?:' + _OCTET_RE + rb'[.]){3}' + _OCTET_RE + rb'\b'
-DOMAIN_RE = rb'(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})\b'
-EMAIL_RE = rb'(?i)\b[a-z0-9._%+-]{3,}@(' + DOMAIN_RE[4:] + rb')\b'
-URL_RE = rb'(?i)(?:ftp|https?)://[a-z0-9-%.]+(?::[0-9]{1,5})?/?' \
-         rb'(?:[a-z0-9/\-.&%$#=~?_+]{3,200})?'
+_OCTET_RE = rb"(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})"
+IP_RE = rb"(?i)\b(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"\b"
+DOMAIN_RE = rb"(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})\b"
+EMAIL_RE = rb"(?i)\b[a-z0-9._%+-]{3,}@(" + DOMAIN_RE[4:] + rb")\b"
+URL_RE = (
+    rb"(?i)(?:ftp|https?)://[a-z0-9-%.]+(?::[0-9]{1,5})?/?"
+    rb"(?:[a-z0-9/\-.&%$#=~?_+]{3,200})?"
+)
 
 
-@analyzer('network.domain')
+@analyzer("network.domain")
 def find_domains(data: bytes) -> List[Hit]:
-    """ Find domains in data """
-    return [match_to_hit(match) for match in re.finditer(DOMAIN_RE, data)
-            if is_valid_domain(match.group())]
+    """Find domains in data"""
+    return [
+        match_to_hit(match)
+        for match in re.finditer(DOMAIN_RE, data)
+        if is_valid_domain(match.group())
+    ]
 
 
-@analyzer('network.email')
+@analyzer("network.email")
 def find_emails(data: bytes) -> List[Hit]:
-    """ Find email addresses in data """
-    return [match_to_hit(match) for match in re.finditer(EMAIL_RE, data)
-            if is_valid_domain(match.group(1))]
+    """Find email addresses in data"""
+    return [
+        match_to_hit(match)
+        for match in re.finditer(EMAIL_RE, data)
+        if is_valid_domain(match.group(1))
+    ]
 
 
-@analyzer('network.ip')
+@analyzer("network.ip")
 def find_ips(data: bytes) -> List[Hit]:
-    """ Find ip addresses in data """
+    """Find ip addresses in data"""
     out = []
     for match in re.finditer(IP_RE, data):
         ip, obfuscation = parse_ip(match.group().decode())
@@ -55,9 +62,9 @@ def find_ips(data: bytes) -> List[Hit]:
     return out
 
 
-@analyzer('network.url')
+@analyzer("network.url")
 def find_urls(data: bytes) -> List[Hit]:
-    """ Find URLs in data """
+    """Find URLs in data"""
     out = []
     for match in re.finditer(URL_RE, data):
         url, obfuscation = parse_url(match.group().decode())
@@ -85,15 +92,18 @@ def parse_ip(ip: str) -> tuple[str, list[str]]:
     try:
         address = IPv4Address(socket.inet_aton(ip))
     except socket.error or AddressValueError:
-        return '', []
+        return "", []
     if address.is_global and not address.is_multicast:
-        return address.compressed, ['ip_obfuscation'] if address.compressed != ip else []
+        return (
+            address.compressed,
+            ["ip_obfuscation"] if address.compressed != ip else [],
+        )
     else:
-        return '', []
+        return "", []
 
 
 def is_valid_domain(domain: Union[str, bytes]) -> bool:
-    """ Checks if a domain is valid.
+    """Checks if a domain is valid.
 
     Checks the top level domain to ensure it is a registered top level domain.
 
@@ -102,7 +112,7 @@ def is_valid_domain(domain: Union[str, bytes]) -> bool:
     Returns:
         Whether domain has a valid top level domain.
     """
-    parts = make_bytes(domain).rsplit(b'.', 1)
+    parts = make_bytes(domain).rsplit(b".", 1)
     if len(parts) != 2:
         return False
     domain, top_level = parts
@@ -119,7 +129,7 @@ def parse_url(url_str: str) -> tuple[str, list[str]]:
         return url_str, []
     host = unquote(url.host)
     if host != url.host:
-        decodings.append('percent.encoding')
+        decodings.append("percent.encoding")
     ip, obfuscation = parse_ip(host)
     if ip:
         decodings.extend(obfuscation)
