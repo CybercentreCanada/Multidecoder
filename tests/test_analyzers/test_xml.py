@@ -1,7 +1,7 @@
 import re
 
 from multidecoder.analyzers.xml import XML_ESCAPE_RE, find_xml_hex, unescape_xml
-from multidecoder.hit import Hit
+from multidecoder.node import Node
 
 external = b'TargetMode="&#x45;&#x78;&#x74;&#x65;&#x72;&#x6e;&#x61;&#x6c;"'
 
@@ -26,4 +26,4 @@ def test_unescape_external():
 
 
 def test_find_external():
-    assert find_xml_hex(external) == [Hit(b"External", ["unescape.xml"], 12, 60)]
+    assert find_xml_hex(external) == [Node("", b"External", "unescape.xml", 12, 60)]

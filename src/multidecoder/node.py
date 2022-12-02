@@ -8,31 +8,55 @@ class Node:
 
     def __init__(
         self,
-        type: str,
+        type_: str,
         value: bytes,
-        obfuscation: list[str],
+        obfuscation: str = "",
         start: int = 0,
         end: int = 0,
         parent: Optional[Node] = None,
         children: Optional[list[Node]] = None,
     ):
-        self.type = type
+        self.type = type_
         self.value = value
         self.obfuscation = obfuscation
         self.start = start
         self.end = end
-        self.children: list[Node] = children if children else []
         self.parent = parent
+        if children:
+            self.children = children
+            for child in children:
+                child.parent = self
+        else:
+            self.children = []
 
     @property
     def original(self):
         # Value before decoding
         if self.parent:
-            return self.parent.value[self.start:self.end]
+            return self.parent.value[self.start : self.end]
         return self.value
 
+    def shift(self: Node, offset: int) -> Node:
+        """Shift the start and end value of a node by and offset
+
+        The node is modified in place.
+
+        Args:
+            node: The node to be shifted.
+            offset: The ammount to shift.
+
+        Returns:
+            The modified node.
+        """
+        self.start += offset
+        self.end += offset
+        return self
+
     def __repr__(self) -> str:
-        return f"Node({self.type}, {self.value!r}, {self.obfuscation}, {self.start}, {self.end})"
+        return (
+            f"Node({self.type!r}, {self.value!r}, {self.obfuscation!r}, "
+            f"{self.start!r}, {self.end!r}, ..., {self.children!r})"
+        )
 
     def __eq__(self, other):
         # Ignoring parent in eq to allow unit tests to not construct backreferences
@@ -59,3 +83,21 @@ class Node:
                     yield subchild
 
         return iter(node_generator(self))
+
+
+def shift_nodes(nodes: list[Node], offset: int) -> list[Node]:
+    """Shift the start and end values of a list of nodes
+
+    The list is modified in place.
+
+    Args:
+        nodes: The list of nodes
+        offset: the ammount to shift
+
+    Returns:
+        The list of modified nodes.
+    """
+    for node in nodes:
+        node.start += offset
+        node.end += offset
+    return nodes

@@ -8,7 +8,7 @@ from multidecoder._version import version
 from multidecoder.json_conversion import tree_to_json
 from multidecoder.multidecoder import Multidecoder
 from multidecoder.query import squash_replace, string_summary
-from multidecoder.registry import build_map
+from multidecoder.registry import build_registry
 
 
 def main():
@@ -35,10 +35,10 @@ def main():
         if not os.path.isdir(args.keywords):
             print("--keywords argument must be a directory", file=sys.stderr)
             return
-        analyzers = build_map(args.keywords)
+        decoders = build_registry(args.keywords)
     else:
-        analyzers = None
-    md = Multidecoder(analyzers)
+        decoders = None
+    md = Multidecoder(decoders)
     tree = md.scan(data)
     if args.json:
         print(tree_to_json(tree))

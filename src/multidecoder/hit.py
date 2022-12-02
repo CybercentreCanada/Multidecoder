@@ -1,30 +1,29 @@
 from __future__ import annotations
 
-from typing import Callable, List, NamedTuple
+from typing import Callable
 
 import regex as re
 
-Hit = NamedTuple(
-    "Hit", [("value", bytes), ("obfuscation", List[str]), ("start", int), ("end", int)]
-)
+from multidecoder.node import Node
 
 
-def match_to_hit(match: re.Match[bytes], group: int = 0) -> Hit:
-    return Hit(match.group(group), [], *match.span(group))
+def match_to_hit(label: str, match: re.Match[bytes], group: int = 0) -> Node:
+    return Node(label, match.group(group), "", *match.span(group))
 
 
-def regex_hits(regex: bytes, data: bytes, group: int = 0) -> list[Hit]:
-    return [match_to_hit(match, group) for match in re.finditer(regex, data)]
+def regex_hits(label: str, regex: bytes, data: bytes, group: int = 0) -> list[Node]:
+    return [match_to_hit(label, match, group) for match in re.finditer(regex, data)]
 
 
 def find_and_deobfuscate(
+    label: str,
     regex: bytes,
     data: bytes,
-    deobfuscation: Callable[[bytes], tuple[bytes, list[str]]],
+    deobfuscation: Callable[[bytes], tuple[bytes, str]],
     deob_group: int = 0,
     context_group: int = 0,
-) -> list[Hit]:
+) -> list[Node]:
     return [
-        Hit(*deobfuscation(match.group(deob_group)), *match.span(context_group))
+        Node(label, *deobfuscation(match.group(deob_group)), *match.span(context_group))
         for match in re.finditer(regex, data)
     ]

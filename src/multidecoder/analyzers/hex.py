@@ -4,15 +4,15 @@ from binascii import unhexlify
 
 import regex as re
 
-from multidecoder.hit import Hit
-from multidecoder.registry import analyzer
+from multidecoder.node import Node
+from multidecoder.registry import decoder
 
 HEX_RE = rb"((?:[a-f0-9]{2}){10,}|(?:[A-F0-9]{2}){10,})"
 
 
-@analyzer("")
-def find_hex(data: bytes) -> list[Hit]:
+@decoder
+def find_hex(data: bytes) -> list[Node]:
     return [
-        Hit(unhexlify(match.group(0)), ["decoded.hexadecimal"], *match.span(0))
+        Node("", unhexlify(match.group(0)), "decoded.hexadecimal", *match.span(0))
         for match in re.finditer(HEX_RE, data)
     ]

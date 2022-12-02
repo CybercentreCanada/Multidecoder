@@ -3,15 +3,15 @@ from __future__ import annotations
 import pefile
 import regex as re
 
-from multidecoder.hit import Hit
-from multidecoder.registry import analyzer
+from multidecoder.node import Node
+from multidecoder.registry import decoder
 
 EXEDOS_RE = rb"(?s)This program cannot be run in DOS mode"
 EXEHEADER_RE = rb"(?s)MZ.{32,1024}PE\000\000"
 
 
-@analyzer("pe_file")
-def find_pe_files(data: bytes) -> list[Hit]:
+@decoder
+def find_pe_files(data: bytes) -> list[Node]:
     """
     Searches for any PE files within data
 
@@ -20,7 +20,7 @@ def find_pe_files(data: bytes) -> list[Hit]:
     Returns:
         A list of found PE files
     """
-    pe_files: list[Hit] = []
+    pe_files: list[Node] = []
     offset = 0
     while offset < len(data):
         match = re.search(EXEHEADER_RE, data)
@@ -38,7 +38,7 @@ def find_pe_files(data: bytes) -> list[Hit]:
             if size == 0:
                 return pe_files
             end = offset + size
-            pe_files.append(Hit(data[offset:end], [], offset, end))
+            pe_files.append(Node("pe_file", data[offset:end], "", offset, end))
             offset = end
         except Exception:
             return pe_files

@@ -6,12 +6,15 @@ from multidecoder.analyzers.network import (
     IP_RE,
     URL_RE,
     find_domains,
-    is_valid_domain,
+    is_domain,
+    is_url,
     parse_ip,
 )
-
+from multidecoder.node import Node
 
 # IP --------------------------------------------
+
+
 def test_ip_re_matches_ips():
     assert re.match(IP_RE, b"127.0.0.1")  # valid ip address
     assert re.match(IP_RE, b"127.000.000.001")  # full ip
@@ -61,11 +64,8 @@ def test_ip_re_matches_mixed():
     assert re.match(IP_RE, b"0xac.000000000000000000331.0246.174")
 
 
-def test_is_public_ip():
-    assert parse_ip("8.8.8.8")[0]
-    assert not parse_ip("0.0.0.0")[0]
-    assert not parse_ip("10.0.192.33")[0]
-    assert not parse_ip("127.0.0.1")[0]
+def test_parse_ip():
+    assert parse_ip(b"8.8.8.8") == Node("network.ip", b"8.8.8.8", "", 0, 7)
 
 
 # Domain ----------------------------------------
@@ -84,12 +84,12 @@ def test_intenational_top_level_domain():
 
 
 def test_is_valid_domain_re():
-    assert is_valid_domain(b"website.com")
-    assert not is_valid_domain(b"website.notatld")
+    assert is_domain(b"website.com")
+    assert not is_domain(b"website.notatld")
 
 
 def test_is_valid_domain_false_positives():
-    assert not is_valid_domain(b"SET.NAME")
+    assert not is_domain(b"SET.NAME")
 
 
 def test_find_domain_shell():
@@ -111,7 +111,7 @@ def test_email_re():
     assert re.match(EMAIL_RE, b"a_name@gmail.com")
 
 
-# Url -------------------------------------------
+# URL -------------------------------------------
 
 
 def test_url_re():
@@ -165,3 +165,7 @@ def test_url_re_mixed_ip():
 
 def test_url_re_encoded_ip():
     assert re.match(URL_RE, b"http://%31%32%37%2E%30%2E%30%2E%31")
+
+
+def test_is_url():
+    assert is_url(b"https://some.domain.com")

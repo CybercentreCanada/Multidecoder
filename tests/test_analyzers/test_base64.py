@@ -3,7 +3,7 @@ import binascii
 import regex as re
 
 from multidecoder.analyzers.base64 import BASE64_RE, find_base64, find_FromBase64String
-from multidecoder.hit import Hit
+from multidecoder.node import Node
 
 
 def test_empty():
@@ -33,9 +33,15 @@ def test_base64_re_matches_equals():
 
 ENCODED = binascii.b2a_base64(b"Some base64 encoded text")
 TEST_STRINGS = {
-    ENCODED: [(b"Some base64 encoded text", ["decoded.base64"], 0, 32)],
+    ENCODED: [Node("", b"Some base64 encoded text", "encoding.base64", 0, 32)],
     b"lorem ipsum lorum asdf\nhjkl\nASDF\nasdf\nhjkl\nASDF\n44==lorum ipsum": [
-        (b"j\xc7_\x869%\x01 \xc5j\xc7_\x869%\x01 \xc5\xe3", ["decoded.base64"], 18, 52)
+        Node(
+            "",
+            b"j\xc7_\x869%\x01 \xc5j\xc7_\x869%\x01 \xc5\xe3",
+            "encoding.base64",
+            18,
+            52,
+        )
     ],
 }
 
@@ -53,20 +59,34 @@ def test_fromb64string_no_xor():
     test = b"FromBase64String('ZHVjaw==')"
     test2 = b"[System.Convert]::FromBase64String('ZHVjaw==')"
     assert find_FromBase64String(test) == [
-        Hit(value=b"duck", obfuscation=["decode.base64"], start=0, end=len(test))
+        Node(
+            type_="powershell.bytes",
+            value=b"duck",
+            obfuscation="encoding.base64",
+            start=0,
+            end=len(test),
+        )
     ]
     assert find_FromBase64String(test2) == [
-        Hit(value=b"duck", obfuscation=["decode.base64"], start=0, end=len(test2))
+        Node(
+            type_="powershell.bytes",
+            value=b"duck",
+            obfuscation="encoding.base64",
+            start=0,
+            end=len(test2),
+        )
     ]
 
 
 def test_fromb64string_xor():
     test = b"FromBase64String('R1ZASA==')\n-bxor 35"
     assert find_FromBase64String(test) == [
-        Hit(
-            value=b"duck",
-            obfuscation=["decode.base64", "xor35"],
+        Node(
+            type_="powershell.bytes",
+            value=b"GV@H",
+            obfuscation="encoding.base64",
             start=0,
             end=test.find(b"\n"),
+            children=[Node("powershell.bytes", b"duck", "cipher.xor35", 0, 4)],
         )
     ]

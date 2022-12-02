@@ -5,7 +5,7 @@ from multidecoder.analyzers.vba import (
     find_createobject,
     find_strreverse,
 )
-from multidecoder.hit import Hit
+from multidecoder.node import Node
 
 
 def test_re_empty():
@@ -19,7 +19,13 @@ def test_re_wscript():
 def test_find_wscript():
     text = b'X = CreateObject("WScript.Shell")'
     assert find_createobject(text) == [
-        Hit(b'CreateObject("WScript.Shell")', [], 4, len(text))
+        Node(
+            "vba.function.createobject",
+            b'CreateObject("WScript.Shell")',
+            "",
+            4,
+            len(text),
+        )
     ]
 
 

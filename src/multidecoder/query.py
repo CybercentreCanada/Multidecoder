@@ -15,18 +15,17 @@ def invert_tree(tree: list[Node]) -> list[Node]:
 
 def make_label(node: Optional[Node]) -> str:
     label_list = []
-    value = node.value if node else b""
     while node:
         if node.type:
             label_list.append(node.type)
         if node.obfuscation:
-            label_list.append(">" + "/>".join(node.obfuscation))
+            label_list.append(">" + node.obfuscation)
         node = node.parent
-    return "/".join(label_list[::-1]) + " " + repr(value)[2:-1]
+    return "/".join(label_list[::-1])
 
 
-def string_summary(tree: list[Node]) -> list[str]:
-    return [make_label(node) for node in invert_tree(tree)]
+def string_summary(tree: Node) -> list[str]:
+    return [make_label(node) + " " + repr(node.value)[2:-1] for node in tree]
 
 
 def squash_replace(data: bytes, tree: list[Node]) -> bytes:

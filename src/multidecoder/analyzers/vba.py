@@ -3,8 +3,9 @@ from __future__ import annotations
 import regex as re
 
 from multidecoder.analyzers.concat import STRING_RE
-from multidecoder.hit import Hit, find_and_deobfuscate
-from multidecoder.registry import analyzer
+from multidecoder.hit import find_and_deobfuscate
+from multidecoder.node import Node
+from multidecoder.registry import decoder
 
 CREATE_OBJECT_RE = rb"(?i)createobject\("
 STRREVERSE_RE = rb"(?i)StrReverse\(\s*(" + STRING_RE + rb")\s*\)"
@@ -33,18 +34,26 @@ def get_closing_brace(data: bytes, start_index: int, brace_ord: int = ord("(")) 
     return -1
 
 
-@analyzer("vba.function.createobject")
-def find_createobject(data: bytes) -> list[Hit]:
+@decoder
+def find_createobject(data: bytes) -> list[Node]:
     out = []
     for match in re.finditer(CREATE_OBJECT_RE, data):
         index = get_closing_brace(data, match.end())
         if index > 0:
-            out.append(Hit(data[match.start() : index], [], match.start(), index))
+            out.append(
+                Node(
+                    "vba.function.createobject",
+                    data[match.start() : index],
+                    "",
+                    match.start(),
+                    index,
+                )
+            )
     return out
 
 
-@analyzer("vba.string")
-def find_strreverse(data: bytes) -> list[Hit]:
+@decoder
+def find_strreverse(data: bytes) -> list[Node]:
     return find_and_deobfuscate(
-        STRREVERSE_RE, data, lambda s: (s[-2:0:-1], ["vba.reverse"]), 1
+        "vba.string", STRREVERSE_RE, data, lambda s: (s[-2:0:-1], "vba.reverse"), 1
     )

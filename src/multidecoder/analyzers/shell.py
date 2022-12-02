@@ -5,8 +5,8 @@ import binascii
 import regex as re
 
 from multidecoder.analyzers.concat import DOUBLE_QUOTE_ESCAPES
-from multidecoder.hit import Hit
-from multidecoder.registry import analyzer
+from multidecoder.node import Node
+from multidecoder.registry import decoder
 
 CMD_RE = b"(?i)\\bc\\^?m\\^?d(?:" + DOUBLE_QUOTE_ESCAPES + rb'|[^)"\x00])*'
 POWERSHELL_INDICATOR_RE = rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
@@ -42,22 +42,22 @@ def strip_carets(cmd: bytes) -> bytes:
     return bytes(out)
 
 
-def deobfuscate_cmd(cmd: bytes) -> tuple[bytes, list[str]]:
+def deobfuscate_cmd(cmd: bytes) -> tuple[bytes, str]:
     stripped = strip_carets(cmd)
-    return stripped, ["unescape.shell.carets"] if stripped != cmd else []
+    return stripped, "unescape.shell.carets" if stripped != cmd else ""
 
 
-@analyzer("shell.cmd")
-def find_cmd_strings(data: bytes) -> list[Hit]:
+@decoder
+def find_cmd_strings(data: bytes) -> list[Node]:
     return [
-        Hit(*deobfuscate_cmd(match.group()), *match.span())
+        Node("shell.cmd", *deobfuscate_cmd(match.group()), *match.span())
         for match in re.finditer(CMD_RE, data)
         if match.group().lower().strip() not in (b"cmd", b"cmd.exe")
     ]
 
 
-@analyzer("shell.powershell")
-def find_powershell_strings(data: bytes) -> list[Hit]:
+@decoder
+def find_powershell_strings(data: bytes) -> list[Node]:
     out = []
     # Find the string PowerShell, possibly obfuscated or shortened to pwsh
     for indicator in re.finditer(POWERSHELL_INDICATOR_RE, data):
@@ -65,8 +65,35 @@ def find_powershell_strings(data: bytes) -> list[Hit]:
         start = indicator.start(1)
         enc = re.search(ENC_RE, data, pos=start)
         if enc:
+            end = enc.end()
             powershell = data[start : enc.end()]
-            deobfuscated, obfuscation = deobfuscate_cmd(powershell)
+        else:
+            # Look back to find the start of the string or FOR loop
+            bound_match = re.search(rb'(\'\(|[\'"])', data[start::-1])
+            if bound_match:
+                bound = bound_match.group()
+                assert bound in (b"'(", b'"', b"'")
+                if bound == b"'(":
+                    # In a cmd FOR loop, find the end paren
+                    end = data.find(b"')", start)
+                elif bound == b'"':
+                    # In a double quoted string, find the end quote
+                    end = data.find(b'"', start)
+                else:
+                    # In a single quoted string, find the end quote
+                    end = data.find(b"'", start)
+                powershell = data[start:end]
+            else:
+                # No recognizable context, assume rest of file is all powershell
+                end = len(data) - start
+                powershell = data[start:]
+        deobfuscated, obfuscation = deobfuscate_cmd(powershell)
+        cmd_node = (
+            Node("shell.cmd", deobfuscated, obfuscation, start, end)
+            if obfuscation
+            else None
+        )
+        if enc:
             split = re.split(rb"\s+", deobfuscated)
             b64 = (
                 binascii.a2b_base64(_pad(split[-1]))
@@ -74,30 +101,41 @@ def find_powershell_strings(data: bytes) -> list[Hit]:
                 .encode()
             )
             deobfuscated = b" ".join(split[:-2]) + b" -Command " + b64
-            obfuscation.append("powershell.base64")
-            out.append(Hit(deobfuscated, obfuscation, start, enc.end()))
-            continue
-        # Look back to find the start of the string or FOR loop
-        bound_match = re.search(rb'(\'\(|[\'"])', data[start::-1])
-        if bound_match:
-            bound = bound_match.group()
-            assert bound in (b"'(", b'"', b"'")
-            if bound == b"'(":
-                # In a cmd FOR loop, find the end paren
-                end = data.find(b"')", start)
-            elif bound == b'"':
-                # In a double quoted string, find the end quote
-                end = data.find(b'"', start)
+            if cmd_node:
+                cmd_node.children.append(
+                    Node(
+                        "shell.powershell",
+                        deobfuscated,
+                        "powershell.base64",
+                        0,
+                        len(deobfuscated),
+                        cmd_node,
+                    )
+                )
+                out.append(cmd_node)
             else:
-                # In a single quoted string, find the end quote
-                end = data.find(b"'", start)
-            powershell = data[start:end]
+                out.append(
+                    Node(
+                        "shell.powershell",
+                        deobfuscated,
+                        "powershell.base64",
+                        start,
+                        end,
+                    )
+                )
         else:
-            # No recognizable context, assume rest of file is all powershell
-            end = len(data) - start
-            powershell = data[start:]
-        deobfuscated, obfuscation = deobfuscate_cmd(powershell)
-        out.append(Hit(deobfuscated, obfuscation, start, end))
+            if cmd_node:
+                cmd_node.children.append(
+                    Node(
+                        "shell.powershell",
+                        deobfuscated,
+                        "",
+                        0,
+                        len(deobfuscated),
+                        cmd_node,
+                    )
+                )
+            out.append(Node("shell.powershell", deobfuscated, obfuscation, start, end))
     return out
 
 

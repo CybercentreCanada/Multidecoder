@@ -1,45 +1,47 @@
+"""
+Module for automatically registering and collecting decoder functions
+"""
+
 import importlib
 import inspect
 import os
 import pkgutil
 from functools import partial
-from typing import Callable, Dict, Iterable, List, Optional
+from typing import Callable, Iterable, List, Optional
 
 import multidecoder
 import multidecoder.analyzers
-from multidecoder.hit import Hit
 from multidecoder.keyword import find_keywords
+from multidecoder.node import Node
 
 # Registry type
-AnalyzerMap = Dict[Callable[[bytes], List[Hit]], str]
+Decoder = Callable[[bytes], List[Node]]
+Registry = List[Decoder]
 
 
-def analyzer(label: str):
-    """Decorator for analysis functions"""
+def decoder(func):
+    """Decorator for decoding functions"""
 
-    def decorator(f):
-        f.label = label
-        return f
-
-    return decorator
+    func._decoder = True
+    return func
 
 
-def build_map(
+def build_registry(
     directory: str = "",
     include: Optional[Iterable[str]] = None,
     exclude: Optional[Iterable[str]] = None,
-) -> AnalyzerMap:
+) -> Registry:
     """Get both analyzer functions and keyword functions"""
     keywords = get_keywords(directory)
-    keywords.update(get_analyzers(include=include, exclude=exclude))
+    keywords.extend(get_analyzers(include=include, exclude=exclude))
     return keywords
 
 
 def get_analyzers(
     include: Optional[Iterable[str]] = None, exclude: Optional[Iterable[str]] = None
-) -> AnalyzerMap:
+) -> Registry:
     """Get all analyzers"""
-    analyzers = {}
+    decoders: Registry = []
     include = set(include) if include else {}
     exclude = set(exclude) if exclude else {}
     for submod_info in pkgutil.iter_modules(multidecoder.analyzers.__path__):
@@ -51,21 +53,21 @@ def get_analyzers(
             "." + submod_info.name, package=multidecoder.analyzers.__name__
         )
         for _, function in inspect.getmembers(submodule, inspect.isfunction):
-            if hasattr(function, "label"):
-                analyzers[function] = function.label
-    return analyzers
+            if hasattr(function, "_decoder"):
+                decoders.append(function)
+    return decoders
 
 
-def get_keywords(directory: str = "") -> AnalyzerMap:
+def get_keywords(directory: str = "") -> Registry:
     """Get keyword search functions from a directory"""
     directory = directory or os.path.join(next(iter(multidecoder.__path__)), "keywords")
-    keyword_map: AnalyzerMap = {}
+    keyword_map: Registry = []
     for subdir, _, files in os.walk(directory):
         for file_name in files:
-            with open(os.path.join(subdir, file_name), "rb") as f:
-                keywords = set(f.read().splitlines())
+            with open(os.path.join(subdir, file_name), "rb") as keyword_file:
+                keywords = set(keyword_file.read().splitlines())
                 keywords.discard(b"")
             if not keywords:
                 continue
-            keyword_map[partial(find_keywords, keywords)] = file_name
+            keyword_map.append(partial(find_keywords, file_name, keywords))
     return keyword_map

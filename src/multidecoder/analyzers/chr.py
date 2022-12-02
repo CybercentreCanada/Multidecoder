@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import regex as re
 
-from multidecoder.hit import Hit
-from multidecoder.registry import analyzer
+from multidecoder.node import Node
+from multidecoder.registry import decoder
 
-CHR_RE = rb"chr[bw]?\((\d+)\)"
+CHR_RE = rb"(?i)chr[bw]?\((\d+)\)"
 
 
-@analyzer("string")
-def find_chr(data: bytes) -> list[Hit]:
+@decoder
+def find_chr(data: bytes) -> list[Node]:
+    """Find and decode calls to the chr function"""
     return [
-        Hit(chr(int(match.group(1))).encode(), ["function.chr"], *match.span())
+        Node("string", chr(int(match.group(1))).encode(), "function.chr", *match.span())
         for match in re.finditer(CHR_RE, data)
     ]

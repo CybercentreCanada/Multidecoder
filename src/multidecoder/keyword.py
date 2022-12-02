@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Iterable
 
-from multidecoder.hit import Hit
+from multidecoder.node import Node
+
+MIXED_CASE_OBF = "MixedCase"
 
 
 def is_mixed_case(value: bytes, raw: bytes) -> bool:
@@ -12,14 +14,15 @@ def is_mixed_case(value: bytes, raw: bytes) -> bool:
     )
 
 
-def find_keywords(keywords: Iterable[bytes], data: bytes) -> list[Hit]:
+def find_keywords(label: str, keywords: Iterable[bytes], data: bytes) -> list[Node]:
     lower = data.lower()
     return [
-        Hit(
+        Node(
+            label,
             keyword,
-            ["MixedCase"]
+            MIXED_CASE_OBF
             if is_mixed_case(keyword, data[start : start + len(keyword)])
-            else [""],
+            else "",
             start,
             start + len(keyword),
         )

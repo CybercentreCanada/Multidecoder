@@ -3,8 +3,8 @@ from __future__ import annotations
 import regex as re
 
 from multidecoder.analyzers.concat import STRING_RE
-from multidecoder.hit import Hit
-from multidecoder.registry import analyzer
+from multidecoder.node import Node
+from multidecoder.registry import decoder
 
 REPLACE_RE = (
     rb"(?i)("
@@ -42,48 +42,52 @@ JS_REGEX_REPLACE_RE = (
 )
 
 
-@analyzer("string")
-def find_replace(data: bytes) -> list[Hit]:
+@decoder
+def find_replace(data: bytes) -> list[Node]:
     return [
-        Hit(
+        Node(
+            "string",
             match.group(1)[1:-1].replace(match.group(2)[1:-1], match.group(3)[1:-1]),
-            ["replace"],
+            "replace",
             *match.span(),
         )
         for match in re.finditer(REPLACE_RE, data)
     ]
 
 
-@analyzer("powershell.string")
-def find_powershell_replace(data: bytes) -> list[Hit]:
+@decoder
+def find_powershell_replace(data: bytes) -> list[Node]:
     return [
-        Hit(
+        Node(
+            "powershell.string",
             match.group(1)[1:-1].replace(match.group(2)[1:-1], match.group(3)[1:-1]),
-            ["replace"],
+            "replace",
             *match.span(),
         )
         for match in re.finditer(POWERSHELL_REPLACE_RE, data)
     ]
 
 
-@analyzer("vba.string")
-def find_vba_replace(data: bytes) -> list[Hit]:
+@decoder
+def find_vba_replace(data: bytes) -> list[Node]:
     return [
-        Hit(
+        Node(
+            "vba.string",
             match.group(1)[1:-1].replace(match.group(2)[1:-1], match.group(3)[1:-1]),
-            ["vba.replace"],
+            "vba.replace",
             *match.span(),
         )
         for match in re.finditer(VBA_REPLACE_RE, data)
     ]
 
 
-@analyzer("javascript.string")
-def find_js_regex_replace(data: bytes) -> list[Hit]:
+@decoder
+def find_js_regex_replace(data: bytes) -> list[Node]:
     return [
-        Hit(
+        Node(
+            "javascript.string",
             match.group(1)[1:-1].replace(match.group(2), match.group(3)[1:-1]),
-            ["replace"],
+            "replace",
             *match.span(),
         )
         for match in re.finditer(JS_REGEX_REPLACE_RE, data)

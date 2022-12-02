@@ -1,9 +1,9 @@
 from multidecoder.analyzers.replace import (
-    find_replace,
+    find_js_regex_replace,
     find_powershell_replace,
+    find_replace,
     find_vba_replace,
 )
-from multidecoder.analyzers.replace import find_js_regex_replace
 
 
 def test_find_replace_emtpy():

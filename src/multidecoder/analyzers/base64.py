@@ -8,8 +8,8 @@ import binascii
 
 import regex as re
 
-from multidecoder.hit import Hit
-from multidecoder.registry import analyzer
+from multidecoder.node import Node
+from multidecoder.registry import decoder
 
 HTML_ESCAPE_RE = rb"&#(?:x[a-fA-F0-9]{1,4}|\d{1,4});"
 BASE64_RE = (
@@ -26,8 +26,8 @@ HEX_RE = rb"(?i)[a-f0-9]+"
 MIN_B64_CHARS = 6
 
 
-@analyzer("")
-def find_base64(data: bytes) -> list[Hit]:
+@decoder
+def find_base64(data: bytes) -> list[Node]:
     """
     Find all base64 encoded sections in some data.
 
@@ -61,38 +61,58 @@ def find_base64(data: bytes) -> list[Hit]:
         try:
             b64_result = binascii.a2b_base64(b64_string)
             b64_matches.append(
-                Hit(b64_result, ["decoded.base64"], b64_match.start(), b64_match.end())
+                Node(
+                    "",
+                    b64_result,
+                    "encoding.base64",
+                    b64_match.start(),
+                    b64_match.end(),
+                )
             )
         except binascii.Error:
             pass
     return b64_matches
 
 
-@analyzer("vba.string")
-def find_Base64Decode(data: bytes) -> list[Hit]:
-    out: list[Hit] = []
+@decoder
+def find_Base64Decode(data: bytes) -> list[Node]:
+    """
+    Find the vba function Base64Decode and decode its arguement
+    """
+    out: list[Node] = []
     for match in re.finditer(BASE64DECODE_RE, data):
         try:
             b64 = binascii.a2b_base64(match.group(1))
-            out.append(Hit(b64, ["decode.base64"], *match.span()))
+            out.append(Node("vba.string", b64, "encoding.base64", *match.span()))
         except binascii.Error:
             continue
     return out
 
 
-@analyzer("powershell.bytes")
-def find_FromBase64String(data: bytes) -> list[Hit]:
-    out: list[Hit] = []
-    obfuscation = ["decode.base64"]
+@decoder
+def find_FromBase64String(data: bytes) -> list[Node]:
+    """
+    Find the powershell function FromBase64String and decode its argument
+    """
+    out: list[Node] = []
+    xorkey = re.search(rb"(?i)-b?xor\s*(\d{1,3})", data)
     for match in re.finditer(FROMB64STRING_RE, data):
         try:
             b64 = binascii.a2b_base64(match.group(2))
-            xorkey = re.search(rb"(?i)-b?xor\s*(\d{1,3})", data)
+            b64_node = Node("powershell.bytes", b64, "encoding.base64", *match.span())
             if xorkey:
                 key = int(xorkey.group(1))
                 b64 = bytes(b ^ key for b in b64)
-                obfuscation.append("xor" + str(key))
-            out.append(Hit(b64, obfuscation, *match.span()))
+                b64_node.children.append(
+                    Node(
+                        "powershell.bytes",
+                        b64,
+                        "cipher.xor" + str(key),
+                        end=len(b64),
+                        parent=b64_node,
+                    )
+                )
+            out.append(b64_node)
         except binascii.Error:
             continue
     return out
