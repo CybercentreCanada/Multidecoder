@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import regex as re
 
-from multidecoder.analyzers.concat import STRING_RE
+from multidecoder.decoders.concat import STRING_RE
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 

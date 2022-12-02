@@ -1,6 +1,6 @@
 import regex as re
 
-from multidecoder.analyzers.shell import (
+from multidecoder.decoders.shell import (
     CMD_RE,
     find_cmd_strings,
     find_powershell_strings,

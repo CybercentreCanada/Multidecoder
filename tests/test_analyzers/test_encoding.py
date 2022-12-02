@@ -2,7 +2,7 @@ import itertools
 
 import regex as re
 
-from multidecoder.analyzers.codec import UTF16_RE, find_utf16
+from multidecoder.decoders.codec import UTF16_RE, find_utf16
 
 test_bytes = bytes(
     itertools.chain([0x9, 0xA, 0xB, 0xC, 0xD], range(0x20, 0x7F), range(0xA0, 0x100))

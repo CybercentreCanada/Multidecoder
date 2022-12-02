@@ -1,4 +1,4 @@
-from multidecoder.analyzers.filename import find_executable_name
+from multidecoder.decoders.filename import find_executable_name
 from multidecoder.node import Node
 
 

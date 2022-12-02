@@ -4,7 +4,7 @@ import binascii
 
 import regex as re
 
-from multidecoder.analyzers.concat import DOUBLE_QUOTE_ESCAPES
+from multidecoder.decoders.concat import DOUBLE_QUOTE_ESCAPES
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 

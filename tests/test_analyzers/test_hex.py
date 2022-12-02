@@ -1,6 +1,6 @@
 import regex as re
 
-from multidecoder.analyzers.hex import HEX_RE, find_hex
+from multidecoder.decoders.hex import HEX_RE, find_hex
 
 
 def test_empty():

@@ -1,6 +1,6 @@
 import re
 
-from multidecoder.analyzers.network import (
+from multidecoder.decoders.network import (
     DOMAIN_RE,
     EMAIL_RE,
     IP_RE,

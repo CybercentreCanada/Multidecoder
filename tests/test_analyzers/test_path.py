@@ -1,6 +1,6 @@
 import regex as re
 
-from multidecoder.analyzers.path import (
+from multidecoder.decoders.path import (
     PATH_RE,
     WINDOWS_PATH_RE,
     find_path,

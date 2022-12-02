@@ -1,6 +1,6 @@
 import re
 
-from multidecoder.analyzers.vba import (
+from multidecoder.decoders.vba import (
     CREATE_OBJECT_RE,
     find_createobject,
     find_strreverse,

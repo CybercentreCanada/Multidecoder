@@ -1,4 +1,4 @@
-from multidecoder.analyzers.replace import (
+from multidecoder.decoders.replace import (
     find_js_regex_replace,
     find_powershell_replace,
     find_replace,

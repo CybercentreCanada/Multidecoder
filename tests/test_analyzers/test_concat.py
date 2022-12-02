@@ -1,4 +1,4 @@
-from multidecoder.analyzers.concat import find_concat
+from multidecoder.decoders.concat import find_concat
 from multidecoder.node import Node
 
 

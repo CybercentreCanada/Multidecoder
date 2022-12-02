@@ -1,4 +1,4 @@
-from multidecoder.analyzers.chr import find_chr
+from multidecoder.decoders.chr import find_chr
 
 
 def test_find_chr_empty():

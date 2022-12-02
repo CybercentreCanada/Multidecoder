@@ -10,7 +10,7 @@ from functools import partial
 from typing import Callable, Iterable, List, Optional
 
 import multidecoder
-import multidecoder.analyzers
+import multidecoder.decoders
 from multidecoder.keyword import find_keywords
 from multidecoder.node import Node
 
@@ -44,13 +44,13 @@ def get_analyzers(
     decoders: Registry = []
     include = set(include) if include else {}
     exclude = set(exclude) if exclude else {}
-    for submod_info in pkgutil.iter_modules(multidecoder.analyzers.__path__):
+    for submod_info in pkgutil.iter_modules(multidecoder.decoders.__path__):
         if include and submod_info.name not in include:
             continue
         if exclude and submod_info.name in exclude:
             continue
         submodule = importlib.import_module(
-            "." + submod_info.name, package=multidecoder.analyzers.__name__
+            "." + submod_info.name, package=multidecoder.decoders.__name__
         )
         for _, function in inspect.getmembers(submodule, inspect.isfunction):
             if hasattr(function, "_decoder"):

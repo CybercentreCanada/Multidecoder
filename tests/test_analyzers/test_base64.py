@@ -2,7 +2,7 @@ import binascii
 
 import regex as re
 
-from multidecoder.analyzers.base64 import BASE64_RE, find_base64, find_FromBase64String
+from multidecoder.decoders.base64 import BASE64_RE, find_base64, find_FromBase64String
 from multidecoder.node import Node
 
 
