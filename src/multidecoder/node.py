@@ -72,13 +72,15 @@ class Node:
         )
 
     def __iter__(self) -> Iterator[Node]:
-        """Depth first iteration over the entire tree of children of the node, starting with the node itself.
+        """Iterates over all the children in the tree below the node.
 
-        If only the direct children are wanted iterating over node.children can be used instead"""
+        The nodes appear in depth-first pre-order, and the root node is not included.
+        If only the direct children are wanted iterating over node.children can be used instead.
+        """
 
         def node_generator(node: Node) -> Iterable[Node]:
-            yield node
             for child in node.children:
+                yield node
                 for subchild in node_generator(child):
                     yield subchild
 

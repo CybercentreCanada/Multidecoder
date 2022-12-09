@@ -27,7 +27,7 @@ class NodeEncoder(json.JSONEncoder):
 
 def as_node(d, parent: Optional[Node] = None) -> Node:
     node = Node(
-        type=d["type"],
+        type_=d["type"],
         value=bytes.fromhex(d["value"]),
         obfuscation=d["obfuscation"],
         start=d["start"],
@@ -43,4 +43,4 @@ def tree_to_json(tree: list[Node], **kargs) -> str:
 
 
 def json_to_tree(serialized: str, **kargs) -> list[Node]:
-    return json.loads(serialized, default=as_node)
+    return json.loads(serialized, default=as_node, **kargs)
