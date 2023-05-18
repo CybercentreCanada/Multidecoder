@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-import regex as re
 import binascii
 
+import regex as re
 from multidecoder.analyzers.concat import DOUBLE_QUOTE_ESCAPES
 from multidecoder.hit import Hit
 from multidecoder.registry import analyzer
-
 
 CMD_RE = b'(?i)\\bc\\^?m\\^?d(?:' + DOUBLE_QUOTE_ESCAPES + rb'|[^)"\x00])*'
 POWERSHELL_INDICATOR_RE = rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
 SH_RE = rb'"(\s*(?:sh|bash|zsh|csh)[^"]+)"'
 ENC_RE = rb'(?i)\s\^?(?:-|/)\^?e\^?(?:c|n\^?(?:c\^?(?:o\^?(?:d\^?(?:e\^?(?:d\^?(?:c\^?(?:o\^?(?:m' \
-         rb'\^?(?:m\^?(?:a\^?(?:n\^?d?)?)?)?)?)?)?)?)?)?)?)?)?[\s^]+([a-z0-9+/^]{4,}=?\^?=?\^?)'
+         rb'\^?(?:m\^?(?:a\^?(?:n\^?d?)?)?)?)?)?)?)?)?)?)?)?)?[\s^]+[\"\']?([a-z0-9+/^]{4,}=?\^?=?\^?[\'\"]?)'
 POWERSHELL_ARGS_RE = rb'\s*(powershell|pwsh)?(.exe)?\s*((-|/)[^\s]+\s+)*'
 
 
@@ -66,6 +65,11 @@ def find_powershell_strings(data: bytes) -> list[Hit]:
             powershell = data[start:enc.end()]
             deobfuscated, ob = deobfuscate_cmd(powershell)
             split = re.split(rb'\s+', deobfuscated)
+
+            # Remove quotation symbols
+            if (split[-1].startswith(b'\"') and split[-1].endswith(b'\"')) or split[-1].startswith(b"\'") and split[-1].endswith(b"\'"):
+                split[-1] = split[-1][1:-1]
+
             b64 = (binascii.a2b_base64(_pad(split[-1]))
                            .decode('utf-16', errors='ignore')
                            .encode())
