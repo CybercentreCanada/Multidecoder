@@ -78,13 +78,13 @@ class Node:
         If only the direct children are wanted iterating over node.children can be used instead.
         """
 
-        def node_generator(node: Node) -> Iterable[Node]:
+        def node_generator(node: Node) -> Iterator[Node]:
             for child in node.children:
                 yield node
                 for subchild in node_generator(child):
                     yield subchild
 
-        return iter(node_generator(self))
+        return node_generator(self)
 
 
 def shift_nodes(nodes: list[Node], offset: int) -> list[Node]:
