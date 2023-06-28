@@ -81,8 +81,7 @@ class Node:
         def node_generator(node: Node) -> Iterator[Node]:
             for child in node.children:
                 yield node
-                for subchild in node_generator(child):
-                    yield subchild
+                yield from node_generator(child)
 
         return node_generator(self)
 
