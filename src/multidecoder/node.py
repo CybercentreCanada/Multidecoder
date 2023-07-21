@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, Iterator, Optional
+from typing import Iterator, Optional
 
 
 class Node:
@@ -80,7 +80,7 @@ class Node:
 
         def node_generator(node: Node) -> Iterator[Node]:
             for child in node.children:
-                yield node
+                yield child
                 yield from node_generator(child)
 
         return node_generator(self)
