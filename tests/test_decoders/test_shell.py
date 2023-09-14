@@ -118,6 +118,19 @@ def test_find_powershell_strings_enc():
     ]
 
 
+def test_find_powershell_strings_enc_with_quotes():
+    ex = b'powershell /e "ZQBjAGgAbwAgAGIAZQBlAA=="'
+    assert find_powershell_strings(ex) == [
+        Node(
+            type_="shell.powershell",
+            value=b"powershell -Command echo bee",
+            obfuscation="powershell.base64",
+            start=0,
+            end=len(ex),
+        )
+    ]
+
+
 def test_find_powershell_for_loop():
     ex = (
         b'for /f "tokens=*" %%a in (\'powershell -Command "hostname '

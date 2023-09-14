@@ -13,7 +13,7 @@ POWERSHELL_INDICATOR_RE = rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])(\^?p\^?(?:o\^?w\^?e\
 SH_RE = rb'"(\s*(?:sh|bash|zsh|csh)[^"]+)"'
 ENC_RE = (
     rb"(?i)\s\^?(?:-|/)\^?e\^?(?:c|n\^?(?:c\^?(?:o\^?(?:d\^?(?:e\^?(?:d\^?(?:c\^?(?:o\^?(?:m"
-    rb"\^?(?:m\^?(?:a\^?(?:n\^?d?)?)?)?)?)?)?)?)?)?)?)?)?[\s^]+([a-z0-9+/^]{4,}=?\^?=?\^?)"
+    rb"\^?(?:m\^?(?:a\^?(?:n\^?d?)?)?)?)?)?)?)?)?)?)?)?)?[\s^]+[\"\']?[a-z0-9+/^]{4,}=?\^?=?\^?[\'\"]?"
 )
 POWERSHELL_ARGS_RE = rb"\s*(powershell|pwsh)?(.exe)?\s*((-|/)[^\s]+\s+)*"
 
@@ -61,8 +61,8 @@ def find_powershell_strings(data: bytes) -> list[Node]:
     out = []
     # Find the string PowerShell, possibly obfuscated or shortened to pwsh
     for indicator in re.finditer(POWERSHELL_INDICATOR_RE, data):
-        # Check for encoded parameter
         start = indicator.start(1)
+        # Check for encoded parameter
         enc = re.search(ENC_RE, data, pos=start)
         if enc:
             end = enc.end()
@@ -94,9 +94,9 @@ def find_powershell_strings(data: bytes) -> list[Node]:
             else None
         )
         if enc:
-            split = re.split(rb"\s+", deobfuscated)
+            split = deobfuscated.split()
             b64 = (
-                binascii.a2b_base64(_pad(split[-1]))
+                binascii.a2b_base64(_pad(split[-1].strip(b"'\"")))
                 .decode("utf-16", errors="ignore")
                 .encode()
             )
