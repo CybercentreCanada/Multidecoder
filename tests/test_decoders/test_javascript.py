@@ -1,4 +1,4 @@
-from multidecoder.analyzers.javascript import find_unescape
+from multidecoder.decoders.javascript import find_unescape
 from multidecoder.node import Node
 
 
