@@ -16,6 +16,15 @@ from multidecoder.node import Node
 # IP --------------------------------------------
 
 
+@pytest.mark.parametrize("data,ip", [(b"12.2.1.3.0", None)])
+def test_IP_RE(data, ip):
+    match = re.search(IP_RE, data)
+    if ip is None:
+        assert match is None
+    else:
+        assert match.group() == ip
+
+
 def test_ip_re_matches_ips():
     assert re.match(IP_RE, b"127.0.0.1")  # valid ip address
     assert re.match(IP_RE, b"127.000.000.001")  # full ip
