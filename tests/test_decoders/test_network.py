@@ -106,6 +106,21 @@ def test_is_valid_domain_re():
 #     assert find_domains(b'oShLnk.Save') == []
 
 
+@pytest.mark.parametrize(
+    "data,domain",
+    [
+        (b"config.edge.skype.com0", b"config.edge.skype.com"),
+        (b"domain.com-", None),
+    ],
+)
+def test_DOMAIN_RE(data, domain):
+    match = re.search(DOMAIN_RE, data)
+    if domain is None:
+        assert match is None
+    else:
+        assert match.group() == domain
+
+
 # Email -----------------------------------------
 
 
