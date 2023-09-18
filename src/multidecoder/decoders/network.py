@@ -32,9 +32,14 @@ _OCTET_RE = rb"(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})"
 DOMAIN_RE = rb"(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z.])"
 EMAIL_RE = rb"(?i)\b[a-z0-9._%+-]{3,}@(" + DOMAIN_RE[4:] + rb")\b"
 IP_RE = rb"(?i)\b(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"\b"
+
+# $-/ is $%&'()*+,-./ of which $&'()*+, are subdelims and .- are unreserved
 URL_RE = (
-    rb"(?i)(?:ftp|https?)://[a-z0-9%.@:-]+(?::[0-9]{1,5})?/?"
-    rb"(?:[a-z0-9/\-.&%$#=~?_+]{3,200})?"
+    rb"(?i)(?:ftp|https?)://"  # scheme
+    rb"(?:[\w!$-.:;=~@]{,2000}@)?"  # userinfo
+    rb"(?:[%A-Z0-9.-]{4,253}|\[[0-9A-F:]{3,39}\])"  # hostname
+    rb"(?::[0-9]{0,5})?"  # port
+    rb"(?:[/?#](?:[\w!#$-/:;=@?~]{,2000}[\w!#$%&(*+\-/:;=@?~])?)?"  # path, query and fragment
 )
 
 

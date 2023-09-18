@@ -1,4 +1,5 @@
 import re
+import pytest
 
 from multidecoder.decoders.network import (
     DOMAIN_RE,
@@ -166,6 +167,40 @@ def test_url_re_mixed_ip():
 
 def test_url_re_encoded_ip():
     assert re.match(URL_RE, b"http://%31%32%37%2E%30%2E%30%2E%31")
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        b"https://www.google.com.account.login:.@example.com",
+        b"https://@example.com",
+        b"https://:@example.com",
+        b"https://google.com@micrsoft.com@adobe.com@example.com/path/to?param=value1&_param=value2"
+        b"&trailing_url=https%3A%2F%2Fmalicious.com",
+        # Example URIs from https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Example_URIs
+        b"https://john.doe@www.example.com:123/forum/questions/?tag=networking&order=newest#top",
+        b"http://[2001:db8::7]/c=GB?objectClass?one",
+        b"ftp://192.0.2.16:80/",
+        b"http://editing.com/resource/file.php?command=checkout",
+    ],
+)
+def test_URL_RE_basic_auth(url):
+    assert re.match(URL_RE, url).span() == (0, len(url))
+
+
+@pytest.mark.parametrize(
+    ("url", "suffix_len"),
+    [
+        (b"function('https://example.com/')", 2),
+        (b"full sentence with a url https://example.com/.", 1),
+        (b"part of a phrase with a url https://example.com/,", 1),
+        (b"barefunction(https://example.com)", 1),
+        (b'in a string content "https://example.com"works.', 7),
+        (b"whitespaceless('https://example.com'){script;}", 11),
+    ],
+)
+def test_URL_RE_in_context(url, suffix_len):
+    assert re.search(URL_RE, url).end() == len(url) - suffix_len
 
 
 def test_is_url():
