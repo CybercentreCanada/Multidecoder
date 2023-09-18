@@ -33,13 +33,19 @@ DOMAIN_RE = rb"(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z.
 EMAIL_RE = rb"(?i)\b[a-z0-9._%+-]{3,}@(" + DOMAIN_RE[4:] + rb")\b"
 IP_RE = rb"(?i)\b(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"\b"
 
-# $-/ is $%&'()*+,-./ of which $&'()*+, are subdelims and .- are unreserved
+# Using some weird ranges to shorten the regex:
+# $-. is $%&'()*+,-. all of which are sub-delims $&'()*+, or unreserved .-
+# $-/ is the same with /
+# #-/ is the same with # and /
+# #-& is #-/ but stopped before '
 URL_RE = (
     rb"(?i)(?:ftp|https?)://"  # scheme
     rb"(?:[\w!$-.:;=~@]{,2000}@)?"  # userinfo
-    rb"(?:[%A-Z0-9.-]{4,253}|\[[0-9A-F:]{3,39}\])"  # hostname
+    rb"(?:[%A-Z0-9.-]{4,253}|\[[0-9A-F:]{3,39}\])"  # host
     rb"(?::[0-9]{0,5})?"  # port
-    rb"(?:[/?#](?:[\w!#$-/:;=@?~]{,2000}[\w!#$%&(*+\-/:;=@?~])?)?"  # path, query and fragment
+    rb"(?:[/?#](?:[\w!#-/:;=@?~]{,2000}[\w!#-&(*+\-/:;=@?~])?)?"  # path, query and fragment
+    # The final char class stops urls from ending in ' ) , or .
+    # to prevent trailing characters from being included in the url.
 )
 
 
