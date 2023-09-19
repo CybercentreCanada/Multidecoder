@@ -1,0 +1,2 @@
+include src/multidecoder/keywords/*
+include src/multidecoder/keywords/api/*
