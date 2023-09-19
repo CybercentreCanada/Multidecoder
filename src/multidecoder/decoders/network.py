@@ -29,12 +29,24 @@ IP_OBF = "ip_obfuscation"
 # Regexes
 _OCTET_RE = rb"(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})"
 
-DOMAIN_RE = rb"(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z.])"
+DOMAIN_RE = rb"(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z.-])"
 EMAIL_RE = rb"(?i)\b[a-z0-9._%+-]{3,}@(" + DOMAIN_RE[4:] + rb")\b"
-IP_RE = rb"(?i)\b(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"\b"
+
+IP_RE = rb"(?i)(?<![\w.])(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"(?![\w.])"
+
+# Using some weird ranges to shorten the regex:
+# $-. is $%&'()*+,-. all of which are sub-delims $&'()*+, or unreserved .-
+# $-/ is the same with /
+# #-/ is the same with # and /
+# #-& is #-/ but stopped before '
 URL_RE = (
-    rb"(?i)(?:ftp|https?)://[a-z0-9%.@:-]+(?::[0-9]{1,5})?/?"
-    rb"(?:[a-z0-9/\-.&%$#=~?_+]{3,200})?"
+    rb"(?i)(?:ftp|https?)://"  # scheme
+    rb"(?:[\w!$-.:;=~@]{,2000}@)?"  # userinfo
+    rb"(?:(?!%5B)[%A-Z0-9.-]{4,253}|(?:\[|%5B)[%0-9A-F:]{3,117}(?:\]|%5D))"  # host
+    rb"(?::[0-9]{0,5})?"  # port
+    rb"(?:[/?#](?:[\w!#-/:;=@?~]{,2000}[\w!#-&(*+\-/:;=@?~])?)?"  # path, query and fragment
+    # The final char class stops urls from ending in ' ) , or .
+    # to prevent trailing characters from being included in the url.
 )
 
 
@@ -281,6 +293,7 @@ def parse_authority(authority: bytes) -> list[Node]:
         return out
     if userinfo:
         offset += 1  # for the @
+    host = unquote_to_bytes(host)
     if host.startswith(b"["):
         if not host.endswith(b"]"):
             raise ValueError("Invalid IPv6 URL")
@@ -289,7 +302,6 @@ def parse_authority(authority: bytes) -> list[Node]:
         except ValueError:
             pass
     else:
-        host = unquote_to_bytes(host)
         try:
             out.append(parse_ip(host).shift(offset))
         except ValueError:
