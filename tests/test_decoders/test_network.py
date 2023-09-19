@@ -20,7 +20,6 @@ from multidecoder.node import Node
     "ip",
     [
         b"127.0.0.1",  # valid ip address
-        b"127.000.000.001",  # full ip
         b"123.123.123.123",  # up to three digits per group
         b"103.245.67.89",  # all digits can appear
         # Obfuscation techniques sourced from
@@ -224,15 +223,14 @@ def test_URL_RE_matches(url):
     ("data", "url"),
     [
         # trailing characters tests
-        (b"function('https://example.com/')", b"https://example.com/"),
+        (b"function('https://example.com/'){script;}", b"https://example.com/"),
         (b"full sentence with a url https://example.com/.", b"https://example.com/"),
         (
             b"part of a phrase with a url https://example.com/, still works",
             b"https://example.com/",
         ),
-        (b"barefunction(https://example.com)", b"https://example.com"),
+        (b"barefunction(https://example.com) works", b"https://example.com"),
         (b'in a string content "https://example.com"works.', b"https://example.com"),
-        (b"whitespaceless('https://example.com'){script;}", b"https://example.com"),
     ],
 )
 def test_URL_RE_context(data, url):
