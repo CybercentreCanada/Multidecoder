@@ -1,5 +1,5 @@
 # setuptools_scm controled file
-multidecoder/_version.py
+src/multidecoder/_version.py
 
 # Editor Configuration
 .vscode/
