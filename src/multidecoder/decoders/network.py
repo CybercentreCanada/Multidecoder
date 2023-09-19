@@ -42,7 +42,7 @@ IP_RE = rb"(?i)(?<![\w.])(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"(?![\w.
 URL_RE = (
     rb"(?i)(?:ftp|https?)://"  # scheme
     rb"(?:[\w!$-.:;=~@]{,2000}@)?"  # userinfo
-    rb"(?:[%A-Z0-9.-]{4,253}|\[[0-9A-F:]{3,39}\])"  # host
+    rb"(?:(?!%5B)[%A-Z0-9.-]{4,253}|(?:\[|%5B)[%0-9A-F:]{3,117}(?:\]|%5D))"  # host
     rb"(?::[0-9]{0,5})?"  # port
     rb"(?:[/?#](?:[\w!#-/:;=@?~]{,2000}[\w!#-&(*+\-/:;=@?~])?)?"  # path, query and fragment
     # The final char class stops urls from ending in ' ) , or .
