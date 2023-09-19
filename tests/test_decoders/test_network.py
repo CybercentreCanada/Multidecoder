@@ -206,7 +206,8 @@ def test_email_re():
         b"http://%31%32%37%2E%30%2E%30%2E%31",
         b"http://[%3A%3A%31]",
         # Full percent encoded IPv6 to test length constraints.
-        b"http://[%30%30%30%30%3a%30%30%30%30%3a%30%30%30%30%3a%30%30%30%30%3a%30%30%30%30%3a%30%30%30%30%3a%30%30%30%30%3a%30%30%30%31]",
+        b"http://[%30%30%30%30%3a%30%30%30%30%3a%30%30%30%30%3a%30%30%30%30%3a"
+        b"%30%30%30%30%3a%30%30%30%30%3a%30%30%30%30%3a%30%30%30%31]",
         # Browser dependent, none of these work in Firefox.
         b"http://%5B%3A%3A1%5D",  # this works in Edge, but not Chrome.
         b"http://%5B%3A%3A1]",  # This works in Chrome and Edge, the colons have to be percent encoded.

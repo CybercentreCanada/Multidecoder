@@ -293,6 +293,7 @@ def parse_authority(authority: bytes) -> list[Node]:
         return out
     if userinfo:
         offset += 1  # for the @
+    host = unquote_to_bytes(host)
     if host.startswith(b"["):
         if not host.endswith(b"]"):
             raise ValueError("Invalid IPv6 URL")
@@ -301,7 +302,6 @@ def parse_authority(authority: bytes) -> list[Node]:
         except ValueError:
             pass
     else:
-        host = unquote_to_bytes(host)
         try:
             out.append(parse_ip(host).shift(offset))
         except ValueError:
