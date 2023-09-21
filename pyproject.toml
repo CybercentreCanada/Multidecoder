@@ -20,7 +20,25 @@ max-line-length = 120
 [tool.ruff]
 line-length = 120
 target-version = "py38"
-select = ["E", "F", "W", "I", "UP"]
+select = [
+    "E",
+    "F",
+    "W",
+    "I",
+    "UP",
+    "FBT",
+    "B",
+    "A",
+    "C4",
+    "FA",
+    "ISC",
+    "PIE",
+    "PYI",
+    "PT",
+    "RET",
+    "SIM",
+    "TCH",
+]
 
 [tool.mypy]
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"

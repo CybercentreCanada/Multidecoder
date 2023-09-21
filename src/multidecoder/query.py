@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from collections import Counter
+from typing import TYPE_CHECKING
 
-from multidecoder.node import Node
+if TYPE_CHECKING:
+    from multidecoder.node import Node
 
 
 def invert_tree(tree: list[Node]) -> list[Node]:

@@ -135,10 +135,9 @@ def _pad(b64: bytes) -> bytes:
     padding = -len(b64) % 4
     if padding == 3:
         return b64[:-1]  # Corrupted end, just keep the valid part
-    elif padding:
+    if padding:
         return b64 + b"=" * padding
-    else:
-        return b64
+    return b64
 
 
 def get_cmd_command(cmd: bytes) -> bytes:
@@ -150,10 +149,7 @@ def get_cmd_command(cmd: bytes) -> bytes:
     if end.group() != b'"' and arg.startswith(b'"'):
         # strip leading and final quote
         index = arg.rfind(b'"')
-        if index > 0:
-            arg = arg[1:index] + arg[index + 1 :]
-        else:
-            arg = arg[1:]
+        arg = arg[1:index] + arg[index + 1 :] if index > 0 else arg[1:]
 
     # return everything after the arguments
     return arg
@@ -161,7 +157,4 @@ def get_cmd_command(cmd: bytes) -> bytes:
 
 def get_powershell_command(powershell: bytes) -> bytes:
     match = re.match(POWERSHELL_ARGS_RE, powershell)
-    if match:
-        return powershell[match.end() :]
-    else:
-        return powershell
+    return powershell[match.end() :] if match else powershell

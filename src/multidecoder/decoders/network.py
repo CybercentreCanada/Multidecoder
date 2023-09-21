@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import binascii
+import contextlib
 import socket
 from ipaddress import AddressValueError, IPv4Address, IPv6Address
 from urllib.parse import unquote_to_bytes, urlsplit
@@ -201,10 +202,8 @@ def parse_url(url_text: bytes) -> list[Node]:
         offset += len(url.scheme) + 1  # scheme + :
     if url.netloc:
         offset += 2  # authority begins with //
-        try:
+        with contextlib.suppress(ValueError):
             out.extend(shift_nodes(parse_authority(url.netloc), offset))
-        except ValueError:
-            pass
         offset += len(url.netloc)
     if url.path:
         out.append(
@@ -275,10 +274,8 @@ def parse_authority(authority: bytes) -> list[Node]:
     if host.startswith(b"["):
         if not host.endswith(b"]"):
             raise ValueError("Invalid IPv6 URL")
-        try:
+        with contextlib.suppress(ValueError):
             out.append(parse_ipv6(host[1:-1]).shift(offset + 1))
-        except ValueError:
-            pass
     else:
         try:
             out.append(parse_ip(host).shift(offset))

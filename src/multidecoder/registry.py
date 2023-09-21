@@ -1,20 +1,22 @@
 """
 Module for automatically registering and collecting decoder functions
 """
+from __future__ import annotations
 
 import importlib
 import inspect
 import os
 import pkgutil
 from functools import partial
-from typing import Callable, Iterable, List, Optional
-
-from typing_extensions import TypeAlias
+from typing import TYPE_CHECKING, Callable, Iterable, List
 
 import multidecoder
 import multidecoder.decoders
 from multidecoder.keyword import find_keywords
 from multidecoder.node import Node
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
 
 # Registry type
 Decoder: TypeAlias = Callable[[bytes], List[Node]]
@@ -30,8 +32,8 @@ def decoder(func: Decoder) -> Decoder:
 
 def build_registry(
     directory: str = "",
-    include: Optional[Iterable[str]] = None,
-    exclude: Optional[Iterable[str]] = None,
+    include: Iterable[str] | None = None,
+    exclude: Iterable[str] | None = None,
 ) -> Registry:
     """Get both analyzer functions and keyword functions"""
     keywords = get_keywords(directory)
@@ -39,7 +41,7 @@ def build_registry(
     return keywords
 
 
-def get_analyzers(include: Optional[Iterable[str]] = None, exclude: Optional[Iterable[str]] = None) -> Registry:
+def get_analyzers(include: Iterable[str] | None = None, exclude: Iterable[str] | None = None) -> Registry:
     """Get all analyzers"""
     decoders: Registry = []
     include = set(include) if include else {}

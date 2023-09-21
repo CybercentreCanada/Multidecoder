@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Iterator
+from typing import Iterator
 
 
 class Node:
@@ -58,7 +58,7 @@ class Node:
             f"{self.start!r}, {self.end!r}, ..., {self.children!r})"
         )
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         # Ignoring parent in eq to allow unit tests to not construct backreferences
         # and to avoid potential infinite loop problems
         return (
