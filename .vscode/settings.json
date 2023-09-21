@@ -15,7 +15,6 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
-    "python.linting.flake8Enabled": false,
     "ruff.enable": true,
     "ruff.organizeImports": true,
 }
