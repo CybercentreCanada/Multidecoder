@@ -97,40 +97,26 @@ def is_url(url: bytes) -> bool:
         split = urlsplit(url)
     except ValueError:
         return False
-    return bool(
-        split.scheme and split.hostname and split.scheme in (b"http", b"https", b"ftp")
-    )
+    return bool(split.scheme and split.hostname and split.scheme in (b"http", b"https", b"ftp"))
 
 
 # Decoders
 @decoder
 def find_domains(data: bytes) -> List[Node]:
     """Find domains in data"""
-    return [
-        match_to_hit(DOMAIN_TYPE, match)
-        for match in re.finditer(DOMAIN_RE, data)
-        if is_domain(match.group())
-    ]
+    return [match_to_hit(DOMAIN_TYPE, match) for match in re.finditer(DOMAIN_RE, data) if is_domain(match.group())]
 
 
 @decoder
 def find_emails(data: bytes) -> List[Node]:
     """Find email addresses in data"""
-    return [
-        match_to_hit(EMAIL_TYPE, match)
-        for match in re.finditer(EMAIL_RE, data)
-        if is_domain(match.group(1))
-    ]
+    return [match_to_hit(EMAIL_TYPE, match) for match in re.finditer(EMAIL_RE, data) if is_domain(match.group(1))]
 
 
 @decoder
 def find_ips(data: bytes) -> List[Node]:
     """Find ip addresses in data"""
-    return [
-        parse_ip(match.group()).shift(match.start())
-        for match in re.finditer(IP_RE, data)
-        if is_ip(match.group())
-    ]
+    return [parse_ip(match.group()).shift(match.start()) for match in re.finditer(IP_RE, data) if is_ip(match.group())]
 
 
 @decoder
@@ -208,8 +194,7 @@ def parse_url(url_text: bytes) -> list[Node]:
                 url.scheme,
                 MIXED_CASE_OBF
                 # url.scheme is normalized by urlsplit
-                if url_text[0 : len(url.scheme)] not in (url.scheme, url.scheme.upper())
-                else "",
+                if url_text[0 : len(url.scheme)] not in (url.scheme, url.scheme.upper()) else "",
                 0,
                 len(url.scheme),
             )
@@ -258,15 +243,9 @@ def parse_authority(authority: bytes) -> list[Node]:
     """Split a URL's authority into it's consituent parts and unquote them"""
     out = []
     offset = 0
-    userinfo, address = (
-        authority.rsplit(b"@", 1) if b"@" in authority else (b"", authority)
-    )
-    username, password = (
-        userinfo.split(b":", 1) if b":" in userinfo else (userinfo, b"")
-    )
-    host, _ = (
-        address.rsplit(b":", 1) if re.match(rb"(?r):\d*", address) else (address, b"")
-    )
+    userinfo, address = authority.rsplit(b"@", 1) if b"@" in authority else (b"", authority)
+    username, password = userinfo.split(b":", 1) if b":" in userinfo else (userinfo, b"")
+    host, _ = address.rsplit(b":", 1) if re.match(rb"(?r):\d*", address) else (address, b"")
     if username:
         out.append(
             Node(
@@ -326,12 +305,7 @@ def normalize_percent_encoding(uri: bytes) -> tuple[bytes, str]:
     def normalize_percent(match: re.Match[bytes]) -> bytes:
         """Normalize a single percent encoded byte"""
         byte = binascii.unhexlify(match.group(1))
-        if (
-            b"A" <= byte <= b"Z"
-            or b"a" <= byte <= b"z"
-            or b"0" <= byte <= b"9"
-            or byte in (b"-", b".", b"_", b"~")
-        ):
+        if b"A" <= byte <= b"Z" or b"a" <= byte <= b"z" or b"0" <= byte <= b"9" or byte in (b"-", b".", b"_", b"~"):
             return byte
         return match.group(0).upper()
 

@@ -37,9 +37,7 @@ def build_registry(
     return keywords
 
 
-def get_analyzers(
-    include: Optional[Iterable[str]] = None, exclude: Optional[Iterable[str]] = None
-) -> Registry:
+def get_analyzers(include: Optional[Iterable[str]] = None, exclude: Optional[Iterable[str]] = None) -> Registry:
     """Get all analyzers"""
     decoders: Registry = []
     include = set(include) if include else {}
@@ -49,9 +47,7 @@ def get_analyzers(
             continue
         if exclude and submod_info.name in exclude:
             continue
-        submodule = importlib.import_module(
-            "." + submod_info.name, package=multidecoder.decoders.__name__
-        )
+        submodule = importlib.import_module("." + submod_info.name, package=multidecoder.decoders.__name__)
         for _, function in inspect.getmembers(submodule, inspect.isfunction):
             if hasattr(function, "_decoder"):
                 decoders.append(function)

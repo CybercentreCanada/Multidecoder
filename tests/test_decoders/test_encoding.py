@@ -4,9 +4,7 @@ import regex as re
 
 from multidecoder.decoders.codec import UTF16_RE, find_utf16
 
-test_bytes = bytes(
-    itertools.chain([0x9, 0xA, 0xB, 0xC, 0xD], range(0x20, 0x7F), range(0xA0, 0x100))
-)
+test_bytes = bytes(itertools.chain([0x9, 0xA, 0xB, 0xC, 0xD], range(0x20, 0x7F), range(0xA0, 0x100)))
 test = bytes(itertools.chain(*zip(test_bytes, [0] * 256)))
 
 

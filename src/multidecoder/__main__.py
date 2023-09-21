@@ -14,9 +14,7 @@ from multidecoder.registry import build_registry
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("filepath", nargs="?", metavar="FILE")
-    parser.add_argument(
-        "--version", "-V", action="version", version="%(prog)s " + version
-    )
+    parser.add_argument("--version", "-V", action="version", version="%(prog)s " + version)
     parser.add_argument("--keywords", "-k")
     output_format = parser.add_mutually_exclusive_group()
     output_format.add_argument("--json", "-j", action="store_true")

@@ -42,11 +42,7 @@ def test_cmd_re_null():
 
 def test_cmd_re_ex1():
     match = re.search(CMD_RE, test)
-    assert (
-        match
-        and test[match.start() : match.end()]
-        == b"cmd /c m^sh^t^a h^tt^p^:/^/some.url/x.html"
-    )
+    assert match and test[match.start() : match.end()] == b"cmd /c m^sh^t^a h^tt^p^:/^/some.url/x.html"
 
 
 # strip_carets
@@ -181,10 +177,7 @@ def test_get_cmd_command_r():
 
 
 def test_get_cmd_command_amp():
-    assert (
-        get_cmd_command(b"cmd&command&command2&command3")
-        == b"command&command2&command3"
-    )
+    assert get_cmd_command(b"cmd&command&command2&command3") == b"command&command2&command3"
 
 
 def test_get_cmd_command_upper():

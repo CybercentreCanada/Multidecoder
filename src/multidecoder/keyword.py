@@ -8,10 +8,7 @@ MIXED_CASE_OBF = "MixedCase"
 
 
 def is_mixed_case(value: bytes, raw: bytes) -> bool:
-    return (
-        any(chr(v).isupper() and not chr(d).isupper() for v, d in zip(raw, value))
-        and not raw.isupper()
-    )
+    return any(chr(v).isupper() and not chr(d).isupper() for v, d in zip(raw, value)) and not raw.isupper()
 
 
 def find_keywords(label: str, keywords: Iterable[bytes], data: bytes) -> list[Node]:
@@ -20,9 +17,7 @@ def find_keywords(label: str, keywords: Iterable[bytes], data: bytes) -> list[No
         Node(
             label,
             keyword,
-            MIXED_CASE_OBF
-            if is_mixed_case(keyword, data[start : start + len(keyword)])
-            else "",
+            MIXED_CASE_OBF if is_mixed_case(keyword, data[start : start + len(keyword)]) else "",
             start,
             start + len(keyword),
         )

@@ -36,18 +36,11 @@ class Multidecoder:
 
         stack: list[Node] = []
         decode_end = 0  # end of the last decoded context
-        offset = (
-            0  # start of the current node relative to the start of the original node
-        )
+        offset = 0  # start of the current node relative to the start of the original node
 
         # Get results in sorted order
         results = sorted(
-            (
-                hit
-                for search in self.decoders
-                for hit in search(node.value)
-                if hit.value
-            ),
+            (hit for search in self.decoders for hit in search(node.value) if hit.value),
             key=lambda t: (t.start, -t.end),
         )
 

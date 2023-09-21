@@ -1,9 +1,5 @@
 [build-system]
-requires = [
-    "setuptools >= 42",
-    "wheel",
-    "setuptools_scm >= 6.2"
-]
+requires = ["setuptools >= 42", "wheel", "setuptools_scm >= 6.2"]
 build-backend = "setuptools.build_meta"
 
 # setuptools_scm
@@ -11,13 +7,15 @@ build-backend = "setuptools.build_meta"
 write_to = "src/multidecoder/_version.py"
 fallback_version = "0.0.0"
 
+[tool.black]
+line-length = 120
+target-version = ["py38"]
+
 [tool.pytest.ini_options]
-addopts = [
-    "--import-mode=importlib",
-]
+addopts = ["--import-mode=importlib"]
 
 [tool.pylint.format]
-max-line-length = "88"
+max-line-length = 120
 
 [tool.isort]
 profile = "black"

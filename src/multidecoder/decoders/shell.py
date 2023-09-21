@@ -88,18 +88,10 @@ def find_powershell_strings(data: bytes) -> list[Node]:
                 end = len(data) - start
                 powershell = data[start:]
         deobfuscated, obfuscation = deobfuscate_cmd(powershell)
-        cmd_node = (
-            Node("shell.cmd", deobfuscated, obfuscation, start, end)
-            if obfuscation
-            else None
-        )
+        cmd_node = Node("shell.cmd", deobfuscated, obfuscation, start, end) if obfuscation else None
         if enc:
             split = deobfuscated.split()
-            b64 = (
-                binascii.a2b_base64(_pad(split[-1].strip(b"'\"")))
-                .decode("utf-16", errors="ignore")
-                .encode()
-            )
+            b64 = binascii.a2b_base64(_pad(split[-1].strip(b"'\""))).decode("utf-16", errors="ignore").encode()
             deobfuscated = b" ".join(split[:-2]) + b" -Command " + b64
             if cmd_node:
                 cmd_node.children.append(
