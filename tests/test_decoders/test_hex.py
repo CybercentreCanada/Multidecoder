@@ -1,5 +1,4 @@
 import regex as re
-
 from multidecoder.decoders.hex import HEX_RE, find_hex
 
 

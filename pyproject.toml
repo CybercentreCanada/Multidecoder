@@ -17,8 +17,10 @@ addopts = ["--import-mode=importlib"]
 [tool.pylint.format]
 max-line-length = 120
 
-[tool.isort]
-profile = "black"
+[tool.ruff]
+line-length = 120
+target-version = "py38"
+select = ["E", "F", "I"]
 
 [tool.mypy]
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"

@@ -1,6 +1,6 @@
 import re
-import pytest
 
+import pytest
 from multidecoder.decoders.network import (
     DOMAIN_RE,
     EMAIL_RE,

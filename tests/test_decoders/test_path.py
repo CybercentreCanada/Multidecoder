@@ -1,5 +1,4 @@
 import regex as re
-
 from multidecoder.decoders.path import (
     PATH_RE,
     WINDOWS_PATH_RE,

@@ -1,5 +1,4 @@
 import regex as re
-
 from multidecoder.decoders.shell import (
     CMD_RE,
     find_cmd_strings,
