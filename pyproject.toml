@@ -35,6 +35,7 @@ select = [
     "RET",
     "SIM",
     "TCH",
+    "RUF",
 ]
 
 [tool.mypy]
