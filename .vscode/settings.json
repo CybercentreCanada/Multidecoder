@@ -1,0 +1,21 @@
+{
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
+    },
+    "editor.formatOnSave": true,
+    "editor.rulers": [
+        120
+    ],
+    "editor.tabSize": 4,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 120,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.linting.flake8Enabled": false,
+    "ruff.enable": true,
+    "ruff.organizeImports": true,
+}
