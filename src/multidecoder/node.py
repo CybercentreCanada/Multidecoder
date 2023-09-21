@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterator, Optional
+from typing import Any, Iterator, Optional
 
 
 class Node:
@@ -30,7 +30,7 @@ class Node:
             self.children = []
 
     @property
-    def original(self):
+    def original(self) -> bytes:
         # Value before decoding
         if self.parent:
             return self.parent.value[self.start : self.end]
@@ -58,7 +58,7 @@ class Node:
             f"{self.start!r}, {self.end!r}, ..., {self.children!r})"
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         # Ignoring parent in eq to allow unit tests to not construct backreferences
         # and to avoid potential infinite loop problems
         return (

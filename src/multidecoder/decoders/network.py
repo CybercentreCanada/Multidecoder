@@ -171,7 +171,7 @@ def parse_ipv6(ip: bytes) -> Node:
     return Node(
         "network.ipv6",
         address.compressed.encode(),
-        IP_OBF if address.compressed != ip else "",
+        IP_OBF if address.compressed.encode() != ip else "",
         0,
         len(ip),
     )

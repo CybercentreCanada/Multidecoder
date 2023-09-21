@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
-from typing import Optional
+from typing import Any, Optional
 
 from multidecoder.node import Node
 
 
-def node_to_dict(node: Node):
+def node_to_dict(node: Node) -> dict[str, Any]:
     return {
         "type": node.type,
         "value": node.value.hex(),
@@ -25,7 +25,7 @@ class NodeEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, node)
 
 
-def as_node(d, parent: Optional[Node] = None) -> Node:
+def as_node(d: dict[str, Any], parent: Optional[Node] = None) -> Node:
     node = Node(
         type_=d["type"],
         value=bytes.fromhex(d["value"]),
@@ -38,9 +38,9 @@ def as_node(d, parent: Optional[Node] = None) -> Node:
     return node
 
 
-def tree_to_json(tree: list[Node], **kargs) -> str:
+def tree_to_json(tree: Node, **kargs) -> str:
     return json.dumps(tree, cls=NodeEncoder, **kargs)
 
 
-def json_to_tree(serialized: str, **kargs) -> list[Node]:
+def json_to_tree(serialized: str, **kargs) -> Node:
     return json.loads(serialized, default=as_node, **kargs)

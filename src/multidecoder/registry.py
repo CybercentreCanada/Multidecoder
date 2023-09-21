@@ -9,17 +9,19 @@ import pkgutil
 from functools import partial
 from typing import Callable, Iterable, List, Optional
 
+from typing_extensions import TypeAlias
+
 import multidecoder
 import multidecoder.decoders
 from multidecoder.keyword import find_keywords
 from multidecoder.node import Node
 
 # Registry type
-Decoder = Callable[[bytes], List[Node]]
-Registry = List[Decoder]
+Decoder: TypeAlias = Callable[[bytes], List[Node]]
+Registry: TypeAlias = List[Decoder]
 
 
-def decoder(func):
+def decoder(func: Decoder) -> Decoder:
     """Decorator for decoding functions"""
 
     func._decoder = True

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from multidecoder.hit import Node, regex_hits
+from multidecoder.hit import regex_hits
+from multidecoder.node import Node
 from multidecoder.registry import decoder
 
 EXECUTABLE_RE = rb"(?i)\b\w+[.]exe\b"
