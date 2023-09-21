@@ -3,33 +3,35 @@ from __future__ import annotations
 from multidecoder.node import Node
 from multidecoder.registry import Registry, build_registry
 
-DEFAULT_DEPTH = 10
+DEFAULT_DEPTH_LIMIT = 10
 
 
 class Multidecoder:
     def __init__(self, decoders: Registry | None = None) -> None:
         self.decoders = decoders if decoders else build_registry()
 
-    def scan(self, data: bytes, depth: int = DEFAULT_DEPTH) -> Node:
-        return self.scan_node(Node("", data, "", 0, len(data)), depth)
+    def scan(self, data: bytes, depth_limit: int = DEFAULT_DEPTH_LIMIT) -> Node:
+        """Search data for all possible decodings.
 
-    def scan_node(self, node: Node, depth: int = DEFAULT_DEPTH) -> Node:
+        A decoded result is recursively scanned unless it is the result of more scans than the depth_limit.
+        Results are organized in a tree where each result's parent is the context in which it was found.
         """
-        Report the combined analysis results.
+        return self.scan_node(Node("", data, "", 0, len(data)), depth_limit)
 
-        Args:
-            data: The data to search
-            depth: The depth at which to search nested decodings
-        Returns:
-            A JSON-like (but with byte values) dictionary structure of the results found,
-            with each result nested inside the context it was found in.
+    def scan_node(self, node: Node, depth_limit: int = DEFAULT_DEPTH_LIMIT) -> Node:
+        """Expand a node with decodings.
+
+        If a node has no children it's value is searched for possible decodings.
+        If a node already has children, instead it's children are scanned.
+        A decoded result is recursively rescanned unless it is the result of more scans than the depth_limit.
+        Results are organized in a tree where each result's parent is the context in which it was found.
         """
-        if depth <= 0:
+        if depth_limit <= 0:
             return node
         if node.children:
             # Don't rescan nodes with existing children
             for child in node.children:
-                self.scan_node(child, depth - 1)
+                self.scan_node(child, depth_limit - 1)
             return node
 
         stack: list[Node] = []
@@ -60,7 +62,7 @@ class Multidecoder:
             if hit.value.lower() != hit.original.lower() or hit.children:
                 # Add decoded result and check for new IOCs
                 decode_end = hit.end
-                self.scan_node(hit, depth - 1)
+                self.scan_node(hit, depth_limit - 1)
             else:
                 # No need to rescan, set as context
                 stack.append(node)
