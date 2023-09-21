@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from multidecoder.node import Node
 from multidecoder.registry import Registry, build_registry
 
@@ -9,7 +7,7 @@ DEFAULT_DEPTH = 10
 
 
 class Multidecoder:
-    def __init__(self, decoders: Optional[Registry] = None) -> None:
+    def __init__(self, decoders: Registry | None = None) -> None:
         self.decoders = decoders if decoders else build_registry()
 
     def scan(self, data: bytes, depth: int = DEFAULT_DEPTH) -> Node:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Optional
+from typing import Any
 
 from multidecoder.node import Node
 
@@ -25,7 +25,7 @@ class NodeEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, node)
 
 
-def as_node(d: dict[str, Any], parent: Optional[Node] = None) -> Node:
+def as_node(d: dict[str, Any], parent: Node | None = None) -> Node:
     node = Node(
         type_=d["type"],
         value=bytes.fromhex(d["value"]),

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator
 
 
 class Node:
@@ -13,8 +13,8 @@ class Node:
         obfuscation: str = "",
         start: int = 0,
         end: int = 0,
-        parent: Optional[Node] = None,
-        children: Optional[list[Node]] = None,
+        parent: Node | None = None,
+        children: list[Node] | None = None,
     ):
         self.type = type_
         self.value = value

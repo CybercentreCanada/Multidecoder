@@ -5,7 +5,6 @@ from __future__ import annotations
 import binascii
 import socket
 from ipaddress import AddressValueError, IPv4Address, IPv6Address
-from typing import List
 from urllib.parse import unquote_to_bytes, urlsplit
 
 import regex as re
@@ -102,25 +101,25 @@ def is_url(url: bytes) -> bool:
 
 # Decoders
 @decoder
-def find_domains(data: bytes) -> List[Node]:
+def find_domains(data: bytes) -> list[Node]:
     """Find domains in data"""
     return [match_to_hit(DOMAIN_TYPE, match) for match in re.finditer(DOMAIN_RE, data) if is_domain(match.group())]
 
 
 @decoder
-def find_emails(data: bytes) -> List[Node]:
+def find_emails(data: bytes) -> list[Node]:
     """Find email addresses in data"""
     return [match_to_hit(EMAIL_TYPE, match) for match in re.finditer(EMAIL_RE, data) if is_domain(match.group(1))]
 
 
 @decoder
-def find_ips(data: bytes) -> List[Node]:
+def find_ips(data: bytes) -> list[Node]:
     """Find ip addresses in data"""
     return [parse_ip(match.group()).shift(match.start()) for match in re.finditer(IP_RE, data) if is_ip(match.group())]
 
 
 @decoder
-def find_urls(data: bytes) -> List[Node]:
+def find_urls(data: bytes) -> list[Node]:
     """Find URLs in data"""
     return [
         Node(
@@ -144,7 +143,7 @@ def parse_ip(ip: bytes) -> Node:
     """
     try:
         address = IPv4Address(socket.inet_aton(ip.decode()))
-    except (socket.error, AddressValueError, UnicodeDecodeError) as ex:
+    except (OSError, AddressValueError, UnicodeDecodeError) as ex:
         raise ValueError(f"{ip!r} is not an IPv4 address") from ex
     compressed = address.compressed.encode()
     return Node(
@@ -166,7 +165,7 @@ def parse_ipv6(ip: bytes) -> Node:
     """
     try:
         address = IPv6Address(socket.inet_pton(socket.AF_INET6, ip.decode()))
-    except (socket.error, AddressValueError, UnicodeDecodeError) as ex:
+    except (OSError, AddressValueError, UnicodeDecodeError) as ex:
         raise ValueError(f"{ip!r} is not an IPv6 address") from ex
     return Node(
         "network.ipv6",

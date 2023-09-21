@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import Optional
 
 from multidecoder.node import Node
 
@@ -13,7 +12,7 @@ def invert_tree(tree: list[Node]) -> list[Node]:
     return nodes
 
 
-def make_label(node: Optional[Node]) -> str:
+def make_label(node: Node | None) -> str:
     label_list = []
     while node:
         if node.type:
