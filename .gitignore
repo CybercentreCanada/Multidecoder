@@ -1,8 +1,5 @@
 # setuptools_scm controled file
-multidecoder/_version.py
-
-# Editor Configuration
-.vscode/
+src/multidecoder/_version.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

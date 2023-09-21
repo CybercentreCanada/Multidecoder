@@ -1,0 +1,3 @@
+include src/multidecoder/py.typed
+include src/multidecoder/keywords/*
+include src/multidecoder/keywords/api/*
