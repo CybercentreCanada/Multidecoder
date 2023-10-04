@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from collections import Counter
 from typing import TYPE_CHECKING
 
@@ -8,6 +9,11 @@ if TYPE_CHECKING:
 
 
 def invert_tree(tree: list[Node]) -> list[Node]:
+    warnings.warn(
+        "invert_tree is obsolete. Use list(root_node) instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     nodes: list[Node] = []
     for node in tree:
         nodes.extend(node)
@@ -30,6 +36,7 @@ def string_summary(tree: Node) -> list[str]:
 
 
 def squash_replace(data: bytes, tree: list[Node]) -> bytes:
+    warnings.warn("squash_replace is depricated. Use node.flatten() instead", DeprecationWarning, stacklevel=2)
     offset = 0
     output = []
     for node in tree:
@@ -45,6 +52,11 @@ def squash_replace(data: bytes, tree: list[Node]) -> bytes:
 
 
 def obfuscation_counts(tree: list[Node]) -> Counter[str]:
+    warnings.warn(
+        "obfuscation_counts is obsolete. Use Counter(child.obfuscation for child in node) instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     counts: Counter[str] = Counter()
     for node in tree:
         if node.obfuscation:

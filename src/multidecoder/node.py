@@ -36,17 +36,33 @@ class Node:
             return self.parent.value[self.start : self.end]
         return self.value
 
+    def flatten(self) -> bytes:
+        """Flatten the node's sub-tree into a single deobfuscated value.
+
+        Returns the node's value with each child node's original data
+        replaced by it's decoded value.
+        This is done recursively, with each child node flattened to include
+        all of it's children's deobfuscations before replacement.
+        """
+        offset = 0
+        output = []
+        for node in self.children:
+            if node.start > offset:
+                continue  # Only take the first of overlapping values
+            node_data = node.flatten()
+            if node_data != self.value[node.start : node.end]:
+                output.append(self.value[offset : node.start])
+                if node.type.endswith("string"):
+                    node_data = b'"' + node_data + b'"'
+                output.append(node_data)
+                offset = node.end
+        output.append(self.value[offset:])
+        return b"".join(output)
+
     def shift(self: Node, offset: int) -> Node:
-        """Shift the start and end value of a node by and offset
+        """Shift the node's start and end value by an offset
 
         The node is modified in place.
-
-        Args:
-            node: The node to be shifted.
-            offset: The ammount to shift.
-
-        Returns:
-            The modified node.
         """
         self.start += offset
         self.end += offset
