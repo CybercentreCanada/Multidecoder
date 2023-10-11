@@ -26,6 +26,7 @@ def test_original_parent():
     [
         (EXAMPLE1, b"12345And now for something completely different.54321"),
         (Node("", b"abc", "", 0, 3, children=[Node("", b"FIRST", "", 0, 2), Node("", b"SECOND", "", 1, 3)]), b"FIRSTc"),
+        (Node("", b"abc", "", 0, 3, children=[Node("", b"FIRST", "", 0, 3), Node("", b"SECOND", "", 0, 3)]), b"FIRST"),
     ],
 )
 def test_flatten(node, flat):
