@@ -47,7 +47,7 @@ class Node:
         offset = 0
         output = []
         for node in self.children:
-            if node.start > offset:
+            if node.start < offset:
                 continue  # Only take the first of overlapping values
             node_data = node.flatten()
             if node_data != self.value[node.start : node.end]:
@@ -60,7 +60,7 @@ class Node:
         return b"".join(output)
 
     def shift(self: Node, offset: int) -> Node:
-        """Shift the node's start and end value by an offset
+        """Shift the node's start and end value by an offset.
 
         The node is modified in place.
         """
