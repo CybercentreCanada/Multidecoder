@@ -4,6 +4,7 @@ import binascii
 
 import regex as re
 
+from multidecoder.decoders.base64 import pad_base64
 from multidecoder.decoders.concat import DOUBLE_QUOTE_ESCAPES
 from multidecoder.node import Node
 from multidecoder.registry import decoder
@@ -91,7 +92,7 @@ def find_powershell_strings(data: bytes) -> list[Node]:
         cmd_node = Node("shell.cmd", deobfuscated, obfuscation, start, end) if obfuscation else None
         if enc:
             split = deobfuscated.split()
-            b64 = binascii.a2b_base64(_pad(split[-1].strip(b"'\""))).decode("utf-16", errors="ignore").encode()
+            b64 = binascii.a2b_base64(pad_base64(split[-1].strip(b"'\""))).decode("utf-16", errors="ignore").encode()
             deobfuscated = b" ".join(split[:-2]) + b" -Command " + b64
             if cmd_node:
                 cmd_node.children.append(
@@ -129,15 +130,6 @@ def find_powershell_strings(data: bytes) -> list[Node]:
                 )
             out.append(Node("shell.powershell", deobfuscated, obfuscation, start, end))
     return out
-
-
-def _pad(b64: bytes) -> bytes:
-    padding = -len(b64) % 4
-    if padding == 3:
-        return b64[:-1]  # Corrupted end, just keep the valid part
-    if padding:
-        return b64 + b"=" * padding
-    return b64
 
 
 def get_cmd_command(cmd: bytes) -> bytes:

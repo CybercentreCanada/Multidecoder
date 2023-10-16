@@ -21,6 +21,21 @@ HEX_RE = rb"(?i)[a-f0-9]+"
 MIN_B64_CHARS = 6
 
 
+def pad_base64(b64: bytes) -> bytes:
+    """Force base64 that is the wrong length to be decodable.
+
+    If the length is 1 or 2 characters from a multiple of 4, it is padded with '='s.
+    If the length is 3 from a multiple of 4 the last character is removed.
+    If the length is a multiple of 4 it is returned unchanged.
+    """
+    padding = -len(b64) % 4
+    if not padding:
+        return b64
+    if padding == 3:
+        return b64[:-1]  # Corrupted end, just keep the valid part
+    return b64 + b"=" * padding
+
+
 @decoder
 def find_base64(data: bytes) -> list[Node]:
     """

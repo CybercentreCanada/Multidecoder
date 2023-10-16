@@ -178,10 +178,23 @@ def parse_ipv6(ip: bytes) -> Node:
 
 
 def parse_url(url_text: bytes) -> list[Node]:
-    """Parses a url into a decoding tree
+    """Parses a url into a decoding tree.
 
-    Args:
-        url_text: the text of the url
+    The url is separated into parts:
+    - scheme
+    - username
+    - password
+    - host (ip or domain)
+    - path
+    - query
+    - fragment
+    Each part is decoded and added as a child if it is present in the url.
+
+    This function should only be used if a decoding tree is necessary.
+    The standard library urllib.path.urlsplit is prefered if separating a url
+    into subparts is all that is required. If splitting and decoding is required,
+    consider using urlsplit then unquote_to_bytes to remove percent encoding
+    and one of the host specific parsers (parse_ip, parse_ipv6) if necessary.
     """
     out = []
     # Parse the url
