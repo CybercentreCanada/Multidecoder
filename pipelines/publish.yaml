@@ -13,7 +13,7 @@ pool:
 
 jobs:
 - job: test_build_deploy
-  displayName: Test, Build and Test deploy
+  displayName: Test, Build and Deploy to Test PyPI
   variables:
   - group: deployment-information-test
   steps:
@@ -46,7 +46,7 @@ jobs:
       TWINE_PASSWORD: $(twinePassword)
 
 - job: deploy
-  displayName: Deploy to PyPI
+  displayName: Build and Deploy to PyPI
   dependsOn: test_build_deploy
   variables:
   - group: deployment-information
@@ -55,6 +55,14 @@ jobs:
     displayName: Set python version
     inputs:
       versionSpec: 3.9
+
+  - script: |
+      set -x
+      python -m pip install -U build
+      python -m build
+      ls dist
+    displayName: Build
+
   - script: |
       set -xv  # Echo commands before they are run
       sudo env "PATH=$PATH" python -m pip install --no-cache-dir twine
