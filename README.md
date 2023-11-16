@@ -1,5 +1,7 @@
 # Multidecoder
 
+<a href="https://pypi.org/project/multidecoder/#history"><img src="https://img.shields.io/pypi/v/multidecoder.svg" alt="Latest Stable Release"></a>
+
 Multidecoder is a python library and command line tool for extracting indicators of compromise (IOCs) from a file.
 Multidecoder preserves the context of where and how an IOC is found to allow automated detection of patterns of obfuscation.
 Multidecoder is currently in alpha, and may change in ways that breaks backwards compatibility as developement continues.
