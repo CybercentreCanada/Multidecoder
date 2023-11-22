@@ -37,6 +37,19 @@ def pad_base64(b64: bytes) -> bytes:
 
 
 @decoder
+def find_atob(data: bytes) -> list[Node]:
+    """Find the javascript base64 decoding function atob and decode its argument."""
+    out: list[Node] = []
+    for match in re.finditer(rb"atob\(\'([A-Za-z0-9+/]+={0,2})\'\)", data):
+        try:
+            b64 = binascii.a2b_base64(match.group(1))
+            out.append(Node("javascript.string", b64, "encoding.base64", *match.span()))
+        except binascii.Error:
+            continue
+    return out
+
+
+@decoder
 def find_base64(data: bytes) -> list[Node]:
     """
     Find all base64 encoded sections in some data.
