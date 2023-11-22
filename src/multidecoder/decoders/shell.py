@@ -10,7 +10,9 @@ from multidecoder.node import Node
 from multidecoder.registry import decoder
 
 CMD_RE = b"(?i)\\bc\\^?m\\^?d(?:" + DOUBLE_QUOTE_ESCAPES + rb'|[^)"\x00])*'
-POWERSHELL_INDICATOR_RE = rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
+POWERSHELL_INDICATOR_RE = (
+    rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])?\b(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
+)
 SH_RE = rb'"(\s*(?:sh|bash|zsh|csh)[^"]+)"'
 ENC_RE = (
     rb"(?i)\s\^?(?:-|/)\^?e\^?(?:c|n\^?(?:c\^?(?:o\^?(?:d\^?(?:e\^?(?:d\^?(?:c\^?(?:o\^?(?:m"
@@ -93,6 +95,14 @@ def find_powershell_strings(data: bytes) -> list[Node]:
         if enc:
             split = deobfuscated.split()
             b64 = binascii.a2b_base64(pad_base64(split[-1].strip(b"'\""))).decode("utf-16", errors="ignore").encode()
+
+            # The powershell binary/command itself is at split[0]
+            if (not split[0].startswith(b'"') and split[0].endswith(b'"')) or (
+                not split[0].startswith(b"'") and split[0].endswith(b"'")
+            ):
+                # Remove the trailing quotation
+                split[0] = split[0][:-1]
+
             deobfuscated = b" ".join(split[:-2]) + b" -Command " + b64
             if cmd_node:
                 cmd_node.children.append(
