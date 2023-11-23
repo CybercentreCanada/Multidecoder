@@ -91,6 +91,18 @@ def test_find_cmd_strings():
     ]
 
 
+def test_find_cmd_strings_with_combo_of_ps1_and_cmd():
+    ex = b"powershell -Command curl blah.com && cmd /c curl https://abc.org && powershell -Command cat /etc/passwd"
+    assert find_cmd_strings(ex) == [
+        Node(
+            type_="shell.cmd",
+            value=b"cmd /c curl https://abc.org && powershell -Command cat /etc/passwd",
+            start=37,
+            end=103,
+        )
+    ]
+
+
 # find_powershell_strings
 def test_find_powershell_strings_enc():
     ex = b"powershell /e ZQBj^AGgAbwAgAGIAZQ^BlAA=="
@@ -166,6 +178,24 @@ def test_find_powershell_strings_from_dynamic_command():
             obfuscation="powershell.base64",
             start=44,
             end=1658,
+        ),
+    ]
+
+
+def test_find_powershell_strings_with_combo_of_ps1_and_cmd():
+    ex = b"powershell -Command curl blah.com && cmd /c curl https://abc.org && powershell -Command cat /etc/passwd"
+    assert find_powershell_strings(ex) == [
+        Node(
+            type_="shell.powershell",
+            value=b"powershell -Command curl blah.com && cmd /c curl https://abc.org && powershell -Command cat /etc/passwd",
+            start=0,
+            end=103,
+        ),
+        Node(
+            type_="shell.powershell",
+            value=b"powershell -Command cat /etc/passwd",
+            start=68,
+            end=35,
         ),
     ]
 
