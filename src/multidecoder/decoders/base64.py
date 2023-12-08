@@ -7,7 +7,6 @@ from __future__ import annotations
 import binascii
 
 import regex as re
-
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 
@@ -116,6 +115,8 @@ def find_Base64Decode(data: bytes) -> list[Node]:
 def find_FromBase64String(data: bytes) -> list[Node]:
     """
     Find the powershell function FromBase64String and decode its argument
+
+    Supported by https://github.com/CYB3RMX/Qu1cksc0pe/blob/1a349826b248e578b0a2ec8b152eeeddf059c388/Modules/powershell_analyzer.py#L53
     """
     out: list[Node] = []
     xorkey = re.search(rb"(?i)-b?xor\s*(\d{1,3})", data)
