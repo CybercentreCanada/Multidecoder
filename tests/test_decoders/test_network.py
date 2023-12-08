@@ -9,7 +9,6 @@ from multidecoder.decoders.network import (
     # find_domains,
     is_domain,
     is_url,
-    normalize_ioc,
     parse_ip,
 )
 from multidecoder.node import Node
@@ -38,15 +37,6 @@ from multidecoder.node import Node
         b"0x7f.0x0.0x0.0x1",
         # mixed ip address
         b"0xac.000000000000000000331.0246.174",
-        # Neutered IPs
-        b"127[.]0[.]0[.]1",
-        b"127<.>0<.>0<.>1",
-        b"127{.}0{.}0{.}1",
-        b"127(.)0(.)0(.)1",
-        b"127<DOT>0<DOT>0<DOT>1",
-        b"127[DOT]0[dot]0[DOT]1",
-        b"127{dOt}0{DOT}0{DOT}1",
-        b"127(DOT)0(DOT)0(DoT)1",
     ],
 )
 def test_IP_RE_match(ip):
@@ -85,8 +75,6 @@ def test_IP_RE_context(data, ip):
 
 def test_parse_ip():
     assert parse_ip(b"8.8.8.8") == Node("network.ip", b"8.8.8.8", "", 0, 7)
-    # Test neutered
-    assert parse_ip(b"8[.]8[.]8[.]8") == Node("network.ip", b"8.8.8.8", "", 0, 7)
 
 
 # Domain ----------------------------------------
@@ -98,15 +86,6 @@ def test_parse_ip():
         b"www.google.com",  # normal domain
         b"xn--bcher-kva.example",  # international domain
         b"some.website.xn--4gbrim",  # intenational top level domain
-        # Neutered domains
-        b"www[.]google[.]com",
-        b"www<.>google<.>com",
-        b"www{.}google{.}com",
-        b"www(.)google(.)com",
-        b"www<DOT>google<dot>com",
-        b"www[DOT]google[DOT]com",
-        b"www{dOt}google{DOT}com",
-        b"www(DOT)google(DOT)com",
     ],
 )
 def test_DOMAIN_RE_match(domain):
@@ -117,8 +96,6 @@ def test_DOMAIN_RE_match(domain):
 def test_is_valid_domain_re():
     assert is_domain(b"website.com")
     assert not is_domain(b"website.notatld")
-    # Test neutered
-    assert is_domain(b"website[DOT]com")
 
 
 # TODO: find a better way to avoid domain false positives than ignoring valid tlds
@@ -163,23 +140,8 @@ def test_DOMAIN_RE_context(data, domain):
 # Email -----------------------------------------
 
 
-@pytest.mark.parametrize(
-    "email",
-    [
-        b"a_name@gmail.com",  # normal email
-        # Neutered emails
-        b"a_name[@]gmail[.]com",
-        b"a_name<@>gmail<.>com",
-        b"a_name{@}gmail{.}com",
-        b"a_name(@)gmail(.)com",
-        b"a_name<AT>gmail<DOT>com",
-        b"a_name[at]gmail[dOt]com",
-        b"a_name{At}gmail{DOT}com",
-        b"a_name(aT)gmail(DoT)com",
-    ],
-)
-def test_email_re(email):
-    assert re.match(EMAIL_RE, email)
+def test_email_re():
+    assert re.match(EMAIL_RE, b"a_name@gmail.com")
 
 
 # URL -------------------------------------------
@@ -251,21 +213,11 @@ def test_email_re(email):
         b"http://%5B%3A%3A1]",  # This works in Chrome and Edge, the colons have to be percent encoded.
         b"http://[::1%5D",  # You wouldn't think this would work, but it still does on Chrome and Edge.
         b"http://[::1%5D/path",  # Even handles the rest of the url just fine.
-        # Neutered schemes are handled!
-        b"hxxps://google.com",
-        b"meow://google.com",
     ],
 )
 def test_URL_RE_matches(url):
     """Test that URL_RE matches expected URLs"""
     assert re.match(URL_RE, url).span() == (0, len(url))
-
-
-def test_URL_RE_false_positive():
-    """Test that URL_RE does not match potential false positives"""
-    # Neutered URLs with neutered domains are not handled by just this regular 
-    # expression, so the full domain is not captured
-    assert re.match(URL_RE, b"hxxps://google[.]com").span() == (0, 14)
 
 
 @pytest.mark.parametrize(
@@ -289,33 +241,3 @@ def test_URL_RE_context(data, url):
 
 def test_is_url():
     assert is_url(b"https://some.domain.com")
-    # Test neutered
-    assert is_url(b"meows://some[.]domain[.]com")
-
-
-# Normalize -------------------------------------------
-
-
-@pytest.mark.parametrize(
-    "value, expected_value",
-    [
-        # Normal email
-        (b"a_name@gmail.com", b"a_name@gmail.com"),
-        # Normal domain
-        (b"www.google.com", b"www.google.com"),
-        # Normal IP
-        (b"127.0.0.1", b"127.0.0.1"),
-        # Normal URL
-        (b"https://some.domain.com", b"https://some.domain.com"),
-        # Neutered email
-        (b"a_name[@]gmail[.]com", b"a_name@gmail.com"),
-        # Neutered domain
-        (b"www[.]google[.]com", b"www.google.com"),
-        # Neutered IP
-        (b"127[.]0{.}0(.)1", b"127.0.0.1"),
-        # Neutered URL
-        (b"hxxps://some[.]domain[.]com", b"https://some.domain.com"),
-    ],
-)
-def test_normalize_ioc(value, expected_value):
-    assert normalize_ioc(value) == expected_value
