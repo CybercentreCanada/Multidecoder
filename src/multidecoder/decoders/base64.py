@@ -9,6 +9,7 @@ import binascii
 import regex as re
 from multidecoder.node import Node
 from multidecoder.registry import decoder
+from multidecoder.xor_helper import apply_xor_key, get_xorkey
 
 HTML_ESCAPE_RE = rb"&#(?:x[a-fA-F0-9]{1,4}|\d{1,4});"
 BASE64_RE = rb"(?:[A-Za-z0-9+/]{4,}(?:<\x00  \x00)?(?:&#13;|&#xD;)?(?:&#10;|&#xA)?\r?\n?){5,}[A-Za-z0-9+/]{2,}=?=?"
@@ -119,23 +120,13 @@ def find_FromBase64String(data: bytes) -> list[Node]:
     Supported by https://github.com/CYB3RMX/Qu1cksc0pe/blob/1a349826b248e578b0a2ec8b152eeeddf059c388/Modules/powershell_analyzer.py#L53
     """
     out: list[Node] = []
-    xorkey = re.search(rb"(?i)-b?xor\s*(\d{1,3})", data)
+    xorkey = get_xorkey(data)
     for match in re.finditer(FROMB64STRING_RE, data):
         try:
             b64 = binascii.a2b_base64(match.group(2))
             b64_node = Node("powershell.bytes", b64, "encoding.base64", *match.span())
             if xorkey:
-                key = int(xorkey.group(1))
-                b64 = bytes(b ^ key for b in b64)
-                b64_node.children.append(
-                    Node(
-                        "powershell.bytes",
-                        b64,
-                        "cipher.xor" + str(key),
-                        end=len(b64),
-                        parent=b64_node,
-                    )
-                )
+                b64_node = apply_xor_key(xorkey, b64, b64_node, "powershell.bytes")
             out.append(b64_node)
         except binascii.Error:
             continue
