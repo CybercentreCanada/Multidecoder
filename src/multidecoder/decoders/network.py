@@ -29,10 +29,19 @@ IP_OBF = "ip_obfuscation"
 # Regexes
 _OCTET_RE = rb"(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})"
 
-DOMAIN_RE = rb"(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z.-])"
-EMAIL_RE = rb"(?i)\b[a-z0-9._%+-]{3,}@(" + DOMAIN_RE[4:] + rb")\b"
+# Inspired by https://github.com/PUNCH-Cyber/stoq-plugins-public/blob/8c2c94e43ce54221121e8e3f542b54d255862078/iocextract/iocextract/iocextract.py#L64
+_DOT_RE = rb"(?:\.|\[\.\]|\<\.\>|\{\.\}|\(\.\)|\<DOT\>|\[DOT\]|\{DOT\}|\(DOT\))"
 
-IP_RE = rb"(?i)(?<![\w.])(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"(?![\w.])"
+# Inspired by https://github.com/PUNCH-Cyber/stoq-plugins-public/blob/8c2c94e43ce54221121e8e3f542b54d255862078/iocextract/iocextract/iocextract.py#L69
+_AT_RE = rb"(?:@|\[@\]|\<@\>|\{@\}|\(@\)|\<AT\>|\[AT\]|\{AT\}|\(AT\))"
+
+DOMAIN_RE = rb"(?i)\b(?:[a-z0-9-]+" + _DOT_RE + rb")+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z.-])"
+EMAIL_RE = rb"(?i)\b[a-z0-9._%+-]{3,}" + _AT_RE + rb"(" + DOMAIN_RE[4:] + rb")\b"
+
+IP_RE = rb"(?i)(?<![\w.])(?:" + _OCTET_RE + _DOT_RE + rb"){3}" + _OCTET_RE + rb"(?![\w.])"
+
+# Inspired by https://github.com/PUNCH-Cyber/stoq-plugins-public/blob/8c2c94e43ce54221121e8e3f542b54d255862078/iocextract/iocextract/iocextract.py#L71
+_HTTP_RE = rb"h(?:tt|xx)ps?|meows?"
 
 # Using some weird ranges to shorten the regex:
 # $-. is $%&'()*+,-. all of which are sub-delims $&'()*+, or unreserved .-
@@ -40,7 +49,7 @@ IP_RE = rb"(?i)(?<![\w.])(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"(?![\w.
 # #-/ is the same with # and /
 # #-& is #-/ but stopped before '
 URL_RE = (
-    rb"(?i)(?:ftp|https?)://"  # scheme
+    rb"(?i)(?:ftp|" + _HTTP_RE + rb")://"  # scheme
     rb"(?:[\w!$-.:;=~@]{,2000}@)?"  # userinfo
     rb"(?:(?!%5B)[%A-Z0-9.-]{4,253}|(?:\[|%5B)[%0-9A-F:]{3,117}(?:\]|%5D))"  # host
     rb"(?::[0-9]{0,5})?"  # port
@@ -48,6 +57,24 @@ URL_RE = (
     # The final char class stops urls from ending in ' ) , or .
     # to prevent trailing characters from being included in the url.
 )
+
+
+# Inspired by https://github.com/PUNCH-Cyber/stoq-plugins-public/blob/8c2c94e43ce54221121e8e3f542b54d255862078/iocextract/iocextract/iocextract.py#L157
+def normalize_ioc(ioc: bytes) -> bytes:
+    """Normalizes a neutered IOC"""
+    # First check dots
+    ioc = re.sub(_DOT_RE, b".", ioc, flags=re.IGNORECASE)
+
+    # Then check @s
+    ioc = re.sub(_AT_RE, b"@", ioc, flags=re.IGNORECASE)
+
+    # Finally check schemes
+    if ioc.startswith(b"hxxps") or ioc.startswith(b"meows"):
+        ioc = re.sub(_HTTP_RE, b"https", ioc, flags=re.IGNORECASE)
+    elif ioc.startswith(b"hxxp") or ioc.startswith(b"meow"):
+        ioc = re.sub(_HTTP_RE, b"http", ioc, flags=re.IGNORECASE)
+
+    return ioc
 
 
 # Regex validators
@@ -61,6 +88,7 @@ def is_domain(domain: bytes) -> bool:
     Returns:
         Whether domain has a valid top level domain.
     """
+    domain = normalize_ioc(domain)
     parts = domain.rsplit(b".", 1)
     if len(parts) != 2:
         return False
@@ -76,6 +104,7 @@ def is_ip(ip: bytes) -> bool:
     Returns:
         Whether ip is an IPv4 address.
     """
+    ip = normalize_ioc(ip)
     try:
         IPv4Address(ip.decode("ascii"))
     except (AddressValueError, UnicodeDecodeError):
@@ -93,6 +122,7 @@ def is_url(url: bytes) -> bool:
     Returns:
        Whether url is a URL.
     """
+    url = normalize_ioc(url)
     try:
         split = urlsplit(url)
     except ValueError:
@@ -142,6 +172,7 @@ def parse_ip(ip: bytes) -> Node:
     Returns:
         A node with the normalized IPv4 address as it's value.
     """
+    ip = normalize_ioc(ip)
     try:
         address = IPv4Address(socket.inet_aton(ip.decode()))
     except (OSError, AddressValueError, UnicodeDecodeError) as ex:
@@ -164,6 +195,7 @@ def parse_ipv6(ip: bytes) -> Node:
     Returns:
         A node with the normalized IPv6 address as it's value.
     """
+    ip = normalize_ioc(ip)
     try:
         address = IPv6Address(socket.inet_pton(socket.AF_INET6, ip.decode()))
     except (OSError, AddressValueError, UnicodeDecodeError) as ex:
