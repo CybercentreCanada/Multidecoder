@@ -1,9 +1,40 @@
 import binascii
 
+import pytest
 import regex as re
-
-from multidecoder.decoders.base64 import BASE64_RE, find_base64, find_FromBase64String
+from multidecoder.decoders.base64 import BASE64_RE, find_atob, find_base64, find_FromBase64String, pad_base64
 from multidecoder.node import Node
+
+# -- pad_base64 --
+
+
+@pytest.mark.parametrize(
+    ("base64", "padded"),
+    [
+        (b"a", b""),
+        (b"aa", b"aa=="),
+        (b"aaa", b"aaa="),
+        (b"aaaa", b"aaaa"),
+    ],
+)
+def test_pad_base64(base64, padded):
+    assert pad_base64(base64) == padded
+
+
+# -- find_atob --
+
+
+@pytest.mark.parametrize(
+    ("atob", "decoded"),
+    [
+        (b"atob('YXRvYiB0ZXN0IHRleHQ=')", b"atob test text"),
+    ],
+)
+def test_atob(atob, decoded):
+    assert find_atob(atob)[0].value == decoded
+
+
+# -- find_base64 --
 
 
 def test_empty():

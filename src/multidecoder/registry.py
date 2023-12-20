@@ -1,25 +1,29 @@
 """
 Module for automatically registering and collecting decoder functions
 """
+from __future__ import annotations
 
 import importlib
 import inspect
 import os
 import pkgutil
 from functools import partial
-from typing import Callable, Iterable, List, Optional
+from typing import TYPE_CHECKING, Callable, Iterable, List
 
 import multidecoder
 import multidecoder.decoders
 from multidecoder.keyword import find_keywords
 from multidecoder.node import Node
 
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
+
 # Registry type
-Decoder = Callable[[bytes], List[Node]]
-Registry = List[Decoder]
+Decoder: TypeAlias = Callable[[bytes], List[Node]]
+Registry: TypeAlias = List[Decoder]
 
 
-def decoder(func):
+def decoder(func: Decoder) -> Decoder:
     """Decorator for decoding functions"""
 
     func._decoder = True
@@ -28,8 +32,8 @@ def decoder(func):
 
 def build_registry(
     directory: str = "",
-    include: Optional[Iterable[str]] = None,
-    exclude: Optional[Iterable[str]] = None,
+    include: Iterable[str] | None = None,
+    exclude: Iterable[str] | None = None,
 ) -> Registry:
     """Get both analyzer functions and keyword functions"""
     keywords = get_keywords(directory)
@@ -37,9 +41,7 @@ def build_registry(
     return keywords
 
 
-def get_analyzers(
-    include: Optional[Iterable[str]] = None, exclude: Optional[Iterable[str]] = None
-) -> Registry:
+def get_analyzers(include: Iterable[str] | None = None, exclude: Iterable[str] | None = None) -> Registry:
     """Get all analyzers"""
     decoders: Registry = []
     include = set(include) if include else {}
@@ -49,9 +51,7 @@ def get_analyzers(
             continue
         if exclude and submod_info.name in exclude:
             continue
-        submodule = importlib.import_module(
-            "." + submod_info.name, package=multidecoder.decoders.__name__
-        )
+        submodule = importlib.import_module("." + submod_info.name, package=multidecoder.decoders.__name__)
         for _, function in inspect.getmembers(submodule, inspect.isfunction):
             if hasattr(function, "_decoder"):
                 decoders.append(function)

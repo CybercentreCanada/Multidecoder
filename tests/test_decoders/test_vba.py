@@ -40,4 +40,5 @@ def test_find_strreverse_duck():
 def test_find_strreverse_endpoints():
     string = b'StrReverse("kcud")'
     hit = find_strreverse(string)[0]
-    assert hit.start == 0 and hit.end == len(string)
+    assert hit.start == 0
+    assert hit.end == len(string)

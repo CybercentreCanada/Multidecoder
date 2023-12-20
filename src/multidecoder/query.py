@@ -1,19 +1,26 @@
 from __future__ import annotations
 
+import warnings
 from collections import Counter
-from typing import Optional
+from typing import TYPE_CHECKING
 
-from multidecoder.node import Node
+if TYPE_CHECKING:
+    from multidecoder.node import Node
 
 
 def invert_tree(tree: list[Node]) -> list[Node]:
+    warnings.warn(
+        "invert_tree is obsolete. Use list(root_node) instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     nodes: list[Node] = []
     for node in tree:
         nodes.extend(node)
     return nodes
 
 
-def make_label(node: Optional[Node]) -> str:
+def make_label(node: Node | None) -> str:
     label_list = []
     while node:
         if node.type:
@@ -29,6 +36,7 @@ def string_summary(tree: Node) -> list[str]:
 
 
 def squash_replace(data: bytes, tree: list[Node]) -> bytes:
+    warnings.warn("squash_replace is depricated. Use node.flatten() instead", DeprecationWarning, stacklevel=2)
     offset = 0
     output = []
     for node in tree:
@@ -44,6 +52,11 @@ def squash_replace(data: bytes, tree: list[Node]) -> bytes:
 
 
 def obfuscation_counts(tree: list[Node]) -> Counter[str]:
+    warnings.warn(
+        "obfuscation_counts is obsolete. Use Counter(child.obfuscation for child in node) instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     counts: Counter[str] = Counter()
     for node in tree:
         if node.obfuscation:

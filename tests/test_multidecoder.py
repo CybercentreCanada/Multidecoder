@@ -1,9 +1,8 @@
 import pytest
-
 from multidecoder.multidecoder import Multidecoder, Node
 
 
-@pytest.fixture
+@pytest.fixture()
 def md():
     return Multidecoder()
 

@@ -1,7 +1,12 @@
 from __future__ import annotations
 
-from multidecoder.hit import Node, regex_hits
+from typing import TYPE_CHECKING
+
+from multidecoder.hit import regex_hits
 from multidecoder.registry import decoder
+
+if TYPE_CHECKING:
+    from multidecoder.node import Node
 
 EXECUTABLE_RE = rb"(?i)\b\w+[.]exe\b"
 LIBRARY_RE = rb"(?i)\b\w+[.]dll\b"

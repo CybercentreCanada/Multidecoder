@@ -11,12 +11,10 @@ from multidecoder.query import squash_replace, string_summary
 from multidecoder.registry import build_registry
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("filepath", nargs="?", metavar="FILE")
-    parser.add_argument(
-        "--version", "-V", action="version", version="%(prog)s " + version
-    )
+    parser.add_argument("--version", "-V", action="version", version="%(prog)s " + version)
     parser.add_argument("--keywords", "-k")
     output_format = parser.add_mutually_exclusive_group()
     output_format.add_argument("--json", "-j", action="store_true")
@@ -43,7 +41,7 @@ def main():
     if args.json:
         print(tree_to_json(tree))
     elif args.replace:
-        sys.stdout.buffer.write(squash_replace(data, tree))
+        sys.stdout.buffer.write(squash_replace(data, tree.children))
     else:
         for string in string_summary(tree):
             print(string)

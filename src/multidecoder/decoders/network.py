@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import binascii
+import contextlib
 import socket
 from ipaddress import AddressValueError, IPv4Address, IPv6Address
-from typing import List
 from urllib.parse import unquote_to_bytes, urlsplit
 
 import regex as re
@@ -97,44 +97,30 @@ def is_url(url: bytes) -> bool:
         split = urlsplit(url)
     except ValueError:
         return False
-    return bool(
-        split.scheme and split.hostname and split.scheme in (b"http", b"https", b"ftp")
-    )
+    return bool(split.scheme and split.hostname and split.scheme in (b"http", b"https", b"ftp"))
 
 
 # Decoders
 @decoder
-def find_domains(data: bytes) -> List[Node]:
+def find_domains(data: bytes) -> list[Node]:
     """Find domains in data"""
-    return [
-        match_to_hit(DOMAIN_TYPE, match)
-        for match in re.finditer(DOMAIN_RE, data)
-        if is_domain(match.group())
-    ]
+    return [match_to_hit(DOMAIN_TYPE, match) for match in re.finditer(DOMAIN_RE, data) if is_domain(match.group())]
 
 
 @decoder
-def find_emails(data: bytes) -> List[Node]:
+def find_emails(data: bytes) -> list[Node]:
     """Find email addresses in data"""
-    return [
-        match_to_hit(EMAIL_TYPE, match)
-        for match in re.finditer(EMAIL_RE, data)
-        if is_domain(match.group(1))
-    ]
+    return [match_to_hit(EMAIL_TYPE, match) for match in re.finditer(EMAIL_RE, data) if is_domain(match.group(1))]
 
 
 @decoder
-def find_ips(data: bytes) -> List[Node]:
+def find_ips(data: bytes) -> list[Node]:
     """Find ip addresses in data"""
-    return [
-        parse_ip(match.group()).shift(match.start())
-        for match in re.finditer(IP_RE, data)
-        if is_ip(match.group())
-    ]
+    return [parse_ip(match.group()).shift(match.start()) for match in re.finditer(IP_RE, data) if is_ip(match.group())]
 
 
 @decoder
-def find_urls(data: bytes) -> List[Node]:
+def find_urls(data: bytes) -> list[Node]:
     """Find URLs in data"""
     return [
         Node(
@@ -158,7 +144,7 @@ def parse_ip(ip: bytes) -> Node:
     """
     try:
         address = IPv4Address(socket.inet_aton(ip.decode()))
-    except (socket.error, AddressValueError, UnicodeDecodeError) as ex:
+    except (OSError, AddressValueError, UnicodeDecodeError) as ex:
         raise ValueError(f"{ip!r} is not an IPv4 address") from ex
     compressed = address.compressed.encode()
     return Node(
@@ -180,22 +166,35 @@ def parse_ipv6(ip: bytes) -> Node:
     """
     try:
         address = IPv6Address(socket.inet_pton(socket.AF_INET6, ip.decode()))
-    except (socket.error, AddressValueError, UnicodeDecodeError) as ex:
+    except (OSError, AddressValueError, UnicodeDecodeError) as ex:
         raise ValueError(f"{ip!r} is not an IPv6 address") from ex
     return Node(
         "network.ipv6",
         address.compressed.encode(),
-        IP_OBF if address.compressed != ip else "",
+        IP_OBF if address.compressed.encode() != ip else "",
         0,
         len(ip),
     )
 
 
 def parse_url(url_text: bytes) -> list[Node]:
-    """Parses a url into a decoding tree
+    """Parses a url into a decoding tree.
 
-    Args:
-        url_text: the text of the url
+    The url is separated into parts:
+    - scheme
+    - username
+    - password
+    - host (ip or domain)
+    - path
+    - query
+    - fragment
+    Each part is decoded and added as a child if it is present in the url.
+
+    This function should only be used if a decoding tree is necessary.
+    The standard library urllib.path.urlsplit is prefered if separating a url
+    into subparts is all that is required. If splitting and decoding is required,
+    consider using urlsplit then unquote_to_bytes to remove percent encoding
+    and one of the host specific parsers (parse_ip, parse_ipv6) if necessary.
     """
     out = []
     # Parse the url
@@ -208,8 +207,7 @@ def parse_url(url_text: bytes) -> list[Node]:
                 url.scheme,
                 MIXED_CASE_OBF
                 # url.scheme is normalized by urlsplit
-                if url_text[0 : len(url.scheme)] not in (url.scheme, url.scheme.upper())
-                else "",
+                if url_text[0 : len(url.scheme)] not in (url.scheme, url.scheme.upper()) else "",
                 0,
                 len(url.scheme),
             )
@@ -217,10 +215,8 @@ def parse_url(url_text: bytes) -> list[Node]:
         offset += len(url.scheme) + 1  # scheme + :
     if url.netloc:
         offset += 2  # authority begins with //
-        try:
+        with contextlib.suppress(ValueError):
             out.extend(shift_nodes(parse_authority(url.netloc), offset))
-        except ValueError:
-            pass
         offset += len(url.netloc)
     if url.path:
         out.append(
@@ -258,15 +254,9 @@ def parse_authority(authority: bytes) -> list[Node]:
     """Split a URL's authority into it's consituent parts and unquote them"""
     out = []
     offset = 0
-    userinfo, address = (
-        authority.rsplit(b"@", 1) if b"@" in authority else (b"", authority)
-    )
-    username, password = (
-        userinfo.split(b":", 1) if b":" in userinfo else (userinfo, b"")
-    )
-    host, _ = (
-        address.rsplit(b":", 1) if re.match(rb"(?r):\d*", address) else (address, b"")
-    )
+    userinfo, address = authority.rsplit(b"@", 1) if b"@" in authority else (b"", authority)
+    username, password = userinfo.split(b":", 1) if b":" in userinfo else (userinfo, b"")
+    host, _ = address.rsplit(b":", 1) if re.match(rb"(?r):\d*", address) else (address, b"")
     if username:
         out.append(
             Node(
@@ -297,10 +287,8 @@ def parse_authority(authority: bytes) -> list[Node]:
     if host.startswith(b"["):
         if not host.endswith(b"]"):
             raise ValueError("Invalid IPv6 URL")
-        try:
+        with contextlib.suppress(ValueError):
             out.append(parse_ipv6(host[1:-1]).shift(offset + 1))
-        except ValueError:
-            pass
     else:
         try:
             out.append(parse_ip(host).shift(offset))
@@ -326,12 +314,7 @@ def normalize_percent_encoding(uri: bytes) -> tuple[bytes, str]:
     def normalize_percent(match: re.Match[bytes]) -> bytes:
         """Normalize a single percent encoded byte"""
         byte = binascii.unhexlify(match.group(1))
-        if (
-            b"A" <= byte <= b"Z"
-            or b"a" <= byte <= b"z"
-            or b"0" <= byte <= b"9"
-            or byte in (b"-", b".", b"_", b"~")
-        ):
+        if b"A" <= byte <= b"Z" or b"a" <= byte <= b"z" or b"0" <= byte <= b"9" or byte in (b"-", b".", b"_", b"~"):
             return byte
         return match.group(0).upper()
 

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 class PE:
     sections: list[SectionStructure]
     def __init__(

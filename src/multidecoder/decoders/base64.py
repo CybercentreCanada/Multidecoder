@@ -7,23 +7,46 @@ from __future__ import annotations
 import binascii
 
 import regex as re
-
 from multidecoder.node import Node
 from multidecoder.registry import decoder
+from multidecoder.xor_helper import apply_xor_key, get_xorkey
 
 HTML_ESCAPE_RE = rb"&#(?:x[a-fA-F0-9]{1,4}|\d{1,4});"
-BASE64_RE = (
-    rb"(?:[A-Za-z0-9+/]{4,}(?:<\x00  \x00)?(?:&#13;|&#xD;)?(?:&#10;|&#xA)?\r?\n?){5,}"
-    rb"[A-Za-z0-9+/]{2,}=?=?"
-)
+BASE64_RE = rb"(?:[A-Za-z0-9+/]{4,}(?:<\x00  \x00)?(?:&#13;|&#xD;)?(?:&#10;|&#xA)?\r?\n?){5,}[A-Za-z0-9+/]{2,}=?=?"
 BASE64DECODE_RE = rb'(?i)Base64Decode\("([a-z0-9/+]+=?=?)"\)'
-FROMB64STRING_RE = (
-    rb"(?i)(\[System.Convert\]::)?FromBase64String\('([a-z0-9+/]+=?=?)'\)"
-)
+FROMB64STRING_RE = rb"(?i)(\[System.Convert\]::)?FromBase64String\('([a-z0-9+/]+=?=?)'\)"
 
 CAMEL_RE = rb"(?i)[a-z]+"
 HEX_RE = rb"(?i)[a-f0-9]+"
 MIN_B64_CHARS = 6
+
+
+def pad_base64(b64: bytes) -> bytes:
+    """Force base64 that is the wrong length to be decodable.
+
+    If the length is 1 or 2 characters from a multiple of 4, it is padded with '='s.
+    If the length is 3 from a multiple of 4 the last character is removed.
+    If the length is a multiple of 4 it is returned unchanged.
+    """
+    padding = -len(b64) % 4
+    if not padding:
+        return b64
+    if padding == 3:
+        return b64[:-1]  # Corrupted end, just keep the valid part
+    return b64 + b"=" * padding
+
+
+@decoder
+def find_atob(data: bytes) -> list[Node]:
+    """Find the javascript base64 decoding function atob and decode its argument."""
+    out: list[Node] = []
+    for match in re.finditer(rb"atob\(\'([A-Za-z0-9+/]+={0,2})\'\)", data):
+        try:
+            b64 = binascii.a2b_base64(match.group(1))
+            out.append(Node("javascript.string", b64, "encoding.base64", *match.span()))
+        except binascii.Error:
+            continue
+    return out
 
 
 @decoder
@@ -93,25 +116,17 @@ def find_Base64Decode(data: bytes) -> list[Node]:
 def find_FromBase64String(data: bytes) -> list[Node]:
     """
     Find the powershell function FromBase64String and decode its argument
+
+    Supported by https://github.com/CYB3RMX/Qu1cksc0pe/blob/1a349826b248e578b0a2ec8b152eeeddf059c388/Modules/powershell_analyzer.py#L53
     """
     out: list[Node] = []
-    xorkey = re.search(rb"(?i)-b?xor\s*(\d{1,3})", data)
+    xorkey = get_xorkey(data)
     for match in re.finditer(FROMB64STRING_RE, data):
         try:
             b64 = binascii.a2b_base64(match.group(2))
             b64_node = Node("powershell.bytes", b64, "encoding.base64", *match.span())
             if xorkey:
-                key = int(xorkey.group(1))
-                b64 = bytes(b ^ key for b in b64)
-                b64_node.children.append(
-                    Node(
-                        "powershell.bytes",
-                        b64,
-                        "cipher.xor" + str(key),
-                        end=len(b64),
-                        parent=b64_node,
-                    )
-                )
+                b64_node = apply_xor_key(xorkey, b64, b64_node, "powershell.bytes")
             out.append(b64_node)
         except binascii.Error:
             continue

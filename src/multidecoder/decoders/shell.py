@@ -4,12 +4,15 @@ import binascii
 
 import regex as re
 
+from multidecoder.decoders.base64 import pad_base64
 from multidecoder.decoders.concat import DOUBLE_QUOTE_ESCAPES
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 
 CMD_RE = b"(?i)\\bc\\^?m\\^?d(?:" + DOUBLE_QUOTE_ESCAPES + rb'|[^)"\x00])*'
-POWERSHELL_INDICATOR_RE = rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
+POWERSHELL_INDICATOR_RE = (
+    rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])?\b(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
+)
 SH_RE = rb'"(\s*(?:sh|bash|zsh|csh)[^"]+)"'
 ENC_RE = (
     rb"(?i)\s\^?(?:-|/)\^?e\^?(?:c|n\^?(?:c\^?(?:o\^?(?:d\^?(?:e\^?(?:d\^?(?:c\^?(?:o\^?(?:m"
@@ -88,18 +91,18 @@ def find_powershell_strings(data: bytes) -> list[Node]:
                 end = len(data) - start
                 powershell = data[start:]
         deobfuscated, obfuscation = deobfuscate_cmd(powershell)
-        cmd_node = (
-            Node("shell.cmd", deobfuscated, obfuscation, start, end)
-            if obfuscation
-            else None
-        )
+        cmd_node = Node("shell.cmd", deobfuscated, obfuscation, start, end) if obfuscation else None
         if enc:
             split = deobfuscated.split()
-            b64 = (
-                binascii.a2b_base64(_pad(split[-1].strip(b"'\"")))
-                .decode("utf-16", errors="ignore")
-                .encode()
-            )
+            b64 = binascii.a2b_base64(pad_base64(split[-1].strip(b"'\""))).decode("utf-16", errors="ignore").encode()
+
+            # The powershell binary/command itself is at split[0]
+            if (not split[0].startswith(b'"') and split[0].endswith(b'"')) or (
+                not split[0].startswith(b"'") and split[0].endswith(b"'")
+            ):
+                # Remove the trailing quotation
+                split[0] = split[0][:-1]
+
             deobfuscated = b" ".join(split[:-2]) + b" -Command " + b64
             if cmd_node:
                 cmd_node.children.append(
@@ -139,16 +142,6 @@ def find_powershell_strings(data: bytes) -> list[Node]:
     return out
 
 
-def _pad(b64: bytes) -> bytes:
-    padding = -len(b64) % 4
-    if padding == 3:
-        return b64[:-1]  # Corrupted end, just keep the valid part
-    elif padding:
-        return b64 + b"=" * padding
-    else:
-        return b64
-
-
 def get_cmd_command(cmd: bytes) -> bytes:
     # Find end of argument string
     end = re.search(rb"(?i)&|/(c|k|r)", cmd)
@@ -158,10 +151,7 @@ def get_cmd_command(cmd: bytes) -> bytes:
     if end.group() != b'"' and arg.startswith(b'"'):
         # strip leading and final quote
         index = arg.rfind(b'"')
-        if index > 0:
-            arg = arg[1:index] + arg[index + 1 :]
-        else:
-            arg = arg[1:]
+        arg = arg[1:index] + arg[index + 1 :] if index > 0 else arg[1:]
 
     # return everything after the arguments
     return arg
@@ -169,7 +159,4 @@ def get_cmd_command(cmd: bytes) -> bytes:
 
 def get_powershell_command(powershell: bytes) -> bytes:
     match = re.match(POWERSHELL_ARGS_RE, powershell)
-    if match:
-        return powershell[match.end() :]
-    else:
-        return powershell
+    return powershell[match.end() :] if match else powershell

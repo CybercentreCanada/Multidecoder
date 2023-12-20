@@ -31,10 +31,7 @@ def find_pe_files(data: bytes) -> list[Node]:
             return pe_files
         try:
             pe = pefile.PE(data=pe_data)
-            size = max(
-                section.PointerToRawData + section.SizeOfRawData
-                for section in pe.sections
-            )
+            size = max(section.PointerToRawData + section.SizeOfRawData for section in pe.sections)
             if size == 0:
                 return pe_files
             end = offset + size

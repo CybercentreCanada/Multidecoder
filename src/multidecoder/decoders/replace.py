@@ -6,39 +6,11 @@ from multidecoder.decoders.concat import STRING_RE
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 
-REPLACE_RE = (
-    rb"(?i)("
-    + STRING_RE
-    + rb")\.replace\(\s*("
-    + STRING_RE
-    + rb")\s*,\s*("
-    + STRING_RE
-    + rb")\s*\)"
-)
-VBA_REPLACE_RE = (
-    rb"(?i)replace\(\s*("
-    + STRING_RE
-    + rb")\s*,\s*("
-    + STRING_RE
-    + rb")\s*,\s*("
-    + STRING_RE
-    + rb")\s*\)"
-)
-POWERSHELL_REPLACE_RE = (
-    rb"(?i)("
-    + STRING_RE
-    + rb")\s*-replace\s*("
-    + STRING_RE
-    + rb")\s*,\s*("
-    + STRING_RE
-    + rb")"
-)
+REPLACE_RE = rb"(?i)(" + STRING_RE + rb")\.replace\(\s*(" + STRING_RE + rb")\s*,\s*(" + STRING_RE + rb")\s*\)"
+VBA_REPLACE_RE = rb"(?i)replace\(\s*(" + STRING_RE + rb")\s*,\s*(" + STRING_RE + rb")\s*,\s*(" + STRING_RE + rb")\s*\)"
+POWERSHELL_REPLACE_RE = rb"(?i)(" + STRING_RE + rb")\s*-replace\s*(" + STRING_RE + rb")\s*,\s*(" + STRING_RE + rb")"
 JS_REGEX_REPLACE_RE = (
-    rb"(?i)("
-    + STRING_RE
-    + rb")\.replace\(/([^/[\](){}\\.+*?^$,]+)/[gim]{0,3}\s*,\s*("
-    + STRING_RE
-    + rb")\s*\)"
+    rb"(?i)(" + STRING_RE + rb")\.replace\(/([^/[\](){}\\.+*?^$,]+)/[gim]{0,3}\s*,\s*(" + STRING_RE + rb")\s*\)"
 )
 
 

