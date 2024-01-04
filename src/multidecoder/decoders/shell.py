@@ -9,7 +9,7 @@ from multidecoder.decoders.concat import DOUBLE_QUOTE_ESCAPES
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 
-CMD_RE = b"(?i)\\bc\\^?m\\^?d(?:" + DOUBLE_QUOTE_ESCAPES + rb'|[^)"\x00])*'
+CMD_RE = b"(?i)\\bc\\^?m\\^?d(?:" + DOUBLE_QUOTE_ESCAPES + rb'|[^)\x00])*'
 POWERSHELL_INDICATOR_RE = (
     rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])?\b(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
 )
@@ -52,11 +52,24 @@ def deobfuscate_cmd(cmd: bytes) -> tuple[bytes, str]:
 
 @decoder
 def find_cmd_strings(data: bytes) -> list[Node]:
-    return [
-        Node("shell.cmd", *deobfuscate_cmd(match.group()), *match.span())
-        for match in re.finditer(CMD_RE, data)
-        if match.group().lower().strip() not in (b"cmd", b"cmd.exe")
-    ]
+    cmd_strings = []
+    for match in re.finditer(CMD_RE, data):
+        if match.group().lower().strip() not in (b"cmd", b"cmd.exe"):
+            deobfuscated, obfuscation = deobfuscate_cmd(match.group())
+
+            split = deobfuscated.split()
+
+            # The cmd binary/command itself is at split[0]
+            if (not split[0].startswith(b'"') and split[0].endswith(b'"')) or (
+                not split[0].startswith(b"'") and split[0].endswith(b"'")
+            ):
+                # Remove the trailing quotation
+                split[0] = split[0][:-1]
+                deobfuscated = b" ".join(split)
+
+            cmd_string = Node("shell.cmd", deobfuscated, obfuscation, *match.span())
+            cmd_strings.append(cmd_string)
+    return cmd_strings
 
 
 @decoder
