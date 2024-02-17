@@ -43,7 +43,7 @@ URL_RE = (
     rb"(?i)(?:ftp|https?)://"  # scheme
     rb"(?:[\w!$-.:;=~@]{,2000}@)?"  # userinfo
     rb"(?:(?!%5B)[%A-Z0-9.-]{4,253}|(?:\[|%5B)[%0-9A-F:]{3,117}(?:\]|%5D))"  # host
-    rb"(?::[0-9]{0,5})?"  # port
+    rb"(?::[0-6]?[0-9]{0,4})?"  # port
     rb"(?:[/?#](?:[\w!#-/:;=@?~]{,2000}[\w!#-&(*+\-/:;=@?~])?)?"  # path, query and fragment
     # The final char class stops urls from ending in ' ) , or .
     # to prevent trailing characters from being included in the url.
@@ -95,6 +95,7 @@ def is_url(url: bytes) -> bool:
     """
     try:
         split = urlsplit(url)
+        split.port  # urlsplit.port is a property that does validation and raises ValueError if it fails.
     except ValueError:
         return False
     return bool(split.scheme and split.hostname and split.scheme in (b"http", b"https", b"ftp"))
@@ -205,9 +206,12 @@ def parse_url(url_text: bytes) -> list[Node]:
             Node(
                 "network.url.scheme",
                 url.scheme,
-                MIXED_CASE_OBF
-                # url.scheme is normalized by urlsplit
-                if url_text[0 : len(url.scheme)] not in (url.scheme, url.scheme.upper()) else "",
+                (
+                    MIXED_CASE_OBF
+                    # url.scheme is normalized by urlsplit
+                    if url_text[0 : len(url.scheme)] not in (url.scheme, url.scheme.upper())
+                    else ""
+                ),
                 0,
                 len(url.scheme),
             )
