@@ -5,7 +5,7 @@ import regex as re
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 
-CHR_RE = rb"(?i)chr[bw]?\((\d{0,5})\)"
+CHR_RE = rb"(?i)chr[bw]?\((0*\d{1,5})\)"
 
 
 @decoder
