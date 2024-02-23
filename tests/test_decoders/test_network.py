@@ -93,6 +93,17 @@ def test_DOMAIN_RE_match(domain):
     assert re.match(DOMAIN_RE, domain).end() == len(domain)
 
 
+@pytest.mark.parametrize(
+    "domain",
+    [
+        b"C:\\path\\looks-like-a-domain.com",
+        b"C:\\path\\looks.like.a.domain.com",
+    ],
+)
+def test_DOMAIN_RE_false_positives(domain):
+    assert not re.search(DOMAIN_RE, domain)
+
+
 def test_is_valid_domain_re():
     assert is_domain(b"website.com")
     assert not is_domain(b"website.notatld")
