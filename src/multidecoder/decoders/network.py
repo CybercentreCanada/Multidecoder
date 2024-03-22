@@ -123,16 +123,30 @@ def find_ips(data: bytes) -> list[Node]:
 @decoder
 def find_urls(data: bytes) -> list[Node]:
     """Find URLs in data"""
-    return [
-        Node(
-            URL_TYPE,
-            *normalize_percent_encoding(match.group()),
-            *match.span(),
-            children=parse_url(match.group()),
+    # Todo: blunt hack to approximate context
+    # need to do actual context aware search
+    contexts = {
+        ord("'"): ord("'"),
+        ord("{"): ord("}"),
+        ord("("): ord(")"),
+    }
+    out = []
+    for match in re.finditer(URL_RE, data):
+        group = match.group()
+        prev = data[match.start() - 1]
+        if prev in contexts:
+            group = group[: group.find(contexts[prev])]
+        if not is_url(group):
+            continue
+        out.append(
+            Node(
+                URL_TYPE,
+                *normalize_percent_encoding(group),
+                *match.span(),
+                children=parse_url(group),
+            )
         )
-        for match in re.finditer(URL_RE, data)
-        if is_url(match.group())
-    ]
+    return out
 
 
 def parse_ip(ip: bytes) -> Node:
