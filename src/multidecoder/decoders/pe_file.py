@@ -1,42 +1,35 @@
 from __future__ import annotations
 
+import struct
+
 import pefile
 import regex as re
 
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 
-EXEDOS_RE = rb"(?s)This program cannot be run in DOS mode"
-EXEHEADER_RE = rb"(?s)MZ.{32,1024}PE\000\000"
+E_ELFANEW_OFFSET = 0x3C
 
 
 @decoder
 def find_pe_files(data: bytes) -> list[Node]:
-    """
-    Searches for any PE files within data
-
-    Args:
-        data: The data to search
-    Returns:
-        A list of found PE files
-    """
+    """Searches for any PE files within data."""
     pe_files: list[Node] = []
-    offset = 0
-    while offset < len(data):
-        match = re.search(EXEHEADER_RE, data)
-        if not match:
-            return pe_files
-        pe_data = data[offset:]
-        if not re.search(EXEDOS_RE, pe_data):
-            return pe_files
+    # Regex is faster here than anything with str.find
+    # because for str.find the loop has to be implemented in python
+    for match in re.finditer(b"MZ", data):
+        mz_offset = match.start()
+        (e_elfanew,) = struct.unpack_from("<I", data, mz_offset + E_ELFANEW_OFFSET)
+        pe_offset = mz_offset + e_elfanew
+        if data[pe_offset : pe_offset + 4] != b"PE\0\0":
+            continue
         try:
-            pe = pefile.PE(data=pe_data)
+            pe = pefile.PE(data=data[mz_offset:])
             size = max(section.PointerToRawData + section.SizeOfRawData for section in pe.sections)
             if size == 0:
-                return pe_files
-            end = offset + size
-            pe_files.append(Node("pe_file", data[offset:end], "", offset, end))
-            offset = end
-        except Exception:
+                continue
+            end = mz_offset + size
+            pe_files.append(Node("pe_file", data[mz_offset:end], "", mz_offset, end))
+        except pefile.PEFormatError:
             return pe_files
     return pe_files
