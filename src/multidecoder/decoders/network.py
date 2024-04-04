@@ -127,14 +127,13 @@ def find_urls(data: bytes) -> list[Node]:
     # need to do actual context aware search
     contexts = {
         ord("'"): ord("'"),
-        ord("{"): ord("}"),
         ord("("): ord(")"),
     }
     out = []
     for match in re.finditer(URL_RE, data):
         group = match.group()
         prev = data[match.start() - 1]
-        if prev in contexts:
+        if match.start() != 0 and prev in contexts:
             group = group[: group.find(contexts[prev])]
         if not is_url(group):
             continue

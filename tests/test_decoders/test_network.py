@@ -255,18 +255,44 @@ def test_is_url():
     assert is_url(b"https://some.domain.com")
 
 
-def test_find_url():
-    assert find_urls(b"'https://example.com/path'after_the_url") == [
-        Node(
-            "network.url",
-            b"https://example.com/path",
-            "",
-            1,
-            39,
-            children=[
-                Node("network.url.scheme", b"https", "", 0, 5),
-                Node("network.domain", b"example.com", "", 8, 19),
-                Node("network.url.path", b"/path", "", 19, 24),
+@pytest.mark.parametrize(
+    ("data", "urls"),
+    [
+        (
+            b"'https://example.com/path'after_the_url",
+            [
+                Node(
+                    "network.url",
+                    b"https://example.com/path",
+                    "",
+                    1,
+                    39,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.com", "", 8, 19),
+                        Node("network.url.path", b"/path", "", 19, 24),
+                    ],
+                )
             ],
-        )
-    ]
+        ),
+        (
+            b"https://example.com/path'still_the_url'",
+            [
+                Node(
+                    "network.url",
+                    b"https://example.com/path'still_the_url",
+                    "",
+                    0,
+                    38,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.com", "", 8, 19),
+                        Node("network.url.path", b"/path'still_the_url", "", 19, 38),
+                    ],
+                )
+            ],
+        ),
+    ],
+)
+def test_find_url(data, urls):
+    assert find_urls(data) == urls
