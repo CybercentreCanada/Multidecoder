@@ -44,8 +44,8 @@ URL_RE = (
     rb"(?:[\w!$-.:;=~@]{,2000}@)?"  # userinfo
     rb"(?:(?!%5B)[%A-Z0-9.-]{4,253}|(?:\[|%5B)[%0-9A-F:]{3,117}(?:\]|%5D))"  # host
     rb"(?::[0-6]?[0-9]{0,4})?"  # port
-    rb"(?:[/?#](?:[\w!#-/:;=@?~]{,2000}[\w!#-&(*+\-/:;=@?~])?)?"  # path, query and fragment
-    # The final char class stops urls from ending in ' ) , or .
+    rb"(?:[/?#](?:[\w!#-/:;=@?~]{,2000}[\w!#-&(*+\-/:=@?~])?)?"  # path, query and fragment
+    # The final char class stops urls from ending in ' ) , . or ;
     # to prevent trailing characters from being included in the url.
 )
 

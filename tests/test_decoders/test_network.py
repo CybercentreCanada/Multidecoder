@@ -243,6 +243,7 @@ def test_URL_RE_matches(url):
         ),
         (b"barefunction(https://example.com) works", b"https://example.com"),
         (b'in a string content "https://example.com"works.', b"https://example.com"),
+        (b"'https://example.com/'; ", b"https://example.com/"),
     ],
 )
 def test_URL_RE_context(data, url):
