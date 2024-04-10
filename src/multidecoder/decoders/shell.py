@@ -5,11 +5,10 @@ import binascii
 import regex as re
 
 from multidecoder.decoders.base64 import pad_base64
-from multidecoder.decoders.concat import DOUBLE_QUOTE_ESCAPES
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 
-CMD_RE = b"(?i)\\bc\\^?m\\^?d(?:" + DOUBLE_QUOTE_ESCAPES + rb'|[^)\x00])*'
+CMD_RE = rb"(?i)\bc\^?m\^?d[^a-z0-9_`)?.-][^)\x00]+"
 POWERSHELL_INDICATOR_RE = (
     rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])?\b(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
 )
