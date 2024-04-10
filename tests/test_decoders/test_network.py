@@ -7,6 +7,7 @@ from multidecoder.decoders.network import (
     IP_RE,
     URL_RE,
     # find_domains,
+    find_ips,
     is_domain,
     is_url,
     parse_ip,
@@ -75,6 +76,14 @@ def test_IP_RE_context(data, ip):
 
 def test_parse_ip():
     assert parse_ip(b"8.8.8.8") == Node("network.ip", b"8.8.8.8", "", 0, 7)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [b"<si><t>1.1.1.4</t></si>", b"ProductVersion\x004.0.0.0\x00", b"FileVersion\x004.0.0.0\x00", b"Version=4.0.0.0"],
+)
+def test_find_ips_false_positives(data):
+    assert find_ips(data) == []
 
 
 # Domain ----------------------------------------
@@ -221,7 +230,8 @@ def test_email_re():
         b"%30%30%30%30%3a%30%30%30%30%3a%30%30%30%30%3a%30%30%30%31]",
         # Browser dependent, none of these work in Firefox.
         b"http://%5B%3A%3A1%5D",  # this works in Edge, but not Chrome.
-        b"http://%5B%3A%3A1]",  # This works in Chrome and Edge, the colons have to be percent encoded.
+        b"http://%5B%3A%3A1]",  # This works in Chrome and Edge.
+        b"http://%5B::1]",  # The colons used to have to be percent encoded in edge and chrome, but not anymore.
         b"http://[::1%5D",  # You wouldn't think this would work, but it still does on Chrome and Edge.
         b"http://[::1%5D/path",  # Even handles the rest of the url just fine.
     ],

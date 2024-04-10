@@ -117,7 +117,18 @@ def find_emails(data: bytes) -> list[Node]:
 @decoder
 def find_ips(data: bytes) -> list[Node]:
     """Find ip addresses in data"""
-    return [parse_ip(match.group()).shift(match.start()) for match in re.finditer(IP_RE, data) if is_ip(match.group())]
+    out = []
+    for match in re.finditer(IP_RE, data):
+        ip = match.group()
+        if not is_ip(ip):
+            continue
+        start, end = match.span()
+        if data[start - 3 : start] == b"<t>" and data[end : end + 4] == b"</t>":
+            continue  # xml section numbering
+        if data[start - 8 : start - 1] == b"Version" and data[start - 1 : start] in (b"\0", b"="):
+            continue  # version number, not an ip address
+        out.append(parse_ip(match.group()).shift(match.start()))
+    return out
 
 
 @decoder
