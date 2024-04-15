@@ -29,7 +29,7 @@ IP_OBF = "ip_obfuscation"
 # Regexes
 _OCTET_RE = rb"(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})"
 
-DOMAIN_RE = rb"(?i)\b(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z.-])"
+DOMAIN_RE = rb"(?i)(?<![-\w.\\])(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z.-])"
 EMAIL_RE = rb"(?i)\b[a-z0-9._%+-]{3,}@(" + DOMAIN_RE[4:] + rb")\b"
 
 IP_RE = rb"(?i)(?<![\w.])(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"(?![\w.])"
@@ -44,8 +44,8 @@ URL_RE = (
     rb"(?:[\w!$-.:;=~@]{,2000}@)?"  # userinfo
     rb"(?:(?!%5B)[%A-Z0-9.-]{4,253}|(?:\[|%5B)[%0-9A-F:]{3,117}(?:\]|%5D))"  # host
     rb"(?::[0-6]?[0-9]{0,4})?"  # port
-    rb"(?:[/?#](?:[\w!#-/:;=@?~]{,2000}[\w!#-&(*+\-/:;=@?~])?)?"  # path, query and fragment
-    # The final char class stops urls from ending in ' ) , or .
+    rb"(?:[/?#](?:[\w!#-/:;=@?~]{,2000}[\w!#-&(*+\-/:=@?~])?)?"  # path, query and fragment
+    # The final char class stops urls from ending in ' ) , . or ;
     # to prevent trailing characters from being included in the url.
 )
 
@@ -117,22 +117,46 @@ def find_emails(data: bytes) -> list[Node]:
 @decoder
 def find_ips(data: bytes) -> list[Node]:
     """Find ip addresses in data"""
-    return [parse_ip(match.group()).shift(match.start()) for match in re.finditer(IP_RE, data) if is_ip(match.group())]
+    out = []
+    for match in re.finditer(IP_RE, data):
+        ip = match.group()
+        if not is_ip(ip):
+            continue
+        start, end = match.span()
+        if data[start - 3 : start] == b"<t>" and data[end : end + 4] == b"</t>":
+            continue  # xml section numbering
+        if data[start - 8 : start - 1] == b"Version" and data[start - 1 : start] in (b"\0", b"="):
+            continue  # version number, not an ip address
+        out.append(parse_ip(match.group()).shift(match.start()))
+    return out
 
 
 @decoder
 def find_urls(data: bytes) -> list[Node]:
     """Find URLs in data"""
-    return [
-        Node(
-            URL_TYPE,
-            *normalize_percent_encoding(match.group()),
-            *match.span(),
-            children=parse_url(match.group()),
+    # Todo: blunt hack to approximate context
+    # need to do actual context aware search
+    contexts = {
+        ord("'"): ord("'"),
+        ord("("): ord(")"),
+    }
+    out = []
+    for match in re.finditer(URL_RE, data):
+        group = match.group()
+        prev = data[match.start() - 1]
+        if match.start() != 0 and prev in contexts:
+            group = group[: group.find(contexts[prev])]
+        if not is_url(group):
+            continue
+        out.append(
+            Node(
+                URL_TYPE,
+                *normalize_percent_encoding(group),
+                *match.span(),
+                children=parse_url(group),
+            )
         )
-        for match in re.finditer(URL_RE, data)
-        if is_url(match.group())
-    ]
+    return out
 
 
 def parse_ip(ip: bytes) -> Node:

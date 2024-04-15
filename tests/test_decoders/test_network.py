@@ -6,7 +6,9 @@ from multidecoder.decoders.network import (
     EMAIL_RE,
     IP_RE,
     URL_RE,
+    find_urls,
     # find_domains,
+    find_ips,
     is_domain,
     is_url,
     parse_ip,
@@ -77,6 +79,14 @@ def test_parse_ip():
     assert parse_ip(b"8.8.8.8") == Node("network.ip", b"8.8.8.8", "", 0, 7)
 
 
+@pytest.mark.parametrize(
+    "data",
+    [b"<si><t>1.1.1.4</t></si>", b"ProductVersion\x004.0.0.0\x00", b"FileVersion\x004.0.0.0\x00", b"Version=4.0.0.0"],
+)
+def test_find_ips_false_positives(data):
+    assert find_ips(data) == []
+
+
 # Domain ----------------------------------------
 
 
@@ -91,6 +101,17 @@ def test_parse_ip():
 def test_DOMAIN_RE_match(domain):
     """Test that DOMAIN_RE matches expected domains"""
     assert re.match(DOMAIN_RE, domain).end() == len(domain)
+
+
+@pytest.mark.parametrize(
+    "domain",
+    [
+        b"C:\\path\\looks-like-a-domain.com",
+        b"C:\\path\\looks.like.a.domain.com",
+    ],
+)
+def test_DOMAIN_RE_false_positives(domain):
+    assert not re.search(DOMAIN_RE, domain)
 
 
 def test_is_valid_domain_re():
@@ -210,7 +231,8 @@ def test_email_re():
         b"%30%30%30%30%3a%30%30%30%30%3a%30%30%30%30%3a%30%30%30%31]",
         # Browser dependent, none of these work in Firefox.
         b"http://%5B%3A%3A1%5D",  # this works in Edge, but not Chrome.
-        b"http://%5B%3A%3A1]",  # This works in Chrome and Edge, the colons have to be percent encoded.
+        b"http://%5B%3A%3A1]",  # This works in Chrome and Edge.
+        b"http://%5B::1]",  # The colons used to have to be percent encoded in edge and chrome, but not anymore.
         b"http://[::1%5D",  # You wouldn't think this would work, but it still does on Chrome and Edge.
         b"http://[::1%5D/path",  # Even handles the rest of the url just fine.
     ],
@@ -232,6 +254,7 @@ def test_URL_RE_matches(url):
         ),
         (b"barefunction(https://example.com) works", b"https://example.com"),
         (b'in a string content "https://example.com"works.', b"https://example.com"),
+        (b"'https://example.com/'; ", b"https://example.com/"),
     ],
 )
 def test_URL_RE_context(data, url):
@@ -241,3 +264,63 @@ def test_URL_RE_context(data, url):
 
 def test_is_url():
     assert is_url(b"https://some.domain.com")
+
+
+@pytest.mark.parametrize(
+    ("data", "urls"),
+    [
+        (
+            b" https://example.com/path'),.;still_url ",
+            [
+                Node(
+                    "network.url",
+                    b"https://example.com/path'),.;still_url",
+                    "",
+                    1,
+                    39,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.com", "", 8, 19),
+                        Node("network.url.path", b"/path'),.;still_url", "", 19, 38),
+                    ],
+                )
+            ],
+        ),
+        (
+            b"'https://example.com/path'after_the_url",
+            [
+                Node(
+                    "network.url",
+                    b"https://example.com/path",
+                    "",
+                    1,
+                    39,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.com", "", 8, 19),
+                        Node("network.url.path", b"/path", "", 19, 24),
+                    ],
+                )
+            ],
+        ),
+        (
+            b"https://example.com/path'still_the_url'",
+            [
+                Node(
+                    "network.url",
+                    b"https://example.com/path'still_the_url",
+                    "",
+                    0,
+                    38,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.com", "", 8, 19),
+                        Node("network.url.path", b"/path'still_the_url", "", 19, 38),
+                    ],
+                )
+            ],
+        ),
+    ],
+)
+def test_find_url(data, urls):
+    assert find_urls(data) == urls
