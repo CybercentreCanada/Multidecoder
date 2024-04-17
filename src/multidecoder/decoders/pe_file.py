@@ -23,13 +23,22 @@ def find_pe_files(data: bytes) -> list[Node]:
         pe_offset = mz_offset + e_elfanew
         if data[pe_offset : pe_offset + 4] != b"PE\0\0":
             continue
-        try:
-            pe = pefile.PE(data=data[mz_offset:])
-            size = max(section.PointerToRawData + section.SizeOfRawData for section in pe.sections)
-            if size == 0:
-                continue
-            end = mz_offset + size
-            pe_files.append(Node("pe_file", data[mz_offset:end], "", mz_offset, end))
-        except pefile.PEFormatError:
-            return pe_files
+        size = pe_size(data[mz_offset:])
+        if size == 0:
+            continue
+        end = mz_offset + size
+        pe_files.append(Node("pe_file", data[mz_offset:end], "", mz_offset, end))
     return pe_files
+
+
+def pe_size(pe_data) -> int:
+    """Find the end of a PE file.
+
+    If there is a parsable PE file at the start of pe_data this function returns the offset of the end of that PE file
+    Otherwise it returns 0. Uses the pefile library to parse the PE.
+    """
+    try:
+        pe = pefile.PE(pe_data)
+        return max(section.PointerToRawData + section.SizeOfRawData for section in pe.sections)
+    except pefile.PEFormatError:
+        return 0
