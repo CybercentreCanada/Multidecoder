@@ -45,6 +45,6 @@ def pe_size(pe_data) -> int:
     """
     try:
         pe = pefile.PE(pe_data)
-        return max(section.PointerToRawData + section.SizeOfRawData for section in pe.sections)
+        return max((section.PointerToRawData + section.SizeOfRawData for section in pe.sections), default=0)
     except pefile.PEFormatError:
         return 0
