@@ -6,9 +6,9 @@ from multidecoder.decoders.network import (
     EMAIL_RE,
     IP_RE,
     URL_RE,
-    find_urls,
     # find_domains,
     find_ips,
+    find_urls,
     is_domain,
     is_url,
     parse_ip,
@@ -294,7 +294,7 @@ def test_is_url():
                     b"https://example.com/path",
                     "",
                     1,
-                    39,
+                    24,
                     children=[
                         Node("network.url.scheme", b"https", "", 0, 5),
                         Node("network.domain", b"example.com", "", 8, 19),
@@ -316,6 +316,22 @@ def test_is_url():
                         Node("network.url.scheme", b"https", "", 0, 5),
                         Node("network.domain", b"example.com", "", 8, 19),
                         Node("network.url.path", b"/path'still_the_url", "", 19, 38),
+                    ],
+                )
+            ],
+        ),
+        (
+            b"'https://example.com",
+            [
+                Node(
+                    "network.url",
+                    b"https://example.com",
+                    "",
+                    1,
+                    20,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.com", "", 8, 19),
                     ],
                 )
             ],
