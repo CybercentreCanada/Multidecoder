@@ -143,16 +143,21 @@ def find_urls(data: bytes) -> list[Node]:
     out = []
     for match in re.finditer(URL_RE, data):
         group = match.group()
-        prev = data[match.start() - 1]
-        if match.start() != 0 and prev in contexts:
-            group = group[: group.find(contexts[prev])]
+        start, end = match.span()
+        prev = data[start - 1]
+        if start != 0 and prev in contexts:
+            close = group.find(contexts[prev])
+            if close > -1:
+                end = close
+                group = group[:end]
         if not is_url(group):
             continue
         out.append(
             Node(
                 URL_TYPE,
                 *normalize_percent_encoding(group),
-                *match.span(),
+                start,
+                end,
                 children=parse_url(group),
             )
         )
