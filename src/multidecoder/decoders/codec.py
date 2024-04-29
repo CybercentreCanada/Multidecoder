@@ -1,6 +1,7 @@
 """
 Character encodings
 """
+
 from __future__ import annotations
 
 import regex as re
@@ -8,7 +9,7 @@ import regex as re
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 
-UTF16_RE = rb"(?s)(?:[^\x00-\x08\x0e-\x1f\x7f-\x9f]\x00){14,}"
+UTF16_RE = rb"(?s)(?:[^\x00-\x08\x0e-\x1f\x7f-\x9f]\x00){7,}"
 
 
 @decoder
