@@ -129,7 +129,8 @@ def find_ips(data: bytes) -> list[Node]:
         start, end = match.span()
         if data[start - 3 : start] == b"<t>" and data[end : end + 4] == b"</t>":
             continue  # xml section numbering
-        if data[start - 8 : start - 1] == b"Version" and data[start - 1 : start] in (b"\0", b"="):
+        offset = data.rfind(b"Version", start - 10, start)
+        if offset >= 0 and re.match(rb"[\x00=\s]+$", data[offset + 7 : start]):
             continue  # version number, not an ip address
         out.append(parse_ip(match.group()).shift(match.start()))
     return out
@@ -149,7 +150,13 @@ def find_urls(data: bytes) -> list[Node]:
         group = match.group()
         start, end = match.span()
         prev = data[start - 1]
-        if start != 0 and prev in contexts:
+        if start == 0:
+            pass  # No context
+        elif group[prev : prev + 1] == b"0":
+            # Pascal string in PE file
+            end = start + prev
+            group = group[:prev]
+        elif prev in contexts:
             close = group.find(contexts[prev])
             if close > -1:
                 end = close
