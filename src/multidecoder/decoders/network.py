@@ -105,7 +105,11 @@ def is_url(url: bytes) -> bool:
 @decoder
 def find_domains(data: bytes) -> list[Node]:
     """Find domains in data"""
-    return [match_to_hit(DOMAIN_TYPE, match) for match in re.finditer(DOMAIN_RE, data) if is_domain(match.group())]
+    return [
+        match_to_hit(DOMAIN_TYPE, match)
+        for match in re.finditer(DOMAIN_RE, data)
+        if is_domain(match.group()) and len(match.group()) >= 6
+    ]
 
 
 @decoder
