@@ -105,10 +105,15 @@ def is_url(url: bytes) -> bool:
 @decoder
 def find_domains(data: bytes) -> list[Node]:
     """Find domains in data"""
+    # Common domain false positives
+    domain_fpos = {b"wscript.shell"}
     return [
         match_to_hit(DOMAIN_TYPE, match)
         for match in re.finditer(DOMAIN_RE, data)
-        if is_domain(match.group()) and len(match.group()) >= 6
+        if is_domain(match.group())
+        and len(match.group()) >= 6
+        and not re.match(b"[a-z]+[.][A-Z][a-z]+", match.group())
+        and match.group().lower() not in domain_fpos
     ]
 
 
