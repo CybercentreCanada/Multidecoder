@@ -81,7 +81,15 @@ def test_parse_ip():
 
 @pytest.mark.parametrize(
     "data",
-    [b"<si><t>1.1.1.4</t></si>", b"ProductVersion\x004.0.0.0\x00", b"FileVersion\x004.0.0.0\x00", b"Version=4.0.0.0"],
+    [
+        b"<si><t>1.1.1.4</t></si>",
+        b"ProductVersion\x004.0.0.0\x00",
+        b"FileVersion\x004.0.0.0\x00",
+        b"Version=4.0.0.0",
+        b"0.0.0.0",
+        b"Version\x00\x0012.3.0.0\x00",
+        b"Version = 4.0.0.0",
+    ],
 )
 def test_find_ips_false_positives(data):
     assert find_ips(data) == []

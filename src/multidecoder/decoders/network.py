@@ -131,10 +131,12 @@ def find_ips(data: bytes) -> list[Node]:
         ip = match.group()
         if not is_ip(ip):
             continue
+        if all(byte in b"0x." for byte in ip):
+            continue  # 0.0.0.0
         start, end = match.span()
         if data[start - 3 : start] == b"<t>" and data[end : end + 4] == b"</t>":
             continue  # xml section numbering
-        offset = data.rfind(b"Version", start - 10, start)
+        offset = data.rfind(b"Version", max(start - 10, 0), start)
         if offset >= 0 and re.match(rb"[\x00=\s]+$", data[offset + 7 : start]):
             continue  # version number, not an ip address
         out.append(parse_ip(match.group()).shift(match.start()))
