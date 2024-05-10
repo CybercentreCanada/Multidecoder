@@ -51,7 +51,8 @@ class Multidecoder:
             # Return to the context that contains the current hit
             while hit.end > offset + len(node.value):
                 offset -= node.start
-                node = stack.pop()
+                if stack:  # Todo: Log here
+                    node = stack.pop()
             hit.shift(-offset)
             # Prevent analyzer rematching its own decoded output
             if hit.start == 0 and hit.value == node.value and hit.type == node.type:
