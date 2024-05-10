@@ -5,7 +5,7 @@ from multidecoder.hit import find_and_deobfuscate
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 
-REVERSE_RE = rb"(?i)reverse\(\s*(" + STRING_RE + rb")\s*\)"
+REVERSE_RE = rb"(?i)reversed?\(\s*(" + STRING_RE + rb")\s*\)"
 
 
 @decoder
