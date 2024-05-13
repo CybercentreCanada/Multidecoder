@@ -133,7 +133,7 @@ def find_ips(data: bytes) -> list[Node]:
             continue
         if all(byte in b"0x." for byte in ip):
             continue  # 0.0.0.0
-        if ip.endswith(b".0") or ip.endswith(b".255"):
+        if ip.endswith((b".0", b".255")):
             continue  # Class C network identifier or broadcast address
         start, end = match.span()
         if data[start - 3 : start] == b"<t>" and data[end : end + 4] == b"</t>":
