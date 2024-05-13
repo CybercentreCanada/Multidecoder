@@ -295,14 +295,14 @@ def test_is_url():
             ],
         ),
         (
-            b"'https://example.com/path'after_the_url",
+            b"                              'https://example.com/path'after_the_url",
             [
                 Node(
                     "network.url",
                     b"https://example.com/path",
                     "",
-                    1,
-                    24,
+                    31,
+                    55,
                     children=[
                         Node("network.url.scheme", b"https", "", 0, 5),
                         Node("network.domain", b"example.com", "", 8, 19),

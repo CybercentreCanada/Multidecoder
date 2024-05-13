@@ -168,8 +168,8 @@ def find_urls(data: bytes) -> list[Node]:
         elif prev in contexts:
             close = group.find(contexts[prev])
             if close > -1:
-                end = close
-                group = group[:end]
+                end = start + close
+                group = group[:close]
         if not is_url(group):
             continue
         out.append(
