@@ -106,7 +106,7 @@ def is_url(url: bytes) -> bool:
 def find_domains(data: bytes) -> list[Node]:
     """Find domains in data"""
     # Common domain false positives
-    domain_fpos = {b"wscript.shell"}
+    domain_fpos = {b"wscript.shell", b"system.io"}
     return [
         match_to_hit(DOMAIN_TYPE, match)
         for match in re.finditer(DOMAIN_RE, data)
@@ -133,6 +133,8 @@ def find_ips(data: bytes) -> list[Node]:
             continue
         if all(byte in b"0x." for byte in ip):
             continue  # 0.0.0.0
+        if ip.endswith(b".0") or ip.endswith(b".255"):
+            continue  # Class C network identifier or broadcast address
         start, end = match.span()
         if data[start - 3 : start] == b"<t>" and data[end : end + 4] == b"</t>":
             continue  # xml section numbering
