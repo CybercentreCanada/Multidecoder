@@ -10,7 +10,8 @@ from multidecoder.node import Node
 from multidecoder.registry import decoder
 
 UTF16_RE = (
-    rb"(?s)(?:[^\x00-\x08\x0e-\x1f\x7f-\x9f]\x00){7,}(?:\x00\x00(?:\x00\x00)?[^\x00-\x08\x0e-\x1f\x7f-\x9f]\x00){7,})*"
+    rb"(?s)(?:[^\x00-\x08\x0e-\x1f\x7f-\x9f]\x00){7,}"
+    rb"(?:\x00\x00(?:\x00\x00)?(?:[^\x00-\x08\x0e-\x1f\x7f-\x9f]\x00){7,})*"
 )
 
 
