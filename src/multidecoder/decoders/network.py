@@ -105,7 +105,16 @@ def is_url(url: bytes) -> bool:
 @decoder
 def find_domains(data: bytes) -> list[Node]:
     """Find domains in data"""
-    return [match_to_hit(DOMAIN_TYPE, match) for match in re.finditer(DOMAIN_RE, data) if is_domain(match.group())]
+    # Common domain false positives
+    domain_fpos = {b"wscript.shell", b"system.io"}
+    return [
+        match_to_hit(DOMAIN_TYPE, match)
+        for match in re.finditer(DOMAIN_RE, data)
+        if is_domain(match.group())
+        and len(match.group()) >= 6
+        and not re.match(b"[a-z]+[.][A-Z][a-z]+", match.group())
+        and match.group().lower() not in domain_fpos
+    ]
 
 
 @decoder
@@ -122,10 +131,15 @@ def find_ips(data: bytes) -> list[Node]:
         ip = match.group()
         if not is_ip(ip):
             continue
+        if all(byte in b"0x." for byte in ip):
+            continue  # 0.0.0.0
+        if ip.endswith((b".0", b".255")):
+            continue  # Class C network identifier or broadcast address
         start, end = match.span()
         if data[start - 3 : start] == b"<t>" and data[end : end + 4] == b"</t>":
             continue  # xml section numbering
-        if data[start - 8 : start - 1] == b"Version" and data[start - 1 : start] in (b"\0", b"="):
+        offset = data.rfind(b"Version", max(start - 10, 0), start)
+        if offset >= 0 and re.match(rb"[\x00=\s]+$", data[offset + 7 : start]):
             continue  # version number, not an ip address
         out.append(parse_ip(match.group()).shift(match.start()))
     return out
@@ -145,11 +159,17 @@ def find_urls(data: bytes) -> list[Node]:
         group = match.group()
         start, end = match.span()
         prev = data[start - 1]
-        if start != 0 and prev in contexts:
+        if start == 0:
+            pass  # No context
+        elif group[prev : prev + 1] == b"0":
+            # Pascal string in PE file
+            end = start + prev
+            group = group[:prev]
+        elif prev in contexts:
             close = group.find(contexts[prev])
             if close > -1:
-                end = close
-                group = group[:end]
+                end = start + close
+                group = group[:close]
         if not is_url(group):
             continue
         out.append(

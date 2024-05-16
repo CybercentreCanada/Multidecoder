@@ -11,7 +11,8 @@ DOUBLE_QUOTE_STRING_RE = rb'"(?:' + DOUBLE_QUOTE_ESCAPES + rb'|[^"])*"'
 SINGLE_QUOTE_STRING_RE = rb"'(?:[^']|'')*'"
 STRING_RE = rb"(?:" + DOUBLE_QUOTE_STRING_RE + rb"|" + SINGLE_QUOTE_STRING_RE + rb")"
 # _ is VB line continuation character
-CONCAT_RE = rb"(?:" + STRING_RE + rb"[\s_]*(?:&|\+|&amp;)[\s_]*)+" + STRING_RE
+CONCAT_SPACER_RE = rb"[\s_]*(?:&|\+|&amp;)[\s_]*"
+CONCAT_RE = rb"(?:" + STRING_RE + CONCAT_SPACER_RE + rb")+" + STRING_RE
 
 
 @decoder
@@ -20,7 +21,7 @@ def find_concat(data: bytes) -> list[Node]:
     return [
         Node(
             "string",
-            b"".join(string[1:-1] for string in re.findall(STRING_RE, match.group())),
+            re.sub(rb"['\"]" + CONCAT_SPACER_RE + rb"['\"]", b"", match.group())[1:-1],
             "concatenation",
             match.start(),
             match.end(),

@@ -6,7 +6,7 @@ from multidecoder.decoders.network import (
     EMAIL_RE,
     IP_RE,
     URL_RE,
-    # find_domains,
+    find_domains,
     find_ips,
     find_urls,
     is_domain,
@@ -81,7 +81,17 @@ def test_parse_ip():
 
 @pytest.mark.parametrize(
     "data",
-    [b"<si><t>1.1.1.4</t></si>", b"ProductVersion\x004.0.0.0\x00", b"FileVersion\x004.0.0.0\x00", b"Version=4.0.0.0"],
+    [
+        b"<si><t>1.1.1.4</t></si>",
+        b"ProductVersion\x004.0.0.0\x00",
+        b"FileVersion\x004.0.0.0\x00",
+        b"Version=4.0.0.0",
+        b"0.0.0.0",
+        b"Version\x00\x0012.3.0.0\x00",
+        b"Version = 4.0.0.0",
+        b"1.0.0.0",
+        b"1.0.0.255",
+    ],
 )
 def test_find_ips_false_positives(data):
     assert find_ips(data) == []
@@ -156,6 +166,16 @@ def test_DOMAIN_RE_false_positive(data):
 def test_DOMAIN_RE_context(data, domain):
     """Test that DOMAIN_RE matches in context"""
     assert re.search(DOMAIN_RE, data).group() == domain
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"K.cA",
+    ],
+)
+def test_find_domaind_fpos(data):
+    assert find_domains(data) == []
 
 
 # Email -----------------------------------------
@@ -287,14 +307,14 @@ def test_is_url():
             ],
         ),
         (
-            b"'https://example.com/path'after_the_url",
+            b"                              'https://example.com/path'after_the_url",
             [
                 Node(
                     "network.url",
                     b"https://example.com/path",
                     "",
-                    1,
-                    24,
+                    31,
+                    55,
                     children=[
                         Node("network.url.scheme", b"https", "", 0, 5),
                         Node("network.domain", b"example.com", "", 8, 19),
@@ -329,6 +349,22 @@ def test_is_url():
                     "",
                     1,
                     20,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.com", "", 8, 19),
+                    ],
+                )
+            ],
+        ),
+        (
+            b"                    \x13https://example.com0thisisaftertheendoftheurl",
+            [
+                Node(
+                    "network.url",
+                    b"https://example.com",
+                    "",
+                    21,
+                    40,
                     children=[
                         Node("network.url.scheme", b"https", "", 0, 5),
                         Node("network.domain", b"example.com", "", 8, 19),
