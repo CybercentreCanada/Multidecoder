@@ -161,7 +161,7 @@ def find_urls(data: bytes) -> list[Node]:
         prev = data[start - 1]
         if start == 0:
             pass  # No context
-        elif group[prev : prev + 1] == b"0":
+        elif group[prev : prev + 1] == b"0" and not _is_printable(data[start - 10 : start]):
             # Pascal string in PE file
             end = start + prev
             group = group[:prev]
@@ -418,3 +418,10 @@ def normalize_path(path: bytes) -> tuple[bytes, str]:
         # Maintain starting / if the entire path is dot segments
         return b"/", "url.dotpath"
     return b"/".join(dotless), "url.dotpath" if len(dotless) < len(segments) else ""
+
+
+def _is_printable(b: bytes) -> bool:
+    try:
+        return b.decode("ascii").isprintable()
+    except UnicodeDecodeError:
+        return False

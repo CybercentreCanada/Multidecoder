@@ -275,6 +275,10 @@ def test_URL_RE_matches(url):
         (b"barefunction(https://example.com) works", b"https://example.com"),
         (b'in a string content "https://example.com"works.', b"https://example.com"),
         (b"'https://example.com/'; ", b"https://example.com/"),
+        (
+            b"webhook_url = 'https://discord.com/api/webhooks/1244340229192548423/hRSjv25n8leII_p1pKEJSFSIUr_dLBX0-EY8ZMW3rakLh682QX0zByEpotnryCtRfK_Z'",
+            b"https://discord.com/api/webhooks/1244340229192548423/hRSjv25n8leII_p1pKEJSFSIUr_dLBX0-EY8ZMW3rakLh682QX0zByEpotnryCtRfK_Z",
+        ),
     ],
 )
 def test_URL_RE_context(data, url):
