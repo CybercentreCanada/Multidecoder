@@ -136,7 +136,7 @@ def find_ips(data: bytes) -> list[Node]:
         if ip.endswith((b".0", b".255")):
             continue  # Class C network identifier or broadcast address
         start, end = match.span()
-        if data[start - 3 : start] == b"<t>" and data[end : end + 4] == b"</t>":
+        if re.match(rb"\s*>t(?::\w+)<", data[start - 1 :: -1]):
             continue  # xml section numbering
         offset = data.rfind(b"Version", max(start - 10, 0), start)
         if offset >= 0 and re.match(rb"[\x00=\s]+$", data[offset + 7 : start]):

@@ -91,6 +91,7 @@ def test_parse_ip():
         b"Version = 4.0.0.0",
         b"1.0.0.0",
         b"1.0.0.255",
+        b"<a:t>  1.1.1.4 Section Title</a:t>",
     ],
 )
 def test_find_ips_false_positives(data):
