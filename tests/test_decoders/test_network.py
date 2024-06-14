@@ -91,6 +91,9 @@ def test_parse_ip():
         b"Version = 4.0.0.0",
         b"1.0.0.0",
         b"1.0.0.255",
+        b"<a:t>  1.1.1.4 Section Title</a:t>",
+        b"section 1.1.1.4",
+        b"sec. 1.1.1.4",
     ],
 )
 def test_find_ips_false_positives(data):
@@ -129,23 +132,6 @@ def test_is_valid_domain_re():
     assert not is_domain(b"website.notatld")
 
 
-# TODO: find a better way to avoid domain false positives than ignoring valid tlds
-# def test_is_valid_domain_false_positives():
-#     assert not is_valid_domain(b'SET.NAME')
-#
-#
-# def test_find_domain_shell():
-#     assert find_domains(b'WScript.Shell, ript.Shell') == []
-#
-#
-# def test_find_domain_run():
-#     assert find_domains(b'WshShell.run') == []
-#
-#
-# def test_find_domain_save():
-#     assert find_domains(b'oShLnk.Save') == []
-
-
 @pytest.mark.parametrize(
     "data",
     [
@@ -172,6 +158,24 @@ def test_DOMAIN_RE_context(data, domain):
     "data",
     [
         b"K.cA",
+        b"WScript.Shell",
+        b"ADODB.stream",
+        b"SET.NAME",
+        b"WshShell.run",
+        b"variable.call(",
+        b"this.day",
+        b"this.global",
+        b"this.it",
+        b"this.it.next",
+        b"this.name",
+        b"this.zone",
+        b"Array.prototype.map",
+        b"CompIterator.prototype.next",
+        b"Date.now",
+        b"NativeDate.now",
+        b"String.link",
+        b"string.search",
+        b"String.prototype.at",
     ],
 )
 def test_find_domaind_fpos(data):

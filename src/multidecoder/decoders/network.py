@@ -105,16 +105,53 @@ def is_url(url: bytes) -> bool:
 @decoder
 def find_domains(data: bytes) -> list[Node]:
     """Find domains in data"""
+    out = []
     # Common domain false positives
-    domain_fpos = {b"wscript.shell", b"system.io"}
-    return [
-        match_to_hit(DOMAIN_TYPE, match)
-        for match in re.finditer(DOMAIN_RE, data)
-        if is_domain(match.group())
-        and len(match.group()) >= 6
-        and not re.match(b"[a-z]+[.][A-Z][a-z]+", match.group())
-        and match.group().lower() not in domain_fpos
-    ]
+    domain_fpos = {b"wscript.shell", b"system.io", b"adodb.stream", b"set.name", b"wshshell.run", b"oshlnk.save"}
+    for match in re.finditer(DOMAIN_RE, data):
+        domain = match.group().lower()
+        tld = domain.rsplit(b".", 1)[-1]
+        end = match.end()
+        if (
+            not is_domain(match.group())
+            or len(match.group()) < 7
+            or re.match(b"[a-z]+[.][A-Z][a-z]+", match.group())
+            or domain in domain_fpos
+        ):
+            continue
+        if tld == b"call" and data[end : end + 1] == b"(":
+            continue  # function call not domain
+        if tld == b"next" and b"iterator" in domain:
+            continue  # iterator not domain
+        if tld in {
+            b"at",
+            b"call",
+            b"day",
+            b"global",
+            b"it",
+            b"link",
+            b"map",
+            b"name",
+            b"next",
+            b"now",
+            b"search",
+            b"zone",
+        } and domain.split(b".", 1)[0] in {
+            b"array",
+            b"arrayprototype",
+            b"date",
+            b"function",
+            b"functionprototype",
+            b"it",
+            b"nativedate",
+            b"object",
+            b"string",
+            b"method",
+            b"this",
+        }:
+            continue  # attribute in script
+        out.append(match_to_hit(DOMAIN_TYPE, match))
+    return out
 
 
 @decoder
@@ -136,8 +173,11 @@ def find_ips(data: bytes) -> list[Node]:
         if ip.endswith((b".0", b".255")):
             continue  # Class C network identifier or broadcast address
         start, end = match.span()
-        if data[start - 3 : start] == b"<t>" and data[end : end + 4] == b"</t>":
+        prefix = data[start - 1 :: -1]
+        if re.match(rb"\s*>t(?::\w+)?<", prefix):
             continue  # xml section numbering
+        if re.match(rb"(?i)\s+(?:noit|[.])ces", prefix):
+            continue  # section number
         offset = data.rfind(b"Version", max(start - 10, 0), start)
         if offset >= 0 and re.match(rb"[\x00=\s]+$", data[offset + 7 : start]):
             continue  # version number, not an ip address
