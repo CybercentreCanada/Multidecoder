@@ -1,5 +1,6 @@
+import pytest
 import regex as re
-from multidecoder.decoders.hex import HEX_RE, find_FromHexString, find_hex
+from multidecoder.decoders.hex import HEX_RE, HEX_SPACE_RE, find_FromHexString, find_hex, find_hex_space
 from multidecoder.node import Node
 
 
@@ -18,6 +19,39 @@ def test_hex():
 def test_find_hex():
     assert find_hex(b"some encoded text".hex().encode())[0].value == b"some encoded text"
 
+
+# -- Hex Space
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"",
+    ],
+)
+def test_hex_space_re_fpos(data: bytes):
+    assert not re.search(HEX_SPACE_RE, data)
+
+
+@pytest.mark.parametrize(
+    ("data", "match"),
+    [
+        (b"65 78 61 6d 70 6c 65 20 74 65 78 74", b"65 78 61 6d 70 6c 65 20 74 65 78 74"),
+    ],
+)
+def test_hex_space_re(data: bytes, match: bytes):
+    assert re.search(HEX_SPACE_RE, data).group() == match
+
+
+@pytest.mark.parametrize(
+    ("data", "decoded"),
+    [
+        (b"65 78 61 6d 70 6c 65 20 74 65 78 74", b"example text"),
+    ],
+)
+def test_find_hex_space(data: bytes, decoded: bytes):
+    assert find_hex_space(data)[0].value == decoded
+
+
+# -- Hex Comma
 
 # -- FromHexString --
 

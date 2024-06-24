@@ -7,14 +7,16 @@ from __future__ import annotations
 import binascii
 
 import regex as re
+
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 from multidecoder.xor_helper import apply_xor_key, get_xorkey
 
 HTML_ESCAPE_RE = rb"&#(?:x[a-fA-F0-9]{1,4}|\d{1,4});"
 BASE64_RE = rb"(?:[A-Za-z0-9+/]{4,}(?:<\x00  \x00)?(?:&#13;|&#xD;)?(?:&#10;|&#xA)?\r?\n?){5,}[A-Za-z0-9+/]{2,}=?=?"
-BASE64DECODE_RE = rb'(?i)Base64Decode\("([a-z0-9/+]+=?=?)"\)'
-FROMB64STRING_RE = rb"(?i)(\[System.Convert\]::)?FromBase64String\('([a-z0-9+/]+=?=?)'\)"
+BASE64DECODE_RE = rb"(?i)Base64Decode\(['\"]([a-z0-9/+]+=?=?)['\"]\)"
+FROMB64STRING_RE = rb"(?i)(\[System.Convert\]::)?FromBase64String\(['\"]([a-z0-9+/]+=?=?)['\"]\)"
+ATOB_RE = rb"atob\(['\"]([A-Za-z0-9+/]+=?=?)['\"]\)"
 
 CAMEL_RE = rb"(?i)[a-z]+"
 HEX_RE = rb"(?i)[a-f0-9]+"
@@ -40,7 +42,7 @@ def pad_base64(b64: bytes) -> bytes:
 def find_atob(data: bytes) -> list[Node]:
     """Find the javascript base64 decoding function atob and decode its argument."""
     out: list[Node] = []
-    for match in re.finditer(rb"atob\(\'([A-Za-z0-9+/]+={0,2})\'\)", data):
+    for match in re.finditer(ATOB_RE, data):
         try:
             b64 = binascii.a2b_base64(match.group(1))
             out.append(Node("javascript.string", b64, "encoding.base64", *match.span()))

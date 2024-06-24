@@ -28,6 +28,7 @@ def test_pad_base64(base64, padded):
     ("atob", "decoded"),
     [
         (b"atob('YXRvYiB0ZXN0IHRleHQ=')", b"atob test text"),
+        (b'atob("YXRvYiB0ZXN0IHRleHQ=")', b"atob test text"),
     ],
 )
 def test_atob(atob, decoded):
@@ -86,27 +87,61 @@ def test_base64_search_texts():
 # -- FromBase64String --
 
 
-def test_fromb64string_no_xor():
-    test = b"FromBase64String('ZHVjaw==')"
-    test2 = b"[System.Convert]::FromBase64String('ZHVjaw==')"
-    assert find_FromBase64String(test) == [
-        Node(
-            type_="powershell.bytes",
-            value=b"duck",
-            obfuscation="encoding.base64",
-            start=0,
-            end=len(test),
-        )
-    ]
-    assert find_FromBase64String(test2) == [
-        Node(
-            type_="powershell.bytes",
-            value=b"duck",
-            obfuscation="encoding.base64",
-            start=0,
-            end=len(test2),
-        )
-    ]
+@pytest.mark.parametrize(
+    ("data", "result"),
+    [
+        (
+            b"FromBase64String('ZHVjaw==')",
+            [
+                Node(
+                    type_="powershell.bytes",
+                    value=b"duck",
+                    obfuscation="encoding.base64",
+                    start=0,
+                    end=28,
+                )
+            ],
+        ),
+        (
+            b'FromBase64String("ZHVjaw==")',
+            [
+                Node(
+                    type_="powershell.bytes",
+                    value=b"duck",
+                    obfuscation="encoding.base64",
+                    start=0,
+                    end=28,
+                )
+            ],
+        ),
+        (
+            b"[System.Convert]::FromBase64String('ZHVjaw==')",
+            [
+                Node(
+                    type_="powershell.bytes",
+                    value=b"duck",
+                    obfuscation="encoding.base64",
+                    start=0,
+                    end=46,
+                )
+            ],
+        ),
+        (
+            b'[System.Convert]::FromBase64String("ZHVjaw==")',
+            [
+                Node(
+                    type_="powershell.bytes",
+                    value=b"duck",
+                    obfuscation="encoding.base64",
+                    start=0,
+                    end=46,
+                )
+            ],
+        ),
+    ],
+)
+def test_fromb64string_no_xor(data, result):
+    assert find_FromBase64String(data) == result
 
 
 def test_fromb64string_xor():

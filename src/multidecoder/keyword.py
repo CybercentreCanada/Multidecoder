@@ -8,7 +8,16 @@ MIXED_CASE_OBF = "MixedCase"
 
 
 def is_mixed_case(value: bytes, raw: bytes) -> bool:
-    return any(chr(v).isupper() and not chr(d).isupper() for v, d in zip(raw, value)) and not raw.isupper()
+    # Mixed case is not possible if raw is entirely upper or lower-cased
+    if raw.isupper() or raw.islower():
+        return False
+
+    for v, d in zip(raw, value):
+        # Check for case discrepancy between byte characters
+        if (chr(v).isupper() and not chr(d).isupper()) or (chr(v).islower() and not chr(d).islower()):
+            return True
+
+    return False
 
 
 def find_keywords(label: str, keywords: Iterable[bytes], data: bytes) -> list[Node]:

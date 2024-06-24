@@ -6,9 +6,9 @@ from multidecoder.decoders.network import (
     EMAIL_RE,
     IP_RE,
     URL_RE,
-    find_urls,
-    # find_domains,
+    find_domains,
     find_ips,
+    find_urls,
     is_domain,
     is_url,
     parse_ip,
@@ -81,7 +81,20 @@ def test_parse_ip():
 
 @pytest.mark.parametrize(
     "data",
-    [b"<si><t>1.1.1.4</t></si>", b"ProductVersion\x004.0.0.0\x00", b"FileVersion\x004.0.0.0\x00", b"Version=4.0.0.0"],
+    [
+        b"<si><t>1.1.1.4</t></si>",
+        b"ProductVersion\x004.0.0.0\x00",
+        b"FileVersion\x004.0.0.0\x00",
+        b"Version=4.0.0.0",
+        b"0.0.0.0",
+        b"Version\x00\x0012.3.0.0\x00",
+        b"Version = 4.0.0.0",
+        b"1.0.0.0",
+        b"1.0.0.255",
+        b"<a:t>  1.1.1.4 Section Title</a:t>",
+        b"section 1.1.1.4",
+        b"sec. 1.1.1.4",
+    ],
 )
 def test_find_ips_false_positives(data):
     assert find_ips(data) == []
@@ -119,23 +132,6 @@ def test_is_valid_domain_re():
     assert not is_domain(b"website.notatld")
 
 
-# TODO: find a better way to avoid domain false positives than ignoring valid tlds
-# def test_is_valid_domain_false_positives():
-#     assert not is_valid_domain(b'SET.NAME')
-#
-#
-# def test_find_domain_shell():
-#     assert find_domains(b'WScript.Shell, ript.Shell') == []
-#
-#
-# def test_find_domain_run():
-#     assert find_domains(b'WshShell.run') == []
-#
-#
-# def test_find_domain_save():
-#     assert find_domains(b'oShLnk.Save') == []
-
-
 @pytest.mark.parametrize(
     "data",
     [
@@ -156,6 +152,34 @@ def test_DOMAIN_RE_false_positive(data):
 def test_DOMAIN_RE_context(data, domain):
     """Test that DOMAIN_RE matches in context"""
     assert re.search(DOMAIN_RE, data).group() == domain
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"K.cA",
+        b"WScript.Shell",
+        b"ADODB.stream",
+        b"SET.NAME",
+        b"WshShell.run",
+        b"variable.call(",
+        b"this.day",
+        b"this.global",
+        b"this.it",
+        b"this.it.next",
+        b"this.name",
+        b"this.zone",
+        b"Array.prototype.map",
+        b"CompIterator.prototype.next",
+        b"Date.now",
+        b"NativeDate.now",
+        b"String.link",
+        b"string.search",
+        b"String.prototype.at",
+    ],
+)
+def test_find_domaind_fpos(data):
+    assert find_domains(data) == []
 
 
 # Email -----------------------------------------
@@ -255,6 +279,10 @@ def test_URL_RE_matches(url):
         (b"barefunction(https://example.com) works", b"https://example.com"),
         (b'in a string content "https://example.com"works.', b"https://example.com"),
         (b"'https://example.com/'; ", b"https://example.com/"),
+        (
+            b"webhook_url = 'https://discord.com/api/webhooks/1244340229192548423/hRSjv25n8leII_p1pKEJSFSIUr_dLBX0-EY8ZMW3rakLh682QX0zByEpotnryCtRfK_Z'",
+            b"https://discord.com/api/webhooks/1244340229192548423/hRSjv25n8leII_p1pKEJSFSIUr_dLBX0-EY8ZMW3rakLh682QX0zByEpotnryCtRfK_Z",
+        ),
     ],
 )
 def test_URL_RE_context(data, url):
@@ -287,14 +315,14 @@ def test_is_url():
             ],
         ),
         (
-            b"'https://example.com/path'after_the_url",
+            b"                              'https://example.com/path'after_the_url",
             [
                 Node(
                     "network.url",
                     b"https://example.com/path",
                     "",
-                    1,
-                    39,
+                    31,
+                    55,
                     children=[
                         Node("network.url.scheme", b"https", "", 0, 5),
                         Node("network.domain", b"example.com", "", 8, 19),
@@ -316,6 +344,38 @@ def test_is_url():
                         Node("network.url.scheme", b"https", "", 0, 5),
                         Node("network.domain", b"example.com", "", 8, 19),
                         Node("network.url.path", b"/path'still_the_url", "", 19, 38),
+                    ],
+                )
+            ],
+        ),
+        (
+            b"'https://example.com",
+            [
+                Node(
+                    "network.url",
+                    b"https://example.com",
+                    "",
+                    1,
+                    20,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.com", "", 8, 19),
+                    ],
+                )
+            ],
+        ),
+        (
+            b"                    \x13https://example.com0thisisaftertheendoftheurl",
+            [
+                Node(
+                    "network.url",
+                    b"https://example.com",
+                    "",
+                    21,
+                    40,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.com", "", 8, 19),
                     ],
                 )
             ],

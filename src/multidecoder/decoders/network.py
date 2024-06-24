@@ -105,7 +105,53 @@ def is_url(url: bytes) -> bool:
 @decoder
 def find_domains(data: bytes) -> list[Node]:
     """Find domains in data"""
-    return [match_to_hit(DOMAIN_TYPE, match) for match in re.finditer(DOMAIN_RE, data) if is_domain(match.group())]
+    out = []
+    # Common domain false positives
+    domain_fpos = {b"wscript.shell", b"system.io", b"adodb.stream", b"set.name", b"wshshell.run", b"oshlnk.save"}
+    for match in re.finditer(DOMAIN_RE, data):
+        domain = match.group().lower()
+        tld = domain.rsplit(b".", 1)[-1]
+        end = match.end()
+        if (
+            not is_domain(match.group())
+            or len(match.group()) < 7
+            or re.match(b"[a-z]+[.][A-Z][a-z]+", match.group())
+            or domain in domain_fpos
+        ):
+            continue
+        if tld == b"call" and data[end : end + 1] == b"(":
+            continue  # function call not domain
+        if tld == b"next" and b"iterator" in domain:
+            continue  # iterator not domain
+        if tld in {
+            b"at",
+            b"call",
+            b"day",
+            b"global",
+            b"it",
+            b"link",
+            b"map",
+            b"name",
+            b"next",
+            b"now",
+            b"search",
+            b"zone",
+        } and domain.split(b".", 1)[0] in {
+            b"array",
+            b"arrayprototype",
+            b"date",
+            b"function",
+            b"functionprototype",
+            b"it",
+            b"nativedate",
+            b"object",
+            b"string",
+            b"method",
+            b"this",
+        }:
+            continue  # attribute in script
+        out.append(match_to_hit(DOMAIN_TYPE, match))
+    return out
 
 
 @decoder
@@ -122,10 +168,18 @@ def find_ips(data: bytes) -> list[Node]:
         ip = match.group()
         if not is_ip(ip):
             continue
+        if all(byte in b"0x." for byte in ip):
+            continue  # 0.0.0.0
+        if ip.endswith((b".0", b".255")):
+            continue  # Class C network identifier or broadcast address
         start, end = match.span()
-        if data[start - 3 : start] == b"<t>" and data[end : end + 4] == b"</t>":
+        prefix = data[start - 1 :: -1]
+        if re.match(rb"\s*>t(?::\w+)?<", prefix):
             continue  # xml section numbering
-        if data[start - 8 : start - 1] == b"Version" and data[start - 1 : start] in (b"\0", b"="):
+        if re.match(rb"(?i)\s+(?:noit|[.])ces", prefix):
+            continue  # section number
+        offset = data.rfind(b"Version", max(start - 10, 0), start)
+        if offset >= 0 and re.match(rb"[\x00=\s]+$", data[offset + 7 : start]):
             continue  # version number, not an ip address
         out.append(parse_ip(match.group()).shift(match.start()))
     return out
@@ -143,16 +197,27 @@ def find_urls(data: bytes) -> list[Node]:
     out = []
     for match in re.finditer(URL_RE, data):
         group = match.group()
-        prev = data[match.start() - 1]
-        if match.start() != 0 and prev in contexts:
-            group = group[: group.find(contexts[prev])]
+        start, end = match.span()
+        prev = data[start - 1]
+        if start == 0:
+            pass  # No context
+        elif group[prev : prev + 1] == b"0" and not _is_printable(data[start - 10 : start]):
+            # Pascal string in PE file
+            end = start + prev
+            group = group[:prev]
+        elif prev in contexts:
+            close = group.find(contexts[prev])
+            if close > -1:
+                end = start + close
+                group = group[:close]
         if not is_url(group):
             continue
         out.append(
             Node(
                 URL_TYPE,
                 *normalize_percent_encoding(group),
-                *match.span(),
+                start,
+                end,
                 children=parse_url(group),
             )
         )
@@ -393,3 +458,10 @@ def normalize_path(path: bytes) -> tuple[bytes, str]:
         # Maintain starting / if the entire path is dot segments
         return b"/", "url.dotpath"
     return b"/".join(dotless), "url.dotpath" if len(dotless) < len(segments) else ""
+
+
+def _is_printable(b: bytes) -> bool:
+    try:
+        return b.decode("ascii").isprintable()
+    except UnicodeDecodeError:
+        return False
