@@ -1,6 +1,7 @@
 """
 Module for automatically registering and collecting decoder functions
 """
+
 from __future__ import annotations
 
 import importlib
@@ -36,7 +37,11 @@ def build_registry(
     exclude: Iterable[str] | None = None,
 ) -> Registry:
     """Get both analyzer functions and keyword functions"""
-    keywords = get_keywords(directory)
+    # Providing a mechanism to skip the keyword-searching decoders
+    if exclude and any(item == "get_keywords" for item in exclude):
+        keywords = list()
+    else:
+        keywords = get_keywords(directory)
     keywords.extend(get_analyzers(include=include, exclude=exclude))
     return keywords
 
