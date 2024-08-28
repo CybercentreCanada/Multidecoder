@@ -121,26 +121,18 @@ def test_DOMAIN_RE_match(domain):
     [
         b"C:\\path\\looks-like-a-domain.com",
         b"C:\\path\\looks.like.a.domain.com",
+        b"date.today()",
+        b"domain.com-",
     ],
 )
 def test_DOMAIN_RE_false_positives(domain):
+    """Test that DOMAIN_RE does not match potential false positives"""
     assert not re.search(DOMAIN_RE, domain)
 
 
 def test_is_valid_domain_re():
     assert is_domain(b"website.com")
     assert not is_domain(b"website.notatld")
-
-
-@pytest.mark.parametrize(
-    "data",
-    [
-        b"domain.com-",
-    ],
-)
-def test_DOMAIN_RE_false_positive(data):
-    """Test that DOMAIN_RE does not match potential false positives"""
-    assert re.search(DOMAIN_RE, data) is None
 
 
 @pytest.mark.parametrize(
@@ -178,7 +170,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"String.prototype.at",
     ],
 )
-def test_find_domaind_fpos(data):
+def test_find_domains_fpos(data):
     assert find_domains(data) == []
 
 
