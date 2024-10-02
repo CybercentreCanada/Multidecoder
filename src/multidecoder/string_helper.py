@@ -1,4 +1,5 @@
-""" Helper functions for type coersion between string and bytes. """
+"""Helper functions for type coersion between string and bytes."""
+
 from __future__ import annotations
 
 

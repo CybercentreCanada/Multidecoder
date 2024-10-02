@@ -1,4 +1,5 @@
 import pytest
+
 from multidecoder.decoders.codec import find_utf16
 
 

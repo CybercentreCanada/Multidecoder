@@ -2,6 +2,7 @@ import binascii
 
 import pytest
 import regex as re
+
 from multidecoder.decoders.base64 import BASE64_RE, find_atob, find_base64, find_FromBase64String, pad_base64
 from multidecoder.node import Node
 

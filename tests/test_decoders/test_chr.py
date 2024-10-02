@@ -1,4 +1,5 @@
 import pytest
+
 from multidecoder.decoders.chr import find_chr
 
 

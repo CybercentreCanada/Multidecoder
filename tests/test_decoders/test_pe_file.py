@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from multidecoder.decoders.pe_file import find_pe_files
 
 TEST_DIR = os.path.dirname(__file__)
