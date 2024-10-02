@@ -1,7 +1,7 @@
-""" Helper functions for xor capabilities. """
-
+"""Helper functions for xor capabilities."""
 
 import regex as re
+
 from multidecoder.node import Node
 
 # Supported by https://github.com/CYB3RMX/Qu1cksc0pe/blob/1a349826b248e578b0a2ec8b152eeeddf059c388/Modules/powershell_analyzer.py#L116

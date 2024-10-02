@@ -1,10 +1,11 @@
 import pytest
+
 from multidecoder.keyword import find_all, find_keywords, is_mixed_case
 from multidecoder.node import Node
 
 
 @pytest.mark.parametrize(
-    ("value, raw, expected_bool"),
+    ("value", "raw", "expected_bool"),
     [
         (b"blah", b"blah", False),
         (b"BLAH", b"blah", False),
@@ -20,7 +21,7 @@ def test_is_mixed_case(value, raw, expected_bool):
 
 
 @pytest.mark.parametrize(
-    ("keyword, data, expected_list_of_ints"),
+    ("keyword", "data", "expected_list_of_ints"),
     [
         (b"yabadabadoo", b"yabadabadoo", [0]),
         (b"daba", b"yabadabadoo", []),
@@ -34,7 +35,7 @@ def test_find_all(keyword, data, expected_list_of_ints):
 
 
 @pytest.mark.parametrize(
-    ("label, keywords, data, expected_list_of_nodes"),
+    ("label", "keywords", "data", "expected_list_of_nodes"),
     [
         # Example where daba is not returned
         ("label", [b"yabadabadoo", b"daba"], b"yabadabadoo", [Node("label", b"yabadabadoo", "", 0, 11)]),

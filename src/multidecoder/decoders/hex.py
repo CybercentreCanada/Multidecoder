@@ -66,10 +66,10 @@ def find_FromHexString(data: bytes) -> list[Node]:
     xorkey = get_xorkey(data)
     for match in re.finditer(FROMHEXSTRING_RE, data):
         try:
-            hex = unhexlify(match.group(2))
-            hex_node = Node("powershell.bytes", hex, "encoding.hexidecimal", *match.span())
+            unhex = unhexlify(match.group(2))
+            hex_node = Node("powershell.bytes", unhex, "encoding.hexidecimal", *match.span())
             if xorkey:
-                hex_node = apply_xor_key(xorkey, hex, hex_node, "powershell.bytes")
+                hex_node = apply_xor_key(xorkey, unhex, hex_node, "powershell.bytes")
             out.append(hex_node)
         except binascii_error:
             continue

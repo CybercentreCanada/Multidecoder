@@ -95,7 +95,7 @@ def is_url(url: bytes) -> bool:
     """
     try:
         split = urlsplit(url)
-        split.port  # urlsplit.port is a property that does validation and raises ValueError if it fails.
+        split.port  # noqa: B018 urlsplit.port is a property that does validation and raises ValueError if it fails.
     except ValueError:
         return False
     return bool(split.scheme and split.hostname and split.scheme in (b"http", b"https", b"ftp"))

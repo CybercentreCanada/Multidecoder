@@ -1,4 +1,5 @@
 import pytest
+
 from multidecoder.node import Node
 
 DATA1 = b"12345HERE WE ARE54321"

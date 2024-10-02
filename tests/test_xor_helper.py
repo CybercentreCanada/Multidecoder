@@ -1,10 +1,11 @@
 import pytest
+
 from multidecoder.node import Node
 from multidecoder.xor_helper import apply_xor_key, get_xorkey
 
 
 @pytest.mark.parametrize(
-    ("data, expected_xorkey"),
+    ("data", "expected_xorkey"),
     [
         (b"blah", None),
         (b"blah-xor35", 35),
@@ -18,7 +19,7 @@ def test_get_xorkey(data, expected_xorkey):
 
 
 @pytest.mark.parametrize(
-    ("data, expected_child_node"),
+    ("data", "expected_child_node"),
     [
         (b"AOBK", Node("powershell.bytes", b"blah", "cipher.xor35", 0, 4)),
     ],
