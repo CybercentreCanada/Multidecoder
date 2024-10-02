@@ -1,5 +1,6 @@
 import pytest
 import regex as re
+
 from multidecoder.decoders.hex import HEX_RE, HEX_SPACE_RE, find_FromHexString, find_hex, find_hex_space
 from multidecoder.node import Node
 

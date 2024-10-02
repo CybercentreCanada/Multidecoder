@@ -7,17 +7,13 @@ build-backend = "setuptools.build_meta"
 write_to = "src/multidecoder/_version.py"
 fallback_version = "0.0.0"
 
-[tool.black]
-line-length = 120
-target-version = ["py38"]
-
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
 
 [tool.ruff]
 line-length = 120
 target-version = "py38"
-select = [
+lint.select = [
     "E",
     "F",
     "W",
@@ -37,6 +33,7 @@ select = [
     "TCH",
     "RUF",
 ]
+lint.fixable = ["I"]
 
 [tool.mypy]
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
