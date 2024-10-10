@@ -8,7 +8,7 @@ from multidecoder.decoders.base64 import pad_base64
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 
-CMD_RE = rb"(?i)\bc\^?m\^?d\^?\b[^)\x00]*"
+CMD_RE = rb'(?i)("(?:C:\\WINDOWS\\system32\\)?\bcmd(?:.exe)?"|(?:C:\\Windows\\System32\\)?\bc\^?m\^?d\b)[^\x00]*'
 POWERSHELL_INDICATOR_RE = (
     rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])?\b(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
 )
@@ -53,21 +53,31 @@ def deobfuscate_cmd(cmd: bytes) -> tuple[bytes, str]:
 def find_cmd_strings(data: bytes) -> list[Node]:
     cmd_strings = []
     for match in re.finditer(CMD_RE, data):
-        if match.group().lower().strip() not in (b"cmd", b"cmd.exe"):
-            deobfuscated, obfuscation = deobfuscate_cmd(match.group())
+        full_cmd = match.group()
+        start, end = match.span()
+        parens = 0
+        for i, char in enumerate(full_cmd):
+            if char == ord(b")"):
+                parens -= 1
+            elif char == ord(b"("):
+                parens += 1
+            if parens < 0:
+                full_cmd = full_cmd[:i]
+                end = start + i
+        deobfuscated, obfuscation = deobfuscate_cmd(full_cmd)
 
-            split = deobfuscated.split()
+        split = deobfuscated.split()
 
-            # The cmd binary/command itself is at split[0]
-            if (not split[0].startswith(b'"') and split[0].endswith(b'"')) or (
-                not split[0].startswith(b"'") and split[0].endswith(b"'")
-            ):
-                # Remove the trailing quotation
-                split[0] = split[0][:-1]
-                deobfuscated = b" ".join(split)
+        # The cmd binary/command itself is at split[0]
+        if (not split[0].startswith(b'"') and split[0].endswith(b'"')) or (
+            not split[0].startswith(b"'") and split[0].endswith(b"'")
+        ):
+            # Remove the trailing quotation
+            split[0] = split[0][:-1]
+            deobfuscated = b" ".join(split)
 
-            cmd_string = Node("shell.cmd", deobfuscated, obfuscation, *match.span())
-            cmd_strings.append(cmd_string)
+        cmd_string = Node("shell.cmd", deobfuscated, obfuscation, start, end)
+        cmd_strings.append(cmd_string)
     return cmd_strings
 
 
