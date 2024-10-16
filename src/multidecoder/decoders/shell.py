@@ -181,4 +181,10 @@ def get_cmd_command(cmd: bytes) -> bytes:
 
 def get_powershell_command(powershell: bytes) -> bytes:
     match = re.match(POWERSHELL_ARGS_RE, powershell)
-    return powershell[match.end() :] if match else powershell
+    if not match:
+        return powershell
+    command = powershell[match.end() :]
+    # Strip if the command starts and end with a double quote (34) or single quote (39)
+    if len(command) > 1 and command[0] in [34, 39] and command[0] == command[-1]:
+        command = command[1:-1]
+    return command
