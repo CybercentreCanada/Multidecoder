@@ -343,3 +343,12 @@ def test_get_powershell_command_exe():
 
 def test_get_powershell_command_args():
     assert get_powershell_command(b"powershell -arg1 -arg2 command") == b"command"
+
+
+def test_get_powershell_command_quotes():
+    assert (
+        get_powershell_command(
+            b"powershell.exe -c \"&{'p8ArwZsj8ZO+Zy/dHPeI';$BxQ='<base64content>';$KOKN='<base64content>';$KOKN=$KOKN+$BxQ;$GBUus=$KOKN;$xCyRLo=[System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($GBUus));$GBUus=$xCyRLo;iex($GBUus)}\""
+        )
+        == b"&{'p8ArwZsj8ZO+Zy/dHPeI';$BxQ='<base64content>';$KOKN='<base64content>';$KOKN=$KOKN+$BxQ;$GBUus=$KOKN;$xCyRLo=[System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($GBUus));$GBUus=$xCyRLo;iex($GBUus)}"
+    )
