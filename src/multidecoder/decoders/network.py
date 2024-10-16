@@ -29,7 +29,7 @@ IP_OBF = "ip_obfuscation"
 # Regexes
 _OCTET_RE = rb"(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})"
 
-DOMAIN_RE = rb"(?i)(?<![-\w.\\])(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z.(-])"
+DOMAIN_RE = rb"(?i)(?<![-\w.\\_])(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z.(=_-])"
 EMAIL_RE = rb"(?i)\b[a-z0-9._%+-]{3,}@(" + DOMAIN_RE[4:] + rb")\b"
 
 IP_RE = rb"(?i)(?<![\w.])(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"(?![\w.])"
@@ -101,55 +101,117 @@ def is_url(url: bytes) -> bool:
     return bool(split.scheme and split.hostname and split.scheme in (b"http", b"https", b"ftp"))
 
 
+# False Positives
+
+
+def domain_is_false_positive(domain: bytes) -> bool:
+    """Flag common forms of dotted text that can be mistaken for domains."""
+    domain_lower = domain.lower()
+    split = domain_lower.split(b".")
+    if len(split) < 2:
+        return True
+    tld = split[-1]
+    root = split[0]
+
+    # Common domain false positives
+    domain_fpos = {b"wscript.shell", b"system.io", b"adodb.stream", b"set.name", b"wshshell.run", b"oshlnk.save"}
+    # Common variable roots
+    root_fpos = {
+        b"at",
+        b"array",
+        b"arrayprototype",
+        b"button",
+        b"date",
+        b"email",
+        b"enduser",
+        b"error",
+        b"event",
+        b"function",
+        b"functionprototype",
+        b"it",
+        b"method",
+        b"nativedate",
+        b"obj",
+        b"object",
+        b"ribbon",
+        b"string",
+        b"syntaxerror",
+        b"table",
+        b"ui",
+        b"user",
+        b"window",
+    }
+    # Common variable name ends
+    tld_fpos = {
+        b"at",
+        b"app",
+        b"auto",
+        b"build",
+        b"call",
+        b"cat",
+        b"center",
+        b"click",
+        b"country",
+        b"day",
+        b"exposed",
+        b"fail",
+        b"global",
+        b"green",
+        b"group",
+        b"how",
+        b"id",
+        b"in",
+        b"info",
+        b"is",
+        b"it",
+        b"link",
+        b"map",
+        b"mobile",
+        b"ms",
+        b"marketing",
+        b"name",
+        b"next",
+        b"now",
+        b"open",
+        b"page",
+        b"play",
+        b"radio",
+        b"read",
+        b"red",
+        b"search",
+        b"software",
+        b"spa",
+        b"space",
+        b"services",
+        b"store",
+        b"style",
+        b"support",
+        b"target",
+        b"total",
+        b"top",
+        b"zone",
+    }
+    return (
+        (tld == b"next" and b"iterator" in domain_lower)  # Iterator not domain
+        or re.match(b"[a-z]+[.][A-Z][a-z]+", domain)  # attribute access not domain
+        or domain_lower in domain_fpos  # common false positive
+        or (tld in tld_fpos and (root in root_fpos or len(root) == 1))  # variable attribute
+        or domain_lower.startswith(b"this.")  # super common variable name in javascript
+        or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
+    )
+
+
 # Decoders
 @decoder
 def find_domains(data: bytes) -> list[Node]:
     """Find domains in data"""
     out = []
-    # Common domain false positives
-    domain_fpos = {b"wscript.shell", b"system.io", b"adodb.stream", b"set.name", b"wshshell.run", b"oshlnk.save"}
     for match in re.finditer(DOMAIN_RE, data):
-        domain = match.group().lower()
-        tld = domain.rsplit(b".", 1)[-1]
-        end = match.end()
-        if (
-            not is_domain(match.group())
-            or len(match.group()) < 7
-            or re.match(b"[a-z]+[.][A-Z][a-z]+", match.group())
-            or domain in domain_fpos
-        ):
+        domain = match.group()
+        if not is_domain(domain) or len(domain) < 7:
             continue
-        if tld == b"call" and data[end : end + 1] == b"(":
-            continue  # function call not domain
-        if tld == b"next" and b"iterator" in domain:
-            continue  # iterator not domain
-        if tld in {
-            b"at",
-            b"call",
-            b"day",
-            b"global",
-            b"it",
-            b"link",
-            b"map",
-            b"name",
-            b"next",
-            b"now",
-            b"search",
-            b"zone",
-        } and domain.split(b".", 1)[0] in {
-            b"array",
-            b"arrayprototype",
-            b"date",
-            b"function",
-            b"functionprototype",
-            b"it",
-            b"nativedate",
-            b"object",
-            b"string",
-            b"method",
-            b"this",
-        }:
-            continue  # attribute in script
+        if domain_is_false_positive(domain):
+            continue
         out.append(match_to_hit(DOMAIN_TYPE, match))
     return out
 

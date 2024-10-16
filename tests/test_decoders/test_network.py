@@ -7,6 +7,7 @@ from multidecoder.decoders.network import (
     EMAIL_RE,
     IP_RE,
     URL_RE,
+    domain_is_false_positive,
     find_domains,
     find_ips,
     find_urls,
@@ -124,6 +125,8 @@ def test_DOMAIN_RE_match(domain):
         b"C:\\path\\looks.like.a.domain.com",
         b"date.today()",
         b"domain.com-",
+        b"variable.page_load" b'fi.search="',
+        b"variable.call(",
     ],
 )
 def test_DOMAIN_RE_false_positives(domain):
@@ -148,14 +151,12 @@ def test_DOMAIN_RE_context(data, domain):
 
 
 @pytest.mark.parametrize(
-    "data",
+    "domain",
     [
-        b"K.cA",
         b"WScript.Shell",
         b"ADODB.stream",
         b"SET.NAME",
         b"WshShell.run",
-        b"variable.call(",
         b"this.day",
         b"this.global",
         b"this.it",
@@ -171,7 +172,17 @@ def test_DOMAIN_RE_context(data, domain):
         b"String.prototype.at",
     ],
 )
-def test_find_domains_fpos(data):
+def test_domain_is_false_positive(domain):
+    assert domain_is_false_positive(domain)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"K.cA",
+    ],
+)
+def test_find_domain_fpos(data):
     assert find_domains(data) == []
 
 
