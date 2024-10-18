@@ -8,6 +8,7 @@ import binascii
 
 import regex as re
 
+from multidecoder.decoders.powershell import POWERSHELL_BYTES_TYPE
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 from multidecoder.xor_helper import apply_xor_key, get_xorkey
@@ -126,9 +127,9 @@ def find_FromBase64String(data: bytes) -> list[Node]:
     for match in re.finditer(FROMB64STRING_RE, data):
         try:
             b64 = binascii.a2b_base64(match.group(2))
-            b64_node = Node("powershell.bytes", b64, "encoding.base64", *match.span())
+            b64_node = Node(POWERSHELL_BYTES_TYPE, b64, "encoding.base64", *match.span())
             if xorkey:
-                b64_node = apply_xor_key(xorkey, b64, b64_node, "powershell.bytes")
+                b64_node = apply_xor_key(xorkey, b64, b64_node, POWERSHELL_BYTES_TYPE)
             out.append(b64_node)
         except binascii.Error:
             continue
