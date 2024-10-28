@@ -55,7 +55,7 @@ def xortool(
 
     (probable_keys, key_char_used) = guess_probable_keys_for_chars(ciphertext, try_chars, known_key_length)
 
-    return produce_plaintexts(ciphertext, probable_keys, key_char_used, text_charset, known_plain, filter_output)
+    return produce_plaintexts(ciphertext, probable_keys, text_charset, known_plain, filter_output)
 
 
 # -----------------------------------------------------------------------------
@@ -243,7 +243,6 @@ def dexor(text: bytes, key: bytes) -> bytes:
 def produce_plaintexts(
     ciphertext: bytes,
     keys: list[bytes],
-    key_char_used,
     text_charset: Container[int],
     known_plain: bytes,
     filter_output: object,
@@ -255,7 +254,6 @@ def produce_plaintexts(
     the most frequent character used
     """
     threshold_valid = 95
-    count_valid = 0
 
     out = []
     for key in keys:
@@ -264,8 +262,6 @@ def produce_plaintexts(
         if known_plain and known_plain not in dexored:
             continue
         perc = round(100 * percentage_valid(dexored, text_charset))
-        if perc > threshold_valid:
-            count_valid += 1
         if not filter_output or (filter_output and perc > threshold_valid):
             out.append(dexored)
     return out
