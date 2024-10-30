@@ -31,7 +31,7 @@ def find_powershell_bytes(data: bytes) -> list[Node]:
             plaintexts = xortool(binary, [0])
             if plaintexts:
                 node.children.append(
-                    Node("POWERSHELL_BYTES_TYPE", plaintexts[0], "multibyte_xor", 0, len(binary), parent=node)
+                    Node(POWERSHELL_BYTES_TYPE, plaintexts[0], "cipher.multibyte_xor", 0, len(binary), parent=node)
                 )
         out.append(node)
 
