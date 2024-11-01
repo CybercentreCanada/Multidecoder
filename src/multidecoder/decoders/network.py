@@ -207,6 +207,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"country",
         b"data",
         b"day",
+        b"direct",
         b"events",
         b"exposed",
         b"fail",
