@@ -25,20 +25,19 @@ def strip_carets(cmd: bytes) -> bytes:
     out = []
     i = 0
     while i < len(cmd) - 1:
-        if cmd[i] == ord('"'):
-            out.append(ord('"'))
+        character = cmd[i]
+        if character == ord('"'):
+            # Starts or ends a string
             in_string = not in_string
+        elif character == ord("\r"):
+            # Line break
+            in_string = False  # Line breaks automatically end strings
+        elif character == ord("^") and not in_string:
+            # Skip and treat the next character literally
             i += 1
-        elif in_string or cmd[i] != ord("^"):
-            out.append(cmd[i])
-            i += 1
-        elif cmd[i + 1] == ord("^"):
-            i += 2
-            out.append(ord("^"))
-        elif cmd[i + 1] == ord("\r"):
-            i += 3  # skip ^\r\n
-        else:
-            i += 1
+        # Add the character (or next character if ^)
+        out.append(cmd[i])
+        i += 1
     if i < len(cmd) and (cmd[i] != ord("^") or in_string):
         out.append(cmd[i])
     return bytes(out)
@@ -116,6 +115,8 @@ def find_powershell_strings(data: bytes) -> list[Node]:
         cmd_node = Node("shell.cmd", deobfuscated, obfuscation, start, end) if obfuscation else None
         if enc:
             split = deobfuscated.split()
+            if b"^" in split[-1]:
+                continue  # Invalid Base64
             b64 = binascii.a2b_base64(pad_base64(split[-1].strip(b"'\""))).decode("utf-16", errors="ignore").encode()
 
             # The powershell binary/command itself is at split[0]
