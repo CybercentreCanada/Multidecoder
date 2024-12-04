@@ -35,6 +35,8 @@ def strip_carets(cmd: bytes) -> bytes:
         elif character == ord("^") and not in_string:
             # Skip and treat the next character literally
             i += 1
+            if cmd[i] == ord("\r"):
+                i += 2  # skip \r\n
         # Add the character (or next character if ^)
         out.append(cmd[i])
         i += 1
