@@ -85,17 +85,19 @@ def test_parse_ip():
     "data",
     [
         b"<si><t>1.1.1.4</t></si>",
-        b"ProductVersion\x004.0.0.0\x00",
-        b"FileVersion\x004.0.0.0\x00",
-        b"Version=4.0.0.0",
+        b"ProductVersion\x004.0.0.1\x00",
+        b"FileVersion\x004.0.0.1\x00",
+        b"Version=4.0.0.1",
         b"0.0.0.0",
-        b"Version\x00\x0012.3.0.0\x00",
-        b"Version = 4.0.0.0",
+        b"Version\x00\x0012.3.0.1\x00",
+        b"Version = 4.0.0.1",
         b"1.0.0.0",
         b"1.0.0.255",
         b"<a:t>  1.1.1.4 Section Title</a:t>",
         b"section 1.1.1.4",
         b"sec. 1.1.1.4",
+        b"1.1.8.35-g8f5559c",
+        b'version="1.2.0.58"',
     ],
 )
 def test_find_ips_false_positives(data):
@@ -127,6 +129,7 @@ def test_DOMAIN_RE_match(domain):
         b"domain.com-",
         b"variable.page_load" b'fi.search="',
         b"variable.call(",
+        b"Microsoft.Win32",
     ],
 )
 def test_DOMAIN_RE_false_positives(domain):
