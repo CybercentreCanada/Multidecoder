@@ -127,7 +127,7 @@ def find_powershell_strings(data: bytes) -> list[Node]:
                 continue  # invalid base64
             pwsh_invocation = b" -".join(pwsh_invocation.split(b"/"))  # Replace cmd style args with powershell style
             args = pwsh_invocation.split()
-            # The powershell binary/command itself is at split[0]
+            # The powershell binary/command itself is at args[0]
             if (not args[0].startswith(b'"') and args[0].endswith(b'"')) or (
                 not args[0].startswith(b"'") and args[0].endswith(b"'")
             ):
