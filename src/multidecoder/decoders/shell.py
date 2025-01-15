@@ -4,18 +4,19 @@ import binascii
 
 import regex as re
 
-from multidecoder.decoders.base64 import pad_base64
 from multidecoder.node import Node
 from multidecoder.registry import decoder
 
 CMD_RE = rb'(?i)("(?:C:\\WINDOWS\\system32\\)?\bcmd(?:.exe)?"|(?:C:\\Windows\\System32\\)?\bc\^?m\^?d\b)[^\x00]*'
 POWERSHELL_INDICATOR_RE = (
-    rb'(?i)(?:^|/c|/k|/r|[\s;,=&\'"])?\b(\^?p\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h))\b'
+    rb'(?i)(?:^|/c|/k|/r|[;,=&\'"({\\])\s*'
+    rb"(\^?\bp\^?(?:o\^?w\^?e\^?r\^?s\^?h\^?e\^?l\^?l|w\^?s\^?h)(?:\^?.\^?e\^?x\^?e)?)\b"
 )
 SH_RE = rb'"(\s*(?:sh|bash|zsh|csh)[^"]+)"'
 ENC_RE = (
-    rb"(?i)\s\^?(?:-|/)\^?e\^?(?:c|n\^?(?:c\^?(?:o\^?(?:d\^?(?:e\^?(?:d\^?(?:c\^?(?:o\^?(?:m"
-    rb"\^?(?:m\^?(?:a\^?(?:n\^?d?)?)?)?)?)?)?)?)?)?)?)?)?[\s^]+[\"\']?[a-z0-9+/^]{4,}=?\^?=?\^?[\'\"]?"
+    rb"(?i)\"?(?:(?:\^?\s)*\^?(?:\s\^?-|/)[a-z^]+)*(?:\^?\s)*\^?(?:\s\^?-|/)\^?"
+    rb"e\^?(?:c|n\^?(?:c\^?(?:o\^?(?:d\^?(?:e\^?(?:d\^?(?:c\^?(?:o\^?(?:m\^?(?:m\^?(?:a\^?(?:n\^?d?)?)?)?)?)?)?)?)?)?)?)?)?"
+    rb"(?:\^?\s)+\^?[\"\']?[a-z0-9+/^]{4,}=?\^?=?\^?[\'\"]?"
 )
 POWERSHELL_ARGS_RE = rb"\s*(powershell|pwsh)?(.exe)?\s*((-|/)[^\s]+\s+)*"
 
@@ -89,7 +90,7 @@ def find_powershell_strings(data: bytes) -> list[Node]:
     for indicator in re.finditer(POWERSHELL_INDICATOR_RE, data):
         start = indicator.start(1)
         # Check for encoded parameter
-        enc = re.search(ENC_RE, data, pos=start)
+        enc = re.match(ENC_RE, data, pos=indicator.end())
         if enc:
             end = enc.end()
             powershell = data[start : enc.end()]
@@ -116,19 +117,24 @@ def find_powershell_strings(data: bytes) -> list[Node]:
         deobfuscated, obfuscation = deobfuscate_cmd(powershell)
         cmd_node = Node("shell.cmd", deobfuscated, obfuscation, start, end) if obfuscation else None
         if enc:
-            split = deobfuscated.split()
-            if b"^" in split[-1]:
-                continue  # Invalid Base64
-            b64 = binascii.a2b_base64(pad_base64(split[-1].strip(b"'\""))).decode("utf-16", errors="ignore").encode()
-
-            # The powershell binary/command itself is at split[0]
-            if (not split[0].startswith(b'"') and split[0].endswith(b'"')) or (
-                not split[0].startswith(b"'") and split[0].endswith(b"'")
+            pwsh_invocation, encoded = deobfuscated.rsplit(maxsplit=1)
+            encoded = encoded.strip(b"'\"")
+            if len(encoded) % 4 or b"^" in encoded:
+                continue  # invalid base64
+            try:
+                b64 = binascii.a2b_base64(encoded).decode("utf-16", errors="ignore").encode()
+            except binascii.Error:
+                continue  # invalid base64
+            pwsh_invocation = b" -".join(pwsh_invocation.split(b"/"))  # Replace cmd style args with powershell style
+            args = pwsh_invocation.split()
+            # The powershell binary/command itself is at args[0]
+            if (not args[0].startswith(b'"') and args[0].endswith(b'"')) or (
+                not args[0].startswith(b"'") and args[0].endswith(b"'")
             ):
                 # Remove the trailing quotation
-                split[0] = split[0][:-1]
+                args[0] = args[0][:-1]
 
-            deobfuscated = b" ".join(split[:-2]) + b" -Command " + b64
+            deobfuscated = b" ".join(args[:-1]) + b" -Command " + b64
             if cmd_node:
                 cmd_node.children.append(
                     Node(
