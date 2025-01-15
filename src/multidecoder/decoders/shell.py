@@ -118,12 +118,11 @@ def find_powershell_strings(data: bytes) -> list[Node]:
         cmd_node = Node("shell.cmd", deobfuscated, obfuscation, start, end) if obfuscation else None
         if enc:
             pwsh_invocation, encoded = deobfuscated.rsplit(maxsplit=1)
+            encoded = encoded.strip(b"'\"")
+            if len(encoded) % 4 or b"^" in encoded:
+                continue  # invalid base64
             try:
-                b64 = (
-                    binascii.a2b_base64(encoded.strip(b"'\""), strict_mode=True)
-                    .decode("utf-16", errors="ignore")
-                    .encode()
-                )
+                b64 = binascii.a2b_base64(encoded).decode("utf-16", errors="ignore").encode()
             except binascii.Error:
                 continue  # invalid base64
             pwsh_invocation = b" -".join(pwsh_invocation.split(b"/"))  # Replace cmd style args with powershell style

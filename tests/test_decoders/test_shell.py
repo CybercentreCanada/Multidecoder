@@ -154,6 +154,18 @@ def test_find_cmd_strings_with_dynamic_cmd(cmd: bytes):
 
 
 # find_powershell_strings
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"",
+        b"supported Powershell version",
+        b"Azure powershell module",
+    ],
+)
+def test_find_powershell_strings_fp(data):
+    assert find_powershell_strings(data) == []
+
+
 def test_find_powershell_strings_enc():
     ex = b"powershell /e ZQBj^AGgAbwAgAGIAZQ^BlAA=="
     assert find_powershell_strings(ex) == [
