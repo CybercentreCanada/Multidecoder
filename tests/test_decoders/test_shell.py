@@ -177,7 +177,7 @@ def test_find_powershell_strings_enc():
 
 
 def test_find_powershell_strings_enc_with_quotes():
-    ex = b'powershell /e "ZQBjAGgAbwAgAGIAZQBlAA=="'
+    ex = b'powershell/e "ZQBjAGgAbwAgAGIAZQBlAA=="'
     assert find_powershell_strings(ex) == [
         Node(
             type_="shell.powershell",
@@ -185,6 +185,28 @@ def test_find_powershell_strings_enc_with_quotes():
             obfuscation="powershell.base64",
             start=0,
             end=len(ex),
+        )
+    ]
+
+
+def test_find_powershell_strings_carets():
+    ex = b'    ^p^o^w^e^r^s^h^e^l^l^ ^-^e^ ^"^Z^Q^B^j^A^G^g^A^b^w^A^g^A^G^I^A^Z^Q^B^l^A^A^=^=^"'
+    assert find_powershell_strings(ex) == [
+        Node(
+            type_="shell.cmd",
+            value=b'powershell -e "ZQBjAGgAbwAgAGIAZQBlAA=="',
+            obfuscation="unescape.shell.carets",
+            start=4,
+            end=len(ex),
+            children=[
+                Node(
+                    "shell.powershell",
+                    b"powershell -Command echo bee",
+                    "powershell.base64",
+                    0,
+                    28,
+                )
+            ],
         )
     ]
 
