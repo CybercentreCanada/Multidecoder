@@ -114,10 +114,9 @@ def domain_is_false_positive(domain: bytes) -> bool:
     tld = split[-1]
     root = split[0]
 
-    # Common domain false positives
-    domain_fpos = {b"wscript.shell", b"system.io", b"adodb.stream", b"set.name", b"wshshell.run", b"oshlnk.save"}
     # Common variable roots
     root_fpos = {
+        b"adodb",
         b"aquota",
         b"at",
         b"array",
@@ -125,8 +124,10 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"basic",
         b"button",
         b"cgroup",
+        b"contributing",
         b"ctrl-alt-del",
         b"di",
+        b"data",
         b"date",
         b"default",
         b"email",
@@ -162,6 +163,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"obj",
         b"object",
         b"org",
+        b"oshlnk",
         b"path",
         b"paths",
         b"poweroff",
@@ -170,9 +172,11 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"remote-fs",
         b"remote-fs-pre",
         b"rescue",
+        b"response",
         b"ribbon",
         b"rpcbind",
         b"service",
+        b"set",
         b"socket",
         b"sockets",
         b"string",
@@ -184,6 +188,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"syntaxerror",
         b"sysinit",
         b"syslog",
+        b"system",
         b"table",
         b"time",
         b"timers",
@@ -193,6 +198,8 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"umount",
         b"user",
         b"window",
+        b"wscript",
+        b"wshshell",
         b"zone",
     }
     # Common variable name ends
@@ -204,11 +211,13 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"call",
         b"cat",
         b"center",
+        b"city",
         b"click",
         b"country",
         b"data",
         b"day",
         b"direct",
+        b"email",
         b"events",
         b"exposed",
         b"fail",
@@ -218,11 +227,14 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"how",
         b"id",
         b"in",
+        b"io",
         b"info",
         b"is",
         b"it",
+        b"lat",
         b"link",
         b"map",
+        b"md",
         b"mobile",
         b"ms",
         b"marketing",
@@ -239,14 +251,18 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"radio",
         b"read",
         b"red",
+        b"run",
+        b"save",
         b"search",
+        b"services",
         b"sh",
+        b"shell",
         b"so",
         b"software",
         b"spa",
         b"space",
-        b"services",
         b"store",
+        b"stream",
         b"style",
         b"support",
         b"tab",
@@ -258,7 +274,6 @@ def domain_is_false_positive(domain: bytes) -> bool:
     return bool(
         (tld == b"next" and b"iterator" in domain_lower)  # Iterator not domain
         or re.match(b"[a-z]+[.][A-Z][a-z]+", domain)  # attribute access not domain
-        or domain_lower in domain_fpos  # common false positive
         or (tld in tld_fpos and (root in root_fpos or len(root) == 1))  # variable attribute
         or domain_lower.startswith(b"this.")  # super common variable name in javascript
         or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
