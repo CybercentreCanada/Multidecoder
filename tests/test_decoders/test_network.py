@@ -266,6 +266,8 @@ def test_email_re():
         b"http://%5B::1]",  # The colons used to have to be percent encoded in edge and chrome, but not anymore.
         b"http://[::1%5D",  # You wouldn't think this would work, but it still does on Chrome and Edge.
         b"http://[::1%5D/path",  # Even handles the rest of the url just fine.
+        # Large URLs
+        b"http://youtube.com" + (b"%20" * 2000) + b"@google.com",
     ],
 )
 def test_URL_RE_matches(url):
