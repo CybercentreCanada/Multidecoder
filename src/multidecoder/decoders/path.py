@@ -16,10 +16,10 @@ PATH_RE = rb"[.]?[.]?/(\w{3,}/)+[\w.]{3,}"
 # Windows Paths
 # See https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats
 WINDOWS_PATH_RE = (
-    rb"(?i)(?:\\\\[.?]\\(?:[a-z]:\\|UNC\\|Volume\{[a-z0-9-]{36}\}\\)?"  # DOS device path
-    rb"|\\\\[\w.-]+(?:@SSL)?(?:@\d{,5})?\\(?:[a-z]$\\)?"  # UNC path
+    rb"(?i)(?:\\\\[.?]\\(?:[a-z]:\\|UNC\\[\w.-]+\\(?:[a-z][$]\\)?|Volume\{[a-z0-9-]{36}\}\\)?"  # DOS device path
+    rb"|\\\\[\w.-]+(?:@SSL)?(?:@\d{,5})?\\(?:[a-z][$]\\)?"  # UNC path
     rb"|[a-z]:\\?|\\)?"  # absolute or drive relative path
-    rb"(?:(?:.|..|[\w.-]{3,})\\)+"  # path segments
+    rb"(?:(?:[.]|[.][.]|[\w.-]{3,})\\)+"  # path segments
     rb"[\w.-]{3,}"  # filename
 )
 
