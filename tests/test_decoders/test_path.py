@@ -65,7 +65,14 @@ def test_windows_path_re(path):
     assert re.search(WINDOWS_PATH_RE, path).group() == path
 
 
-@pytest.mark.parametrize("fpos", [b""])
+@pytest.mark.parametrize(
+    "fpos",
+    [
+        b"",
+        b"\\",
+        Rb"\"\\temp",
+    ],
+)
 def test_windows_path_re_fpos(fpos):
     assert not re.search(WINDOWS_PATH_RE, fpos)
 
@@ -116,30 +123,30 @@ def test_windows_path_re_fpos(fpos):
             ],
         ),
         (
-            Rb"\\?\UNC\127.0.0.1\path\to\file.exe",
+            Rb"\\?\UNC\127.0.0.1\path\file.exe",
             [
                 Node(
                     "windows.device.path",
-                    Rb"\\?\UNC\127.0.0.1\path\to\file.exe",
+                    Rb"\\?\UNC\127.0.0.1\path\file.exe",
                     "",
                     0,
-                    34,
+                    31,
                     children=[
                         Node("network.ip", b"127.0.0.1", "", 8, 17),
-                        Node("executable.filename", b"file.exe", "", 26, 34),
+                        Node("executable.filename", b"file.exe", "", 23, 31),
                     ],
                 ),
             ],
         ),
         (
-            Rb"c:\temp\\\\\\foo\..\\.\.\\test-file",
+            Rb"c:\temp\foo\..\.\.\test-file",
             [
                 Node(
                     "windows.path",
                     Rb"c:\temp\test-file",
                     "windows.dotpath",
                     0,
-                    35,
+                    28,
                 )
             ],
         ),
