@@ -184,6 +184,9 @@ def test_DOMAIN_RE_context(data, domain):
         b"reader.cc",
         b"process.name",
         b"subprocess.call",
+        b"readme.md",
+        b"compile.sh",
+        b"authentication.click",
     ],
 )
 def test_domain_is_false_positive(domain):
