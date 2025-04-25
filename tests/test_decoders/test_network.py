@@ -187,6 +187,8 @@ def test_DOMAIN_RE_context(data, domain):
         b"readme.md",
         b"compile.sh",
         b"authentication.click",
+        b"system.management",
+        b"microsoft.powershell.security",
     ],
 )
 def test_domain_is_false_positive(domain):
