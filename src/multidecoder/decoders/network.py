@@ -273,6 +273,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"lossy",
         b"manager",
         b"match",
+        b"mem",
         b"memfd",
         b"memutil",
         b"memory",
@@ -442,6 +443,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"verinfo",
         b"version",
         b"versioninfo",
+        b"view",
         b"vlog",
         b"window",
         b"wrapping",
@@ -537,12 +539,13 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"zone",
     }
     return bool(
-        (tld == b"next" and b"iterator" in domain_lower)  # Iterator not domain
-        or re.match(b"[a-z]+[.][A-Z][a-z]+", domain)  # attribute access not domain
-        or (tld in tld_fpos and (root in root_fpos or len(root) == 1))  # variable attribute
-        or domain_lower.startswith(b"this.")  # super common variable name in javascript
-        or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
+        len(root) < 3  # difficult to register, common variable names
+        or root == b"this"  # common variable name in javascript
         or (domain_lower.startswith(b"lib") and tld == b"so")  # ELF false positive
+        or (tld in tld_fpos and root in root_fpos)  # variable attribute
+        or (tld == b"next" and b"iterator" in domain_lower)  # Iterator not domain
+        or re.match(b"[a-z]+[.][A-Z][a-z]+", domain)  # attribute access not domain
+        or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
     )
 
 

@@ -189,6 +189,13 @@ def test_DOMAIN_RE_context(data, domain):
         b"authentication.click",
         b"system.management",
         b"microsoft.powershell.security",
+        b"mem.total",
+        b"e.business",
+        b"t.center",
+        b"a.family",
+        b"e.global",
+        b"view.name",
+        b"x.properties",
     ],
 )
 def test_domain_is_false_positive(domain):
