@@ -185,8 +185,11 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"descripters",
         b"destructible",
         b"di",
+        b"direction",
+        b"directions",
         b"div",
         b"division",
+        b"document",
         b"double-to-string",
         b"downcalls",
         b"duration",
@@ -227,6 +230,9 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"function",
         b"functionprototype",
         b"futex",
+        b"gadget",
+        b"gadgets",
+        b"geo",
         b"gettingstarted",
         b"glob",
         b"global",
@@ -260,6 +266,8 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"it",
         b"item",
         b"keyset",
+        b"layer",
+        b"layerswitcher",
         b"legacy",
         b"lexing",
         b"lhash",
@@ -303,6 +311,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"offsets",
         b"og",
         b"once",
+        b"operation",
         b"option",
         b"options",
         b"original",
@@ -444,6 +453,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"version",
         b"versioninfo",
         b"view",
+        b"visit",
         b"vlog",
         b"window",
         b"wrapping",
@@ -889,10 +899,11 @@ def domain_is_false_positive(domain: bytes) -> bool:
         len(root) < 3  # difficult to register, common variable names
         or root == b"this"  # common variable name in javascript
         or (domain_lower.startswith(b"lib") and tld == b"so")  # ELF false positive
-        or (root in root_fpos and not tld in reliable_tlds)  # variable attribute
+        or (root in root_fpos and tld not in reliable_tlds)  # variable attribute
         or (tld == b"next" and b"iterator" in domain_lower)  # Iterator not domain
         or re.match(b"[a-z]+[.][A-Z][a-z]+", domain)  # attribute access not domain
         or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
+        or domain_lower.endswith(b"prototype.at")
     )
 
 
