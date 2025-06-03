@@ -196,6 +196,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"e.global",
         b"view.name",
         b"x.properties",
+        b"sub.name",
     ],
 )
 def test_domain_is_false_positive(domain):
