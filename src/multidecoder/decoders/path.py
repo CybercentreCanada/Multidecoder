@@ -19,8 +19,8 @@ WINDOWS_PATH_RE = (
     rb"(?i)(?:\\\\[.?]\\(?:[a-z]:\\|UNC\\[\w.-]+\\(?:[a-z][$]\\)?|Volume\{[a-z0-9-]{36}\}\\)?"  # DOS device path
     rb"|\\\\[\w.-]+(?:@SSL)?(?:@\d{,5})?\\(?:[a-z][$]\\)?"  # UNC path
     rb"|[a-z]:\\?|\\)?"  # absolute or drive relative path
-    rb"(?:(?:[.]|[.][.]|[\w.-]{3,})\\)+"  # path segments
-    rb"[\w.-]{3,}"  # filename
+    rb"(?:(?:[.]|[.][.]|[\w.-]{3,256})\\)+"  # path segments
+    rb"[\w.-]{3,256}"  # filename
 )
 
 
