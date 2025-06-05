@@ -33,6 +33,8 @@ def find_pe_files(data: bytes) -> list[Node]:
         if size == 0:
             continue
         end = mz_offset + size
+        if end > len_data:
+            end = len_data
         pe_files.append(Node("pe_file", data[mz_offset:end], "", mz_offset, end))
     return pe_files
 
