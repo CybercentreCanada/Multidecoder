@@ -257,6 +257,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"inline",
         b"input",
         b"install",
+        b"installscript",
         b"int",
         b"int16",
         b"int32",
