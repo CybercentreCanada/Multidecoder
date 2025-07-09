@@ -601,7 +601,6 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"ly",
         b"ma",
         b"mc",
-        b"me",
         b"mg",
         b"mh",
         b"ml",
