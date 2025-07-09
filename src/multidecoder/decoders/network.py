@@ -181,6 +181,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"decimal",
         b"default",
         b"deferred",
+        b"delete",
         b"demangle",
         b"descripters",
         b"destructible",
