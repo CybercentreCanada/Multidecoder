@@ -42,9 +42,7 @@ def find_all(keyword: bytes, data: bytes) -> list[int]:
     start = data.find(keyword)
     while start >= 0:
         end = start + len(keyword)
-        if (start == 0 or not data[start - 1 : start].isalnum()) and (
-            end == len(data) or not data[end : end + 1].isalnum()
-        ):
+        if (start == 0 or not chr(data[start - 1]).isalnum()) and (end == len(data) or not chr(data[end]).isalnum()):
             starts.append(start)
-        start = data.find(keyword, start + len(keyword))
+        start = data.find(keyword, end)
     return starts
