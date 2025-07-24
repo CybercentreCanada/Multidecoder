@@ -99,7 +99,9 @@ def is_url(url: bytes) -> bool:
         split.port  # noqa: B018 urlsplit.port is a property that does validation and raises ValueError if it fails.
     except ValueError:
         return False
-    return bool(split.scheme and split.hostname and split.scheme in (b"http", b"https", b"ftp"))
+    return bool(
+        split.scheme and split.hostname and split.scheme in (b"http", b"https", b"ftp")
+    )
 
 
 # False Positives
@@ -910,7 +912,12 @@ def domain_is_false_positive(domain: bytes) -> bool:
         or (root in root_fpos and tld not in reliable_tlds)  # variable attribute
         or (tld == b"next" and b"iterator" in domain_lower)  # Iterator not domain
         or re.match(b"[a-z]+[.][A-Z][a-z]+", domain)  # attribute access not domain
-        or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
+        or (
+            len(split) == 3
+            and split[1] == b"prototype"
+            and len(root) < 3
+            and len(tld) < 3
+        )  # javascript pattern
         or domain_lower.endswith(b"prototype.at")
     )
 
@@ -922,6 +929,39 @@ def find_domains(data: bytes) -> list[Node]:
     out = []
     for match in re.finditer(DOMAIN_RE, data):
         domain = match.group()
+        match_type = DOMAIN_TYPE
+
+        # Check if the preceeding character where this domain was found in the data is a "%"
+        # Some of the URL encoding might be stuck to the domain that was found via regex.
+        preceeding_character = chr(data[match.span()[0] - 1])
+        if preceeding_character == "%" and domain.startswith(b"40"):
+            # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
+            match_type = EMAIL_TYPE
+            domain = domain[2:]
+
+            # Update the match object to reflect the new domain
+            match = re.search(domain, data, 0, *match.span())
+        elif preceeding_character == "%" and domain.lower().startswith(b"2f"):
+            # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
+            domain = domain[2:]
+
+            # Update the match object to reflect the new domain
+            match = re.search(domain, data, 0, *match.span())
+        elif preceeding_character == "@":
+            # We might've stumbled on a email domain, in which case we should change the match type and validate
+            match_type = EMAIL_TYPE
+
+        if match_type == EMAIL_TYPE:
+            # Verify that the domain is a valid email domain, if so skip adding it to the output
+            specific_email_re = EMAIL_RE.replace(DOMAIN_RE[4:], domain)
+            if preceeding_character == "%":
+                specific_email_re = specific_email_re.replace(b"@", b"%40")
+            if re.search(specific_email_re, data, endpos=match.span()[1]):
+                continue
+
+            # We have reason to suspect this domain was found under another context (ie. basic auth in a URL)
+            match_type = DOMAIN_TYPE
+
         if not is_domain(domain) or len(domain) < 7:
             continue
         if domain_is_false_positive(domain):
@@ -933,7 +973,11 @@ def find_domains(data: bytes) -> list[Node]:
 @decoder
 def find_emails(data: bytes) -> list[Node]:
     """Find email addresses in data"""
-    return [match_to_hit(EMAIL_TYPE, match) for match in re.finditer(EMAIL_RE, data) if is_domain(match.group(1))]
+    return [
+        match_to_hit(EMAIL_TYPE, match)
+        for match in re.finditer(EMAIL_RE, data)
+        if is_domain(match.group(1))
+    ]
 
 
 @decoder
@@ -977,7 +1021,9 @@ def find_urls(data: bytes) -> list[Node]:
         prev = data[start - 1]
         if start == 0:
             pass  # No context
-        elif group[prev : prev + 1] == b"0" and not _is_printable(data[start - 10 : start]):
+        elif group[prev : prev + 1] == b"0" and not _is_printable(
+            data[start - 10 : start]
+        ):
             # Pascal string in PE file
             end = start + prev
             group = group[:prev]
@@ -1074,7 +1120,8 @@ def parse_url(url_text: bytes) -> list[Node]:
                 (
                     MIXED_CASE_OBF
                     # url.scheme is normalized by urlsplit
-                    if url_text[0 : len(url.scheme)] not in (url.scheme, url.scheme.upper())
+                    if url_text[0 : len(url.scheme)]
+                    not in (url.scheme, url.scheme.upper())
                     else ""
                 ),
                 0,
@@ -1123,9 +1170,15 @@ def parse_authority(authority: bytes) -> list[Node]:
     """Split a URL's authority into it's consituent parts and unquote them"""
     out = []
     offset = 0
-    userinfo, address = authority.rsplit(b"@", 1) if b"@" in authority else (b"", authority)
-    username, password = userinfo.split(b":", 1) if b":" in userinfo else (userinfo, b"")
-    host, _ = address.rsplit(b":", 1) if re.match(rb"(?r):\d*", address) else (address, b"")
+    userinfo, address = (
+        authority.rsplit(b"@", 1) if b"@" in authority else (b"", authority)
+    )
+    username, password = (
+        userinfo.split(b":", 1) if b":" in userinfo else (userinfo, b"")
+    )
+    host, _ = (
+        address.rsplit(b":", 1) if re.match(rb"(?r):\d*", address) else (address, b"")
+    )
     if username:
         out.append(
             Node(
@@ -1183,7 +1236,12 @@ def normalize_percent_encoding(uri: bytes) -> tuple[bytes, str]:
     def normalize_percent(match: re.Match[bytes]) -> bytes:
         """Normalize a single percent encoded byte"""
         byte = binascii.unhexlify(match.group(1))
-        if b"A" <= byte <= b"Z" or b"a" <= byte <= b"z" or b"0" <= byte <= b"9" or byte in (b"-", b".", b"_", b"~"):
+        if (
+            b"A" <= byte <= b"Z"
+            or b"a" <= byte <= b"z"
+            or b"0" <= byte <= b"9"
+            or byte in (b"-", b".", b"_", b"~")
+        ):
             return byte
         return match.group(0).upper()
 

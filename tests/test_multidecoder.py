@@ -1,5 +1,6 @@
 import pytest
 
+from multidecoder.decoders.network import find_domains
 from multidecoder.multidecoder import Multidecoder, Node
 
 
@@ -25,6 +26,20 @@ def test_analyze_data_url(md):
                 Node("network.domain", b"some.domain.com", "", 8, 23),
             ],
         )
+    ]
+
+
+def test_analyze_encoded_url(md):
+    # Test with an encoded URL that contains a domain
+    result = find_domains(
+        b"https://domain.com/?url=https%3A%2F%2Fbadsite.org%2Fblah%2F&amp;data=random.person%40email.com"
+    )
+
+    # We expect to only find two domains: domain.com and badsite.org,
+    # email.com is an email domain that's part of an email address that's been encoded, that should not be included
+    assert result == [
+        Node("network.domain", b"domain.com", "", 8, 18),
+        Node("network.domain", b"badsite.org", "", 38, 49),
     ]
 
 
