@@ -925,8 +925,8 @@ def find_domains(data: bytes) -> list[Node]:
 
         # Check if the preceeding character where this domain was found in the data is a "%"
         # Some of the URL encoding might be stuck to the domain that was found via regex.
-        preceeding_character = chr(data[match.span()[0] - 1])
-        if preceeding_character == "%" and (domain.lower().startswith(b"2f") or domain.startswith(b"40")):
+        preceeding_character = chr(data[match.start() - 1])
+        if preceeding_character == "%" and (domain.lower().startswith((b"2f", b"40")):
             # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
             domain = domain[2:]
 
@@ -1001,11 +1001,10 @@ def find_urls(data: bytes) -> list[Node]:
         elif next_chr and prev == ord('"') and prev != next_chr:
             # URL is part of a quoted string but not the whole string was extracted
             # Common for XML or HTML files
-            pattern = rb'"(' + group + rb'[a-zA-Z0-9\s\.\/]+)"'
-            match = re.search(pattern, data, pos=start - 1)
+            match = re.match(rb'[a-zA-Z0-9\s\.\/]+"', data, pos=end)
             if match:
-                group = match.group(1)
-                start, end = match.span(1)
+                end = match.end()
+                group = data[start : end]
         if not is_url(group):
             continue
         out.append(
