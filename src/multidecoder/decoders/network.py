@@ -1003,7 +1003,7 @@ def find_urls(data: bytes) -> list[Node]:
             # Common for XML or HTML files
             match = re.match(rb'[a-zA-Z0-9\s\.\/]+"', data, pos=end)
             if match:
-                end = match.end()
+                end = match.end() - 1
                 group = data[start : end]
         if not is_url(group):
             continue
