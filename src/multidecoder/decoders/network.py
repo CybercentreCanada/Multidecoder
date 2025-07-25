@@ -999,6 +999,7 @@ def find_urls(data: bytes) -> list[Node]:
         group = match.group()
         start, end = match.span()
         prev = data[start - 1]
+        next = data[end + 1]
         if start == 0:
             pass  # No context
         elif group[prev : prev + 1] == b"0" and not _is_printable(
@@ -1012,6 +1013,14 @@ def find_urls(data: bytes) -> list[Node]:
             if close > -1:
                 end = start + close
                 group = group[:close]
+        elif prev == ord('"') and prev != next:
+            # URL is part of a quoted string but not the whole string was extracted
+            # Common for XML or HTML files
+            pattern = rb'"(' + group + rb'[a-zA-Z0-9\s\.\/]+)"'
+            match = re.search(pattern, data, pos=start - 1)
+            if match:
+                group = match.group(1)
+                start, end = match.span(1)
         if not is_url(group):
             continue
         out.append(

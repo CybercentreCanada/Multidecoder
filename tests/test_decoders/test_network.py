@@ -413,6 +413,29 @@ def test_is_url():
                 )
             ],
         ),
+        (
+            b'<a href="https://journal.com/Canadian Centre for Cyber Security/My Great Article.docx">Click Here</a>',
+            [
+                Node(
+                    "network.url",
+                    b"https://journal.com/Canadian Centre for Cyber Security/My Great Article.docx",
+                    "",
+                    9,
+                    85,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"journal.com", "", 8, 19),
+                        Node(
+                            "network.url.path",
+                            b"/Canadian Centre for Cyber Security/My Great Article.docx",
+                            "",
+                            19,
+                            76,
+                        ),
+                    ],
+                )
+            ],
+        ),
     ],
 )
 def test_find_url(data, urls):
