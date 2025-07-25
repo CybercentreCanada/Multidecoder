@@ -929,38 +929,18 @@ def find_domains(data: bytes) -> list[Node]:
     out = []
     for match in re.finditer(DOMAIN_RE, data):
         domain = match.group()
-        match_type = DOMAIN_TYPE
 
         # Check if the preceeding character where this domain was found in the data is a "%"
         # Some of the URL encoding might be stuck to the domain that was found via regex.
         preceeding_character = chr(data[match.span()[0] - 1])
-        if preceeding_character == "%" and domain.startswith(b"40"):
-            # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
-            match_type = EMAIL_TYPE
-            domain = domain[2:]
-
-            # Update the match object to reflect the new domain
-            match = re.search(domain, data, 0, *match.span())
-        elif preceeding_character == "%" and domain.lower().startswith(b"2f"):
+        if preceeding_character == "%" and (
+            domain.lower().startswith(b"2f") or domain.startswith(b"40")
+        ):
             # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
             domain = domain[2:]
 
             # Update the match object to reflect the new domain
             match = re.search(domain, data, 0, *match.span())
-        elif preceeding_character == "@":
-            # We might've stumbled on a email domain, in which case we should change the match type and validate
-            match_type = EMAIL_TYPE
-
-        if match_type == EMAIL_TYPE:
-            # Verify that the domain is a valid email domain, if so skip adding it to the output
-            specific_email_re = EMAIL_RE.replace(DOMAIN_RE[4:], domain)
-            if preceeding_character == "%":
-                specific_email_re = specific_email_re.replace(b"@", b"%40")
-            if re.search(specific_email_re, data, endpos=match.span()[1]):
-                continue
-
-            # We have reason to suspect this domain was found under another context (ie. basic auth in a URL)
-            match_type = DOMAIN_TYPE
 
         if not is_domain(domain) or len(domain) < 7:
             continue
