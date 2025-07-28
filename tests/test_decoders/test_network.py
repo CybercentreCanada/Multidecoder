@@ -213,6 +213,14 @@ def test_find_domain_fpos(data):
     assert find_domains(data) == []
 
 
+@pytest.mark.parametrize(
+    ("data", "domains"),
+    [(b"K.cA", []), (b"mailto:delete.me@cyber.gc.ca", [Node("network.domain", b"cyber.gc.ca", "", 17, 28)])],
+)
+def test_find_domains(data, domains):
+    assert find_domains(data) == domains
+
+
 # Email -----------------------------------------
 
 
