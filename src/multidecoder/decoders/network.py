@@ -922,6 +922,23 @@ def find_domains(data: bytes) -> list[Node]:
     out = []
     for match in re.finditer(DOMAIN_RE, data):
         domain = match.group()
+
+        # Check if the preceeding character where this domain was found in the data is a "%"
+        # Some of the URL encoding might be stuck to the domain that was found via regex.
+        preceeding_character = chr(data[match.start() - 1])
+        next_character = chr(data[match.end()]) if match.end() < len(data) else None
+        if next_character and next_character == "@":
+            # If the next character is an '@', we are in a userinfo section of a URL or email address.
+            # The domain of interest should follow after the "@" in either scenario (which is likely captured by regex)
+            continue
+
+        if preceeding_character == "%" and domain.lower().startswith((b"2f", b"40")):
+            # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
+            domain = domain[2:]
+
+            # Update the match object to reflect the new domain
+            match = re.search(domain, data, 0, *match.span())
+
         if not is_domain(domain) or len(domain) < 7:
             continue
         if domain_is_false_positive(domain):
@@ -975,6 +992,7 @@ def find_urls(data: bytes) -> list[Node]:
         group = match.group()
         start, end = match.span()
         prev = data[start - 1]
+        next_chr = data[end + 1] if end + 1 < len(data) else None
         if start == 0:
             pass  # No context
         elif group[prev : prev + 1] == b"0" and not _is_printable(data[start - 10 : start]):
@@ -986,6 +1004,13 @@ def find_urls(data: bytes) -> list[Node]:
             if close > -1:
                 end = start + close
                 group = group[:close]
+        elif next_chr and prev == ord('"') and prev != next_chr:
+            # URL is part of a quoted string but not the whole string was extracted
+            # Common for XML or HTML files
+            match = re.match(rb'[a-zA-Z0-9\s\.\/]+"', data, pos=end)
+            if match:
+                end = match.end() - 1
+                group = data[start:end]
         if not is_url(group):
             continue
         out.append(
