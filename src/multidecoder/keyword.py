@@ -1,23 +1,35 @@
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from multidecoder.node import Node
+
+if TYPE_CHECKING:
+    from typing import Iterable
 
 MIXED_CASE_OBF = "MixedCase"
 
 
-def is_mixed_case(value: bytes, raw: bytes) -> bool:
-    # Mixed case is not possible if raw is entirely upper or lower-cased
-    if raw.isupper() or raw.islower():
-        return False
-
-    for v, d in zip(raw, value):
-        # Check for case discrepancy between byte characters
-        if (chr(v).isupper() and not chr(d).isupper()) or (chr(v).islower() and not chr(d).islower()):
-            return True
-
-    return False
+def is_mixed_case(expected: bytes, found: bytes) -> bool:
+    # Keyword is mixed case if it has an unexpected uppercase character, unless it's all uppercase.
+    # Doing sequences of alphabetic characters seperately to handle regestry keys and paths better.
+    in_word = False
+    all_upper = True
+    good_case = True
+    for byte_found, byte_expected in zip(found, expected):
+        if chr(byte_found).isalpha():
+            in_word = True
+            found_upper = chr(byte_found).isupper()
+            expected_upper = chr(byte_expected).isupper()
+            all_upper = all_upper and found_upper
+            good_case = good_case and (expected_upper or not found_upper)
+        elif in_word:
+            if not all_upper and not good_case:
+                return True
+            in_word = False
+            all_upper = True
+            good_case = True
+    return (not all_upper and not good_case) if in_word else False
 
 
 def find_keywords(label: str, keywords: Iterable[bytes], data: bytes) -> list[Node]:

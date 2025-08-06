@@ -12,8 +12,10 @@ from multidecoder.node import Node
         (b"BLAH", b"BLAH", False),
         (b"blah", b"BLAH", False),
         (b"Blah", b"Blah", False),
-        (b"BLah", b"Blah", True),
+        (b"BLah", b"Blah", False),
         (b"Blah", b"BLah", True),
+        (b"Software\\Microsoft", b"SOFTWARE\\Microsoft", False),
+        (b"Software\\Microsoft", b"SOFTWARE\\MicrOsoft", True),
     ],
 )
 def test_is_mixed_case(value, raw, expected_bool):
@@ -52,7 +54,7 @@ def test_find_all(keyword, data, expected_list_of_ints):
             [b"YABA", b"DaBa", b"doo"],
             b"YaBa;DaBa+doo",
             [
-                Node("label", b"YABA", "MixedCase", 0, 4),
+                Node("label", b"YABA", "", 0, 4),
                 Node("label", b"DaBa", "", 5, 9),
                 Node("label", b"doo", "", 10, 13),
             ],
