@@ -13,7 +13,7 @@
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
+        "editor.defaultFormatter": "charliermarsh.ruff"
     },
     "ruff.enable": true,
     "ruff.organizeImports": true,
