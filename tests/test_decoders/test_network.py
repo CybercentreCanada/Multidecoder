@@ -197,10 +197,21 @@ def test_DOMAIN_RE_context(data, domain):
         b"view.name",
         b"x.properties",
         b"sub.name",
+        b"oft.com",
     ],
 )
 def test_domain_is_false_positive(domain):
     assert domain_is_false_positive(domain)
+
+
+@pytest.mark.parametrize(
+    "domain",
+    [
+        b"microsoft.com",
+    ],
+)
+def test_domain_is_false_positive_real_domain(domain):
+    assert not domain_is_false_positive(domain)
 
 
 @pytest.mark.parametrize(
