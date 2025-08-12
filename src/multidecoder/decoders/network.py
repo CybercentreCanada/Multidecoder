@@ -493,11 +493,14 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"ao",
         b"aq",
         b"ar",
+        # b"as",
+        # b"at",  # common in scripts
         b"au",
         b"aw",
         b"ax",
         b"az",
         b"ba",
+        # b"bb"
         b"bd",
         b"be",
         b"bf",
@@ -516,10 +519,12 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"by",
         b"bz",
         b"ca",
+        # b"cc",  #c++ source files
         b"cd",
         b"cf",
         b"cg",
         b"ch",
+        # b"ci",
         b"ck",
         b"cl",
         b"cm",
@@ -536,8 +541,11 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"dj",
         b"dk",
         b"dm",
+        # b"do",
         b"dz",
         b"ec",
+        # b"ee",
+        # b"eg",
         b"er",
         b"es",
         b"et",
@@ -552,6 +560,10 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"gb",
         b"gd",
         b"ge",
+        # b"gf",
+        # b"gg",
+        # b"gh",
+        # b"gi",
         b"gl",
         b"gm",
         b"gn",
@@ -569,11 +581,16 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"hr",
         b"ht",
         b"hu",
+        # b"id",  # common in scripts
         b"ie",
         b"il",
         b"im",
+        # b"in",  # common in scripts
+        # b"io",  # common in scripts
         b"iq",
         b"ir",
+        # b"is",  # common in scripts
+        # b"it",  # common in scripts
         b"je",
         b"jm",
         b"jo",
@@ -590,6 +607,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"ky",
         b"kz",
         b"la",
+        # b"lb",
         b"lc",
         b"li",
         b"lk",
@@ -601,14 +619,18 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"ly",
         b"ma",
         b"mc",
+        # b"md",  # Markdown Files
         b"mg",
         b"mh",
+        # b"mk",  # Make files
         b"ml",
+        # b"mm",
         b"mn",
         b"mo",
         b"mp",
         b"mq",
         b"mr",
+        # b"ms",
         b"mt",
         b"mu",
         b"mv",
@@ -623,6 +645,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"ng",
         b"ni",
         b"nl",
+        # b"no",
         b"np",
         b"nr",
         b"nu",
@@ -634,14 +657,18 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"pg",
         b"ph",
         b"pk",
+        # b"pl",
+        # b"pm",
         b"pn",
         b"pr",
         b"ps",
         b"pt",
         b"pw",
+        # b"py",  # Python files
         b"qa",
         b"re",
         b"ro",
+        # b"rs",  # Rust source files
         b"ru",
         b"rw",
         b"sa",
@@ -650,12 +677,14 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"sd",
         b"se",
         b"sg",
+        # b"sh",  # shell script files
         b"si",
         b"sj",
         b"sk",
         b"sl",
         b"sm",
         b"sn",
+        # b"so",  # Shared Object files
         b"sr",
         b"ss",
         b"st",
@@ -913,6 +942,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         or re.match(b"[a-z]+[.][A-Z][a-z]+", domain)  # attribute access not domain
         or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
         or domain_lower.endswith(b"prototype.at")
+        or b"icrosoft.com".endswith(domain_lower)  # Truncated microsoft.com
     )
 
 
