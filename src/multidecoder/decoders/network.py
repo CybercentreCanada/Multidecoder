@@ -493,14 +493,14 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"ao",
         b"aq",
         b"ar",
-        # b"as",
+        # b"as",  # common in scripts
         # b"at",  # common in scripts
         b"au",
         b"aw",
         b"ax",
         b"az",
         b"ba",
-        # b"bb"
+        # b"bb",  # double letter
         b"bd",
         b"be",
         b"bf",
@@ -519,7 +519,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"by",
         b"bz",
         b"ca",
-        # b"cc",  #c++ source files
+        # b"cc",  # C++ source files
         b"cd",
         b"cf",
         b"cg",
@@ -544,7 +544,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         # b"do",
         b"dz",
         b"ec",
-        # b"ee",
+        # b"ee",  # double letter
         # b"eg",
         b"er",
         b"es",
@@ -561,7 +561,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"gd",
         b"ge",
         # b"gf",
-        # b"gg",
+        # b"gg",  # double letter
         # b"gh",
         # b"gi",
         b"gl",
@@ -620,11 +620,12 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"ma",
         b"mc",
         # b"md",  # Markdown Files
+        # b"me",  # common in scripts
         b"mg",
         b"mh",
         # b"mk",  # Make files
         b"ml",
-        # b"mm",
+        # b"mm",  # double letter
         b"mn",
         b"mo",
         b"mp",
@@ -657,8 +658,8 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"pg",
         b"ph",
         b"pk",
-        # b"pl",
-        # b"pm",
+        # b"pl",  # perl script
+        # b"pm",  # perl module
         b"pn",
         b"pr",
         b"ps",
