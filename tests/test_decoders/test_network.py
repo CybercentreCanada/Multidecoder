@@ -209,6 +209,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"mZME.mE",
         b"Instance.Name",
         b"login.microsoft",
+        b"Second.click",
     ],
 )
 def test_domain_is_false_positive(domain):
