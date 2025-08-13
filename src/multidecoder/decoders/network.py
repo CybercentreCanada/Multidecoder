@@ -117,10 +117,6 @@ def domain_is_false_positive(domain: bytes) -> bool:
         # For domains that chose to use camel case for readability, the tld should still be lowercase.
         # Restrict to domains with a lowercase tld and fully uppercase domains
         return True
-    domain_lower = domain.lower()
-    split = domain_lower.split(b".")  # lowering then splitting is faster than lowering each segment
-    tld = split[-1]
-    root = split[0]
 
     # Common variable roots
     root_fpos = {
@@ -133,7 +129,6 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"algorithm",
         b"alias",
         b"analytic",
-        b"analytics",
         b"append",
         b"appendreplace",
         b"application",
@@ -148,7 +143,6 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"attrtable",
         b"authentication",
         b"badge",
-        b"badges",
         b"barrier",
         b"base64",
         b"basetype",
@@ -171,11 +165,11 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"client",
         b"clock",
         b"code-of-conduct",
-        b"colors",
+        b"color",
         b"column",
         b"common",
         b"compile",
-        b"conditions",
+        b"condition",
         b"config",
         b"constructor",
         b"context",
@@ -202,18 +196,16 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"deferred",
         b"delete",
         b"demangle",
-        b"descripters",
+        b"descripter",
         b"destructible",
         b"detail",
-        b"details",
         b"di",
         b"direction",
-        b"directions",
         b"div",
         b"division",
         b"document",
         b"double-to-string",
-        b"downcalls",
+        b"downcall",
         b"duration",
         b"ecdh",
         b"ecos",
@@ -230,18 +222,16 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"event",
         b"eventstudy",
         b"example",
-        b"examples",
         b"exit",
         b"expr",
         b"extention",
         b"fast-dtoa",
-        b"features",
+        b"feature",
         b"fence",
         b"field",
         b"file",
         b"fixed-dtoa",
         b"flag",
-        b"flags",
         b"float",
         b"float32",
         b"float64",
@@ -254,14 +244,12 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"functionprototype",
         b"futex",
         b"gadget",
-        b"gadgets",
         b"geo",
         b"gettingstarted",
         b"glob",
         b"global",
-        b"globals",
         b"graph",
-        b"graphcycles",
+        b"graphcycle",
         b"graphical",
         b"grid",
         b"halt",
@@ -319,7 +307,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"metadata",
         b"metatrace",
         b"method",
-        b"metrics",
+        b"metric",
         b"microsoft",
         b"mount",
         b"mutex",
@@ -337,18 +325,15 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"nss-lookup",
         b"nullguard",
         b"number",
-        b"numbers",
         b"obj",
         b"object",
         b"offset",
-        b"offsets",
         b"og",
         b"once",
         b"operation",
         b"option",
-        b"options",
         b"original",
-        b"originalresults",
+        b"originalresult",
         b"org",
         b"os",
         b"oshlnk",
@@ -360,7 +345,6 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"parentoffset",
         b"parser",
         b"path",
-        b"paths",
         b"pattern",
         b"performance",
         b"pickle",
@@ -398,11 +382,10 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"response",
         b"restore",
         b"result",
-        b"results",
         b"ribbon",
-        b"roots",
+        b"root",
         b"rpcbind",
-        b"runtests",
+        b"runtest",
         b"rvalue",
         b"second",
         b"security",
@@ -410,7 +393,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"sequence",
         b"service",
         b"set",
-        b"settings",
+        b"setting",
         b"sha1",
         b"sha256",
         b"sha512",
@@ -427,11 +410,9 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"shutdown",
         b"signal",
         b"signalhandler",
-        b"signals",
         b"sigpwr",
         b"simple",
         b"socket",
-        b"sockets",
         b"source",
         b"spec",
         b"spinlock",
@@ -468,14 +449,12 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"tail",
         b"target",
         b"task",
-        b"tasks",
         b"technique",
         b"test",
         b"testdomain",
         b"thread",
         b"time",
         b"timer",
-        b"timers",
         b"time-sync",
         b"timezone",
         b"token",
@@ -498,10 +477,8 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"user",
         b"utf8",
         b"util",
-        b"utils",
         b"uuid",
         b"value",
-        b"values",
         b"vcl",
         b"vector",
         b"verinfo",
@@ -515,7 +492,6 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"winapi",
         b"worksheet",
         b"workspace",
-        b"workspaces",
         b"workspacesclient",
         b"wrapping",
         b"wscript",
@@ -986,11 +962,23 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"xn--ygbi2ammx",
         b"xn--zfr164b",
     }
+
+    def check_root(root: bytes, root_fpos: set[bytes]) -> bool:
+        """Check normalized verisons of root against root_fpos."""
+        if root.endswith(b"s") and root[:-1] in root_fpos:
+            # Regular English Plurals
+            return True
+        return root in root_fpos
+
+    domain_lower = domain.lower()
+    split = domain_lower.split(b".")  # lowering then splitting is faster than lowering each segment
+    tld = split[-1]
+    root = split[0]
     return bool(
         len(root) < 3  # difficult to register, common variable names
         or root == b"this"  # common variable name in javascript
         or (domain_lower.startswith(b"lib") and tld == b"so")  # ELF false positive
-        or (root in root_fpos and tld not in reliable_tlds)  # variable attribute
+        or (check_root(root, root_fpos) and tld not in reliable_tlds)  # variable attribute
         or (tld == b"next" and b"iterator" in domain_lower)  # Iterator not domain
         or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
         or domain_lower.endswith(b"prototype.at")
