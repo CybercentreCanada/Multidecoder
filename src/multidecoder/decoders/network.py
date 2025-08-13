@@ -169,6 +169,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"column",
         b"common",
         b"compile",
+        b"component",
         b"condition",
         b"config",
         b"constructor",
