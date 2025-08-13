@@ -211,6 +211,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"login.microsoft",
         b"Second.click",
         b"component.name",
+        b"mman.cc",
     ],
 )
 def test_domain_is_false_positive(domain):

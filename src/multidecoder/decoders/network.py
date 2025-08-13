@@ -310,6 +310,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"method",
         b"metric",
         b"microsoft",
+        b"mman",
         b"mount",
         b"mutex",
         b"multi-user",
