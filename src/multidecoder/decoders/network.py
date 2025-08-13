@@ -300,6 +300,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"local-fs-pre",
         b"location",
         b"logging",
+        b"login",
         b"lossy",
         b"mail",
         b"manager",

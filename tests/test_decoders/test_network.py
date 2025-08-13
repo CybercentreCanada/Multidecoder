@@ -208,6 +208,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"Details.Report",
         b"mZME.mE",
         b"Instance.Name",
+        b"login.microsoft",
     ],
 )
 def test_domain_is_false_positive(domain):
