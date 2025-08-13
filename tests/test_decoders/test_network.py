@@ -206,6 +206,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"proposal.ID",
         b"arepoint.com",
         b"Details.Report",
+        b"mZME.mE",
     ],
 )
 def test_domain_is_false_positive(domain):
@@ -216,6 +217,7 @@ def test_domain_is_false_positive(domain):
     "domain",
     [
         b"microsoft.com",
+        b"MICROSOFT.COM",
     ],
 )
 def test_domain_is_false_positive_real_domain(domain):

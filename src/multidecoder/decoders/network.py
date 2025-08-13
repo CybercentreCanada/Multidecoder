@@ -972,6 +972,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         or (tld == b"next" and b"iterator" in domain_lower)  # Iterator not domain
         or re.match(b"[A-Za-z]+[.][A-Z][a-z]+", domain)  # attribute access not domain
         or re.match(b"[a-z]+[.][A-Z]{2}", domain)  # attribute access
+        or re.match(b"[^.]+.[a-z][A-Z]", domain)  # weird capitalization that shows up in data false positives
         or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
         or domain_lower.endswith(b"prototype.at")
         or b"icrosoft.com".endswith(domain_lower)  # Truncated microsoft.com
