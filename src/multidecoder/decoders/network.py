@@ -191,6 +191,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"demangle",
         b"descripters",
         b"destructible",
+        b"details",
         b"di",
         b"direction",
         b"directions",
@@ -354,6 +355,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"program",
         b"progress",
         b"property",
+        b"proposal",
         b"proto",
         b"prtime",
         b"prtracer",
@@ -467,6 +469,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"uint64",
         b"umount",
         b"unix",
+        b"unsafe",
         b"unscaledcycleclock",
         b"unwinder",
         b"upgrade",
@@ -490,6 +493,9 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"window",
         b"winapi",
         b"worksheet",
+        b"workspace",
+        b"workspaces",
+        b"workspacesclient",
         b"wrapping",
         b"wscript",
         b"wshshell",
@@ -968,6 +974,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
         or domain_lower.endswith(b"prototype.at")
         or b"icrosoft.com".endswith(domain_lower)  # Truncated microsoft.com
+        or b"harepoint.com".endswith(domain_lower)  # Truncated sharepoint.com
     )
 
 

@@ -203,6 +203,9 @@ def test_DOMAIN_RE_context(data, domain):
         b"font.name",
         b"mail.CC",
         b"Worksheet.Name",
+        b"proposal.ID",
+        b"arepoint.com",
+        b"Details.Report",
     ],
 )
 def test_domain_is_false_positive(domain):
