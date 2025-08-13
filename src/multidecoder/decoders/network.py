@@ -107,10 +107,18 @@ def is_url(url: bytes) -> bool:
 
 def domain_is_false_positive(domain: bytes) -> bool:
     """Flag common forms of dotted text that can be mistaken for domains."""
-    domain_lower = domain.lower()
-    split = domain_lower.split(b".")
-    if len(split) < 2:
+    split = domain.split(b".", 1)
+    if len(split) != 2:
         return True
+    if not split[1].islower() and not domain.isupper():
+        # All lowercase is typical for domains.
+        # All uppercase may be used in contexts where lowercase letters must be avoided.
+        # Mixed case is uncommon in domains, but common in identifiers.
+        # For domains that chose to use camel case for readability, the tld should still be lowercase.
+        # Restrict to domains with a lowercase tld and fully uppercase domains
+        return True
+    domain_lower = domain.lower()
+    split = domain_lower.split(b".")  # lowering then splitting is faster than lowering each segment
     tld = split[-1]
     root = split[0]
 
@@ -970,9 +978,6 @@ def domain_is_false_positive(domain: bytes) -> bool:
         or (domain_lower.startswith(b"lib") and tld == b"so")  # ELF false positive
         or (root in root_fpos and tld not in reliable_tlds)  # variable attribute
         or (tld == b"next" and b"iterator" in domain_lower)  # Iterator not domain
-        or re.match(b"[A-Za-z]+[.][A-Z][a-z]+", domain)  # attribute access not domain
-        or re.match(b"[a-z]+[.][A-Z]{2}", domain)  # attribute access
-        or re.match(b"[^.]+.[a-z][A-Z]", domain)  # weird capitalization that shows up in data false positives
         or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
         or domain_lower.endswith(b"prototype.at")
         or b"icrosoft.com".endswith(domain_lower)  # Truncated microsoft.com
