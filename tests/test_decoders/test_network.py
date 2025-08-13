@@ -207,6 +207,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"arepoint.com",
         b"Details.Report",
         b"mZME.mE",
+        b"Instance.Name",
     ],
 )
 def test_domain_is_false_positive(domain):
