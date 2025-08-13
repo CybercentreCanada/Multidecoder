@@ -198,6 +198,9 @@ def test_DOMAIN_RE_context(data, domain):
         b"x.properties",
         b"sub.name",
         b"oft.com",
+        b"ActiveSheet.name",
+        b"welcome.do",
+        b"font.name",
     ],
 )
 def test_domain_is_false_positive(domain):
