@@ -201,6 +201,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"ActiveSheet.name",
         b"welcome.do",
         b"font.name",
+        b"mail.CC",
     ],
 )
 def test_domain_is_false_positive(domain):

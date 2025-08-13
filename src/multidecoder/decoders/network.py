@@ -289,6 +289,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"location",
         b"logging",
         b"lossy",
+        b"mail",
         b"manager",
         b"match",
         b"mem",
@@ -539,7 +540,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"by",
         b"bz",
         b"ca",
-        # b"cc",  # C++ source files
+        # b"cc",  # C++ source files, mail.cc
         b"cd",
         b"cf",
         b"cg",
