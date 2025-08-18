@@ -230,18 +230,11 @@ def test_domain_is_false_positive_real_domain(domain):
 
 
 @pytest.mark.parametrize(
-    "data",
-    [
-        b"K.cA",
-    ],
-)
-def test_find_domain_fpos(data):
-    assert find_domains(data) == []
-
-
-@pytest.mark.parametrize(
     ("data", "domains"),
-    [(b"K.cA", []), (b"mailto:delete.me@cyber.gc.ca", [Node("network.domain", b"cyber.gc.ca", "", 17, 28)])],
+    [
+        (b"K.cA", []),
+        (b"mailto:delete.me@cyber.gc.ca", [Node("network.domain", b"cyber.gc.ca", "", 17, 28)]),
+    ],
 )
 def test_find_domains(data, domains):
     assert find_domains(data) == domains
