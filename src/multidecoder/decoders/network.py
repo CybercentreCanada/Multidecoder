@@ -30,7 +30,7 @@ IP_OBF = "ip_obfuscation"
 _OCTET_RE = rb"(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})"
 
 # Specifically allowing 0 after domain names for PE strings
-DOMAIN_RE = rb"(?i)(?<![-$\w.\\])(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z1-9.(=_-])"
+DOMAIN_RE = rb"(?i)(?<![-$\w.\\])(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z1-9.(=_@-])"
 EMAIL_RE = rb"(?i)\b[a-z0-9._%+-]{3,}@(" + DOMAIN_RE[4:] + rb")\b"
 
 IP_RE = rb"(?i)(?<![\w.-])(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"(?![\w.-])"
@@ -986,6 +986,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         or domain_lower.endswith(b"prototype.at")
         or b"icrosoft.com".endswith(domain_lower)  # Truncated microsoft.com
         or b"harepoint.com".endswith(domain_lower)  # Truncated sharepoint.com
+        or b"utlook.com".endswith(domain_lower)  # Truncated outlook.com
     )
 
 
@@ -1011,10 +1012,6 @@ def find_domains(data: bytes) -> list[Node]:
             start = url_match.start() + 8
             domain = data[start:end].translate(bytes(range(256)), delete=b"\x00\r\n\t")
             obfuscation = "split"
-        elif next_character and next_character == "@":
-            # If the next character is an '@', we are in a userinfo section of a URL or email address.
-            # The domain of interest should follow after the "@" in either scenario (which is likely captured by regex)
-            continue
         # Check if the preceeding character where this domain was found in the data is a "%"
         # Some of the URL encoding might be stuck to the domain that was found via regex.
         elif preceeding_character == "%" and domain.lower().startswith((b"2f", b"40")):
