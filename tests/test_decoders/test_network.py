@@ -232,8 +232,10 @@ def test_domain_is_false_positive_real_domain(domain):
 @pytest.mark.parametrize(
     ("data", "domains"),
     [
+        (b"example.com", [Node("network.domain", b"example.com", "", 0, 11)]),
         (b"K.cA", []),
         (b"mailto:delete.me@cyber.gc.ca", [Node("network.domain", b"cyber.gc.ca", "", 17, 28)]),
+        (b"https://o\r\n\tutlook.com/path", [Node("network.domain", b"outlook.com", "split", 8, 22)]),
     ],
 )
 def test_find_domains(data, domains):

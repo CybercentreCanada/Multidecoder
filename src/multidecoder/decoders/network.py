@@ -996,28 +996,37 @@ def find_domains(data: bytes) -> list[Node]:
     out = []
     for match in re.finditer(DOMAIN_RE, data):
         domain = match.group()
+        start, end = match.span()
+        obfuscation = ""
 
-        # Check if the preceeding character where this domain was found in the data is a "%"
-        # Some of the URL encoding might be stuck to the domain that was found via regex.
-        preceeding_character = chr(data[match.start() - 1])
-        next_character = chr(data[match.end()]) if match.end() < len(data) else None
-        if next_character and next_character == "@":
+        preceeding_character = chr(data[start - 1]) if start != 0 else None
+        next_character = chr(data[end]) if end < len(data) else None
+
+        if (
+            preceeding_character
+            and preceeding_character in "\x00\n\t\r"
+            and next_character == "/"
+            and (url_match := re.match(rb"(?ir)https?://[\x00\r\n\ta-z0-9.-]+", data, endpos=start))
+        ):
+            start = url_match.start() + 8
+            domain = data[start:end].translate(bytes(range(256)), delete=b"\x00\r\n\t")
+            obfuscation = "split"
+        elif next_character and next_character == "@":
             # If the next character is an '@', we are in a userinfo section of a URL or email address.
             # The domain of interest should follow after the "@" in either scenario (which is likely captured by regex)
             continue
-
-        if preceeding_character == "%" and domain.lower().startswith((b"2f", b"40")):
+        # Check if the preceeding character where this domain was found in the data is a "%"
+        # Some of the URL encoding might be stuck to the domain that was found via regex.
+        elif preceeding_character == "%" and domain.lower().startswith((b"2f", b"40")):
             # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
             domain = domain[2:]
-
-            # Update the match object to reflect the new domain
-            match = re.search(domain, data, 0, *match.span())
+            start = start + 2
 
         if not is_domain(domain) or len(domain) < 7:
             continue
         if domain_is_false_positive(domain):
             continue
-        out.append(match_to_hit(DOMAIN_TYPE, match))
+        out.append(Node(DOMAIN_TYPE, domain, obfuscation, start, end))
     return out
 
 
