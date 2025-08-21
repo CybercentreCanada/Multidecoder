@@ -30,7 +30,7 @@ IP_OBF = "ip_obfuscation"
 _OCTET_RE = rb"(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})"
 
 # Specifically allowing 0 after domain names for PE strings
-DOMAIN_RE = rb"(?i)(?<![-\w.\\_])(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z1-9.(=_-])"
+DOMAIN_RE = rb"(?i)(?<![-$\w.\\])(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z1-9.(=_@-])"
 EMAIL_RE = rb"(?i)\b[a-z0-9._%+-]{3,}@(" + DOMAIN_RE[4:] + rb")\b"
 
 IP_RE = rb"(?i)(?<![\w.-])(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"(?![\w.-])"
@@ -107,25 +107,31 @@ def is_url(url: bytes) -> bool:
 
 def domain_is_false_positive(domain: bytes) -> bool:
     """Flag common forms of dotted text that can be mistaken for domains."""
-    domain_lower = domain.lower()
-    split = domain_lower.split(b".")
-    if len(split) < 2:
+    split = domain.split(b".", 1)
+    if len(split) != 2:
         return True
-    tld = split[-1]
-    root = split[0]
+    if not split[1].islower() and not domain.isupper():
+        # All lowercase is typical for domains.
+        # All uppercase may be used in contexts where lowercase letters must be avoided.
+        # Mixed case is uncommon in domains, but common in identifiers.
+        # For domains that chose to use camel case for readability, the tld should still be lowercase.
+        # Restrict to domains with a lowercase tld and fully uppercase domains
+        return True
 
     # Common variable roots
     root_fpos = {
         b"abbrev",
         b"activate",
+        b"activesheet",
+        b"activeworkbook",
         b"adodb",
         b"agent",
         b"algorithm",
         b"alias",
         b"analytic",
-        b"analytics",
         b"append",
         b"appendreplace",
+        b"application",
         b"aquota",
         b"arena",
         b"arenastring",
@@ -133,8 +139,10 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"arrayprototype",
         b"ascii",
         b"at",
+        b"attribute",
         b"attrtable",
         b"authentication",
+        b"badge",
         b"barrier",
         b"base64",
         b"basetype",
@@ -147,19 +155,22 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"build",
         b"button",
         b"bytestream",
+        b"callingworksheet",
         b"cgroup",
         b"charconv",
         b"check",
         b"city",
         b"clause",
         b"clean",
+        b"client",
         b"clock",
         b"code-of-conduct",
-        b"colors",
+        b"color",
         b"column",
         b"common",
         b"compile",
-        b"conditions",
+        b"component",
+        b"condition",
         b"config",
         b"constructor",
         b"context",
@@ -177,22 +188,25 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"cycleclock",
         b"data",
         b"date",
+        b"day",
         b"debbugger",
         b"decimal",
         b"default",
+        b"defaultsheet",
+        b"defaultworksheet",
         b"deferred",
         b"delete",
         b"demangle",
-        b"descripters",
+        b"descripter",
         b"destructible",
+        b"detail",
         b"di",
         b"direction",
-        b"directions",
         b"div",
         b"division",
         b"document",
         b"double-to-string",
-        b"downcalls",
+        b"downcall",
         b"duration",
         b"ecdh",
         b"ecos",
@@ -209,22 +223,21 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"event",
         b"eventstudy",
         b"example",
-        b"examples",
         b"exit",
         b"expr",
         b"extention",
         b"fast-dtoa",
-        b"features",
+        b"feature",
         b"fence",
         b"field",
         b"file",
         b"fixed-dtoa",
         b"flag",
-        b"flags",
         b"float",
         b"float32",
         b"float64",
         b"fnmatch",
+        b"font",
         b"forkunsafe",
         b"format",
         b"frame",
@@ -232,14 +245,12 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"functionprototype",
         b"futex",
         b"gadget",
-        b"gadgets",
         b"geo",
         b"gettingstarted",
         b"glob",
         b"global",
-        b"globals",
         b"graph",
-        b"graphcycles",
+        b"graphcycle",
         b"graphical",
         b"grid",
         b"halt",
@@ -259,6 +270,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"input",
         b"install",
         b"installscript",
+        b"instance",
         b"int",
         b"int16",
         b"int32",
@@ -283,7 +295,9 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"local-fs-pre",
         b"location",
         b"logging",
+        b"login",
         b"lossy",
+        b"mail",
         b"manager",
         b"match",
         b"mem",
@@ -291,15 +305,19 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"memutil",
         b"memory",
         b"message",
+        b"metadata",
         b"metatrace",
         b"method",
-        b"metrics",
+        b"metric",
         b"microsoft",
+        b"mman",
         b"mount",
         b"mutex",
         b"multi-user",
         b"myapplication",
+        b"mycell",
         b"nativedate",
+        b"navigator",
         b"netinfo",
         b"network",
         b"network-online",
@@ -309,30 +327,28 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"nss-lookup",
         b"nullguard",
         b"number",
-        b"numbers",
         b"obj",
         b"object",
         b"offset",
-        b"offsets",
         b"og",
         b"once",
         b"operation",
         b"option",
-        b"options",
         b"original",
-        b"originalresults",
+        b"originalresult",
         b"org",
         b"os",
         b"oshlnk",
         b"ostringstream",
+        b"other",
         b"output",
         b"package",
         b"packagejson",
         b"parentoffset",
         b"parser",
         b"path",
-        b"paths",
         b"pattern",
+        b"performance",
         b"pickle",
         b"pipe",
         b"pkey",
@@ -345,6 +361,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"program",
         b"progress",
         b"property",
+        b"proposal",
         b"proto",
         b"prtime",
         b"prtracer",
@@ -367,29 +384,37 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"response",
         b"restore",
         b"result",
-        b"results",
         b"ribbon",
-        b"roots",
+        b"root",
         b"rpcbind",
-        b"runtests",
+        b"runtest",
         b"rvalue",
+        b"second",
         b"security",
+        b"selection",
         b"sequence",
         b"service",
         b"set",
-        b"settings",
+        b"setting",
         b"sha1",
         b"sha256",
         b"sha512",
+        b"sheet1",
+        b"sheet2",
+        b"sheet3",
+        b"sheet4",
+        b"sheet5",
+        b"sheet6",
+        b"sheet7",
+        b"sheet8",
+        b"sheet9",
         b"shift",
         b"shutdown",
         b"signal",
         b"signalhandler",
-        b"signals",
         b"sigpwr",
         b"simple",
         b"socket",
-        b"sockets",
         b"source",
         b"spec",
         b"spinlock",
@@ -424,15 +449,14 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"tactic",
         b"tagging",
         b"tail",
+        b"target",
         b"task",
-        b"tasks",
         b"technique",
         b"test",
         b"testdomain",
         b"thread",
         b"time",
         b"timer",
-        b"timers",
         b"time-sync",
         b"timezone",
         b"token",
@@ -447,6 +471,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"uint64",
         b"umount",
         b"unix",
+        b"unsafe",
         b"unscaledcycleclock",
         b"unwinder",
         b"upgrade",
@@ -454,10 +479,9 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"user",
         b"utf8",
         b"util",
-        b"utils",
         b"uuid",
         b"value",
-        b"values",
+        b"vcl",
         b"vector",
         b"verinfo",
         b"version",
@@ -465,10 +489,16 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"view",
         b"visit",
         b"vlog",
+        b"welcome",
         b"window",
+        b"winapi",
+        b"worksheet",
+        b"workspace",
+        b"workspacesclient",
         b"wrapping",
         b"wscript",
         b"wshshell",
+        b"yes",
         b"zlib",
         b"zone",
     }
@@ -519,7 +549,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"by",
         b"bz",
         b"ca",
-        # b"cc",  # C++ source files
+        # b"cc",  # C++ source files, mail.cc
         b"cd",
         b"cf",
         b"cg",
@@ -541,7 +571,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"dj",
         b"dk",
         b"dm",
-        # b"do",
+        # b"do",  # Java servlet files
         b"dz",
         b"ec",
         # b"ee",  # double letter
@@ -934,16 +964,29 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"xn--ygbi2ammx",
         b"xn--zfr164b",
     }
+
+    def check_root(root: bytes, root_fpos: set[bytes]) -> bool:
+        """Check normalized verisons of root against root_fpos."""
+        if root.endswith(b"s") and root[:-1] in root_fpos:
+            # Regular English Plurals
+            return True
+        return root in root_fpos
+
+    domain_lower = domain.lower()
+    split = domain_lower.split(b".")  # lowering then splitting is faster than lowering each segment
+    tld = split[-1]
+    root = split[0]
     return bool(
         len(root) < 3  # difficult to register, common variable names
         or root == b"this"  # common variable name in javascript
         or (domain_lower.startswith(b"lib") and tld == b"so")  # ELF false positive
-        or (root in root_fpos and tld not in reliable_tlds)  # variable attribute
+        or (check_root(root, root_fpos) and tld not in reliable_tlds)  # variable attribute
         or (tld == b"next" and b"iterator" in domain_lower)  # Iterator not domain
-        or re.match(b"[a-z]+[.][A-Z][a-z]+", domain)  # attribute access not domain
         or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
         or domain_lower.endswith(b"prototype.at")
         or b"icrosoft.com".endswith(domain_lower)  # Truncated microsoft.com
+        or b"harepoint.com".endswith(domain_lower)  # Truncated sharepoint.com
+        or b"utlook.com".endswith(domain_lower)  # Truncated outlook.com
     )
 
 
@@ -954,28 +997,33 @@ def find_domains(data: bytes) -> list[Node]:
     out = []
     for match in re.finditer(DOMAIN_RE, data):
         domain = match.group()
+        start, end = match.span()
+        obfuscation = ""
 
+        preceeding_character = chr(data[start - 1]) if start != 0 else None
+        next_character = chr(data[end]) if end < len(data) else None
+
+        if (
+            preceeding_character
+            and preceeding_character in "\x00\n\t\r"
+            and next_character == "/"
+            and (url_match := re.match(rb"(?ir)https?://[\x00\r\n\ta-z0-9.-]+", data, endpos=start))
+        ):
+            start = url_match.start() + 8
+            domain = data[start:end].translate(bytes(range(256)), delete=b"\x00\r\n\t")
+            obfuscation = "split"
         # Check if the preceeding character where this domain was found in the data is a "%"
         # Some of the URL encoding might be stuck to the domain that was found via regex.
-        preceeding_character = chr(data[match.start() - 1])
-        next_character = chr(data[match.end()]) if match.end() < len(data) else None
-        if next_character and next_character == "@":
-            # If the next character is an '@', we are in a userinfo section of a URL or email address.
-            # The domain of interest should follow after the "@" in either scenario (which is likely captured by regex)
-            continue
-
-        if preceeding_character == "%" and domain.lower().startswith((b"2f", b"40")):
+        elif preceeding_character == "%" and domain.lower().startswith((b"2f", b"40")):
             # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
             domain = domain[2:]
-
-            # Update the match object to reflect the new domain
-            match = re.search(domain, data, 0, *match.span())
+            start = start + 2
 
         if not is_domain(domain) or len(domain) < 7:
             continue
         if domain_is_false_positive(domain):
             continue
-        out.append(match_to_hit(DOMAIN_TYPE, match))
+        out.append(Node(DOMAIN_TYPE, domain, obfuscation, start, end))
     return out
 
 

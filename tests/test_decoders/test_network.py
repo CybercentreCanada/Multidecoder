@@ -131,6 +131,7 @@ def test_DOMAIN_RE_match(domain):
         b'fi.search="',
         b"variable.call(",
         b"Microsoft.Win32",
+        b"delete.me@",
     ],
 )
 def test_DOMAIN_RE_false_positives(domain):
@@ -198,6 +199,21 @@ def test_DOMAIN_RE_context(data, domain):
         b"x.properties",
         b"sub.name",
         b"oft.com",
+        b"ActiveSheet.name",
+        b"welcome.do",
+        b"font.name",
+        b"mail.CC",
+        b"Worksheet.Name",
+        b"proposal.ID",
+        b"arepoint.com",
+        b"Details.Report",
+        b"mZME.mE",
+        b"Instance.Name",
+        b"login.microsoft",
+        b"Second.click",
+        b"component.name",
+        b"mman.cc",
+        b"utlook.com",
     ],
 )
 def test_domain_is_false_positive(domain):
@@ -208,6 +224,8 @@ def test_domain_is_false_positive(domain):
     "domain",
     [
         b"microsoft.com",
+        b"MICROSOFT.COM",
+        b"outlook.com",
     ],
 )
 def test_domain_is_false_positive_real_domain(domain):
@@ -215,18 +233,13 @@ def test_domain_is_false_positive_real_domain(domain):
 
 
 @pytest.mark.parametrize(
-    "data",
-    [
-        b"K.cA",
-    ],
-)
-def test_find_domain_fpos(data):
-    assert find_domains(data) == []
-
-
-@pytest.mark.parametrize(
     ("data", "domains"),
-    [(b"K.cA", []), (b"mailto:delete.me@cyber.gc.ca", [Node("network.domain", b"cyber.gc.ca", "", 17, 28)])],
+    [
+        (b"example.com", [Node("network.domain", b"example.com", "", 0, 11)]),
+        (b"K.cA", []),
+        (b"mailto:example.com@cyber.gc.ca", [Node("network.domain", b"cyber.gc.ca", "", 19, 30)]),
+        (b"https://e\r\n\txample.com/path", [Node("network.domain", b"example.com", "split", 8, 22)]),
+    ],
 )
 def test_find_domains(data, domains):
     assert find_domains(data) == domains
