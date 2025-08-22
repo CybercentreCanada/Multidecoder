@@ -215,6 +215,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"mman.cc",
         b"utlook.com",
         b"download.show",
+        b"question.name",
     ],
 )
 def test_domain_is_false_positive(domain):
