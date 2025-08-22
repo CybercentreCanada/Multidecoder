@@ -242,6 +242,7 @@ def test_domain_is_false_positive_real_domain(domain):
         (b"https://e\r\n\txample.com/path", [Node("network.domain", b"example.com", "split", 8, 22)]),
         (b"http://e\r\n\txample.com/path", [Node("network.domain", b"example.com", "split", 7, 21)]),
         (b"https://example.com/path/to/greetings-welcome.do/file", [Node("network.domain", b"example.com", "", 8, 19)]),
+        (b"https://example.com/path/to/greetings-welcome.do", [Node("network.domain", b"example.com", "", 8, 19)]),
     ],
 )
 def test_find_domains(data, domains):
