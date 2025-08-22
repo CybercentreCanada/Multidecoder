@@ -535,6 +535,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"util",
         b"uuid",
         b"value",
+        b"vba",
         b"vcl",
         b"vector",
         b"verinfo",
