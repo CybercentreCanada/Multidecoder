@@ -1018,6 +1018,16 @@ def find_domains(data: bytes) -> list[Node]:
             # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
             domain = domain[2:]
             start = start + 2
+        elif preceeding_character == "/":
+            # The match we found might be part of the path of a URL
+            path_match = re.search(rb"[^:\/]\/[a-zA-Z0-9_.-]*" + domain + rb"[a-zA-Z0-9_.-]*\/", data)
+            if path_match:
+                # Check to see if the domain found is encapsulated within a path
+                path_start, path_end = path_match.span()
+
+                if path_start < start and path_end > end:
+                    # The match is part of a path, so skip it.
+                    continue
 
         if not is_domain(domain) or len(domain) < 7:
             continue
