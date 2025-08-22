@@ -107,7 +107,7 @@ def is_url(url: bytes) -> bool:
 
 def domain_is_false_positive(domain: bytes) -> bool:
     """Flag common forms of dotted text that can be mistaken for domains."""
-    split = domain.split(b".", 1)
+    split = domain.rsplit(b".", 1)
     if len(split) != 2:
         return True
     if not split[1].islower() and not domain.isupper():
@@ -1007,9 +1007,9 @@ def find_domains(data: bytes) -> list[Node]:
             preceeding_character
             and preceeding_character in "\x00\n\t\r"
             and next_character == "/"
-            and (url_match := re.match(rb"(?ir)https?://[\x00\r\n\ta-z0-9.-]+", data, endpos=start))
+            and (url_match := re.match(rb"(?ir)https?://([\x00\r\n\ta-z0-9.-]+)", data, endpos=start))
         ):
-            start = url_match.start() + 8
+            start = url_match.start(1)
             domain = data[start:end].translate(bytes(range(256)), delete=b"\x00\r\n\t")
             obfuscation = "split"
         # Check if the preceeding character where this domain was found in the data is a "%"
