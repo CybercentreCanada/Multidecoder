@@ -107,7 +107,7 @@ def is_url(url: bytes) -> bool:
 
 def domain_is_false_positive(domain: bytes) -> bool:
     """Flag common forms of dotted text that can be mistaken for domains."""
-    split = domain.split(b".", 1)
+    split = domain.rsplit(b".", 1)
     if len(split) != 2:
         return True
     if not split[1].islower() and not domain.isupper():

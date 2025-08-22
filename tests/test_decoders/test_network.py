@@ -226,6 +226,7 @@ def test_domain_is_false_positive(domain):
         b"microsoft.com",
         b"MICROSOFT.COM",
         b"outlook.com",
+        b"Subdomain.Domain.com",
     ],
 )
 def test_domain_is_false_positive_real_domain(domain):
