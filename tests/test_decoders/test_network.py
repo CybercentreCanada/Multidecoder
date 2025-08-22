@@ -240,6 +240,7 @@ def test_domain_is_false_positive_real_domain(domain):
         (b"K.cA", []),
         (b"mailto:example.com@cyber.gc.ca", [Node("network.domain", b"cyber.gc.ca", "", 19, 30)]),
         (b"https://e\r\n\txample.com/path", [Node("network.domain", b"example.com", "split", 8, 22)]),
+        (b"http://e\r\n\txample.com/path", [Node("network.domain", b"example.com", "split", 7, 21)]),
     ],
 )
 def test_find_domains(data, domains):
