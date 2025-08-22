@@ -1021,7 +1021,9 @@ def find_domains(data: bytes) -> list[Node]:
         elif preceeding_character == "/":
             # The match we found might be part of the path of a URL
             domain_fp = False
-            for path_match in re.finditer(rb"[^:\/]\/[a-zA-Z0-9_.-%]*" + domain + rb"[a-zA-Z0-9_.-%]*(\/)?", data):
+            for path_match in re.finditer(
+                rb"[^:\/]\/([%0-9A-F:]|[a-zA-Z0-9_.-])*" + domain + rb"([%0-9A-F:]|[a-zA-Z0-9_.-])*(\/)?", data
+            ):
                 # Check to see if the domain found is encapsulated within a path
                 path_start, path_end = path_match.span()
 
