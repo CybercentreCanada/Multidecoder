@@ -245,6 +245,13 @@ def test_domain_is_false_positive_real_domain(domain):
         (b"mailto:example.com@cyber.gc.ca", [Node("network.domain", b"cyber.gc.ca", "", 19, 30)]),
         (b"https://e\r\n\txample.com/path", [Node("network.domain", b"example.com", "split", 8, 22)]),
         (b"http://e\r\n\txample.com/path", [Node("network.domain", b"example.com", "split", 7, 21)]),
+        (b"https://example.com/path/to/greetings-welcome.do/file", [Node("network.domain", b"example.com", "", 8, 19)]),
+        (b"https://example.com/path/to/greetings-welcome.do", [Node("network.domain", b"example.com", "", 8, 19)]),
+        (b"https://example.com/path/to/abacus.do?lang=en-US", [Node("network.domain", b"example.com", "", 8, 19)]),
+        (
+            b"https://example.com/path/to/abacus.do?lang=en-US https://example.com/path/to/abacus.do?lang=en-US",
+            [Node("network.domain", b"example.com", "", 8, 19), Node("network.domain", b"example.com", "", 57, 68)],
+        ),
         (b"&lt;a href=&quot;krakev.cc&quot;&gt;", [Node("network.domain", b"krakev.cc", "", 17, 26)]),
     ],
 )
