@@ -41,7 +41,7 @@ IP_RE = rb"(?i)(?<![\w.-])(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"(?![\w
 # #-/ is the same with # and /
 # #-& is #-/ but stopped before '
 URL_RE = (
-    rb"(?i)(?:ftp|https?)://"  # scheme
+    rb"(?i)(?:t?ftp|https?|wss?|udp|socks(?:\d[a-z]?)?)://"  # scheme
     rb"(?:[\w!$-.:;=~@]*@)?"  # userinfo
     rb"(?:(?!%5B)[%A-Z0-9.-]{4,253}|(?:\[|%5B)[%0-9A-F:]{3,117}(?:\]|%5D))"  # host
     rb"(?::[0-6]?[0-9]{0,4})?"  # port
