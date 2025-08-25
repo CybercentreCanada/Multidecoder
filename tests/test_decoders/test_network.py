@@ -329,6 +329,21 @@ def test_email_re():
         b"http://[::1%5D/path",  # Even handles the rest of the url just fine.
         # Large URLs
         b"http://youtube.com" + (b"%20" * 2000) + b"@google.com",
+        # UDP
+        b"udp://tracker.opentrackr.org:1337/announce",
+        # Curl socks examples https://ec.haxx.se/usingcurl/proxies/socks.html
+        b"socks4://proxy.example.com",
+        b"socks4a://proxy.example.com",
+        b"socks5://proxy.example.com",
+        b"socks5h://proxy.example.com",
+        # Socks without version
+        b"socks://proxy.example.com",
+        # WebSocket
+        b"ws://www.example.com",
+        b"wss://www.example.com/",
+        # FTP and TFTP
+        b"ftp://www.example.com",
+        b"tftp://example.com",
     ],
 )
 def test_URL_RE_matches(url):
