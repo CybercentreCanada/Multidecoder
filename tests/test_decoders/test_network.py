@@ -218,7 +218,8 @@ def test_DOMAIN_RE_context(data, domain):
         b"question.name",
         b"order.do",
         b"label.name",
-        b"com.info",
+        b"COM.INFO",
+        b"container.image.name",
     ],
 )
 def test_domain_is_false_positive(domain):
