@@ -214,6 +214,10 @@ def test_DOMAIN_RE_context(data, domain):
         b"component.name",
         b"mman.cc",
         b"utlook.com",
+        b"download.show",
+        b"question.name",
+        b"order.do",
+        b"label.name",
     ],
 )
 def test_domain_is_false_positive(domain):
@@ -248,6 +252,7 @@ def test_domain_is_false_positive_real_domain(domain):
             b"https://example.com/path/to/abacus.do?lang=en-US https://example.com/path/to/abacus.do?lang=en-US",
             [Node("network.domain", b"example.com", "", 8, 19), Node("network.domain", b"example.com", "", 57, 68)],
         ),
+        (b"&lt;a href=&quot;krakev.cc&quot;&gt;", [Node("network.domain", b"krakev.cc", "", 17, 26)]),
     ],
 )
 def test_find_domains(data, domains):
@@ -333,6 +338,21 @@ def test_email_re():
         b"http://[::1%5D/path",  # Even handles the rest of the url just fine.
         # Large URLs
         b"http://youtube.com" + (b"%20" * 2000) + b"@google.com",
+        # UDP
+        b"udp://tracker.opentrackr.org:1337/announce",
+        # Curl socks examples https://ec.haxx.se/usingcurl/proxies/socks.html
+        b"socks4://proxy.example.com",
+        b"socks4a://proxy.example.com",
+        b"socks5://proxy.example.com",
+        b"socks5h://proxy.example.com",
+        # Socks without version
+        b"socks://proxy.example.com",
+        # WebSocket
+        b"ws://www.example.com",
+        b"wss://www.example.com/",
+        # FTP and TFTP
+        b"ftp://www.example.com",
+        b"tftp://example.com",
     ],
 )
 def test_URL_RE_matches(url):
