@@ -217,6 +217,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"download.show",
         b"question.name",
         b"order.do",
+        b"label.name",
     ],
 )
 def test_domain_is_false_positive(domain):
@@ -244,6 +245,7 @@ def test_domain_is_false_positive_real_domain(domain):
         (b"mailto:example.com@cyber.gc.ca", [Node("network.domain", b"cyber.gc.ca", "", 19, 30)]),
         (b"https://e\r\n\txample.com/path", [Node("network.domain", b"example.com", "split", 8, 22)]),
         (b"http://e\r\n\txample.com/path", [Node("network.domain", b"example.com", "split", 7, 21)]),
+        (b"&lt;a href=&quot;krakev.cc&quot;&gt;", [Node("network.domain", b"krakev.cc", "", 17, 26)]),
     ],
 )
 def test_find_domains(data, domains):

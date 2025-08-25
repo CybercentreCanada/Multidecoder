@@ -314,6 +314,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"key",
         b"keydown",
         b"keyset",
+        b"label",
         b"layer",
         b"layerswitcher",
         b"legacy",
