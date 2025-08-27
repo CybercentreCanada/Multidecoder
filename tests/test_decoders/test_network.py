@@ -219,6 +219,8 @@ def test_DOMAIN_RE_context(data, domain):
         b"question.name",
         b"order.do",
         b"label.name",
+        b"COM.INFO",
+        b"container.image.name",
     ],
 )
 def test_domain_is_false_positive(domain):
@@ -247,6 +249,8 @@ def test_domain_is_false_positive_real_domain(domain):
         (b"https://e\r\n\txample.com/path", [Node("network.domain", b"example.com", "split", 8, 22)]),
         (b"http://e\r\n\txample.com/path", [Node("network.domain", b"example.com", "split", 7, 21)]),
         (b"&lt;a href=&quot;krakev.cc&quot;&gt;", [Node("network.domain", b"krakev.cc", "", 17, 26)]),
+        (b"https % 3A % 2F % 2Fdoi.org % 2F ", [Node("network.domain", b"doi.org", "", 20, 27)]),
+        (b"https:*2F*2Fexample.org*2f", [Node("network.domain", b"example.org", "", 12, 23)]),
     ],
 )
 def test_find_domains(data, domains):

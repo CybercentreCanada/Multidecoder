@@ -174,9 +174,11 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"clean",
         b"client",
         b"clock",
+        b"cloud",
         b"code-of-conduct",
         b"color",
         b"column",
+        b"com",
         b"common",
         b"compile",
         b"component",
@@ -184,6 +186,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"config",
         b"constructor",
         b"contact",
+        b"container",
         b"context",
         b"contributing",
         b"conversion",
@@ -245,6 +248,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"exit",
         b"expr",
         b"extention",
+        b"faas",
         b"fast-dtoa",
         b"feature",
         b"fence",
@@ -279,6 +283,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"heapsort",
         b"histogram",
         b"host",
+        b"http",
         b"httpd",
         b"id",
         "identification",
@@ -311,6 +316,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"item1",
         b"item2",
         b"item3",
+        b"k8s",
         b"key",
         b"keydown",
         b"keyset",
@@ -351,6 +357,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"mycell",
         b"nativedate",
         b"navigator",
+        b"net",
         b"netinfo",
         b"network",
         b"network-online",
@@ -365,6 +372,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"object",
         b"observation",
         b"ocr",
+        b"off",
         b"offset",
         b"og",
         b"once",
@@ -440,6 +448,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"select",
         b"selection",
         b"sequence",
+        b"serv",
         b"service",
         b"set",
         b"setting",
@@ -501,6 +510,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"target",
         b"task",
         b"technique",
+        b"telemetry",
         b"temp",
         b"temporary",
         b"test",
@@ -1072,7 +1082,10 @@ def find_domains(data: bytes) -> list[Node]:
             obfuscation = "split"
         # Check if the preceeding character where this domain was found in the data is a "%"
         # Some of the URL encoding might be stuck to the domain that was found via regex.
-        elif preceeding_character == "%" and domain.lower().startswith((b"2f", b"40")):
+        elif (
+            re.match(rb"(?ir)(?:[%*]\s?3A|:)\s?[%*]\s?2F\s?[%*]\s?2F", data, endpos=start + 2)
+            or data[start - 1 : start + 2] == b"%40"
+        ):
             # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
             domain = domain[2:]
             start = start + 2
