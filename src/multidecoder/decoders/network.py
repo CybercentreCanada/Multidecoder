@@ -5,6 +5,7 @@ from __future__ import annotations
 import binascii
 import contextlib
 import socket
+from collections import Counter
 from ipaddress import AddressValueError, IPv4Address, IPv6Address
 from urllib.parse import unquote_to_bytes, urlsplit
 
@@ -1040,6 +1041,12 @@ def domain_is_false_positive(domain: bytes) -> bool:
             return True
         return root in root_fpos
 
+    def freq_of_most_common(data: bytes) -> float:
+        """Get the frequency of the most common character."""
+        counts = Counter(data)
+        most_common_count = counts.most_common(1)[0][1]
+        return most_common_count / len(data)
+
     domain_lower = domain.lower()
     split = domain_lower.split(b".")  # lowering then splitting is faster than lowering each segment
     tld = split[-1]
@@ -1055,6 +1062,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         or b"icrosoft.com".endswith(domain_lower)  # Truncated microsoft.com
         or b"harepoint.com".endswith(domain_lower)  # Truncated sharepoint.com
         or b"utlook.com".endswith(domain_lower)  # Truncated outlook.com
+        or freq_of_most_common(domain_lower) > 0.6  # Junk or padded data
     )
 
 

@@ -221,6 +221,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"label.name",
         b"COM.INFO",
         b"container.image.name",
+        b"bbbbb-bbbbbbbbbbbxbbbbbobbbbbrbb.bb",
     ],
 )
 def test_domain_is_false_positive(domain):
