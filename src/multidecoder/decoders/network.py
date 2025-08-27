@@ -1096,13 +1096,15 @@ def find_ips(data: bytes) -> list[Node]:
     out = []
     for match in re.finditer(IP_RE, data):
         try:
-            ip = parse_ip(match.group()))
+            ip = parse_ip(match.group())
         except ValueError:
             continue  # Not an ip address
         if ip.value == b"0.0.0.0":
             continue
         if ip.value.endswith((b".0", b".255")):
             continue  # Class C network identifier or broadcast address
+        if ip.value != b"127.0.0.1" and len(ip.value.split(b".")[1]) == 1:
+            continue  # More likely to be a version number than an ip address
         ip.shift(match.start())
         prefix = data[ip.start - 1 :: -1]
         if re.match(rb"\s*>t(?::\w+)?<", prefix):
