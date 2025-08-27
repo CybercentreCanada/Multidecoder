@@ -44,8 +44,8 @@ def test_analyze_encoded_url(md):
 
 
 def test_scan_no_overlap(md):
-    assert md.scan(b"google.com, amazon.com, 8.8.8.8").children == [
+    assert md.scan(b"google.com, amazon.com, 127.0.0.1").children == [
         Node("network.domain", b"google.com", "", 0, 10),
         Node("network.domain", b"amazon.com", "", 12, 22),
-        Node("network.ip", b"8.8.8.8", "", 24, 31),
+        Node("network.ip", b"127.0.0.1", "", 24, 33),
     ]

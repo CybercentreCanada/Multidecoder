@@ -33,7 +33,7 @@ _OCTET_RE = rb"(?:0x0*[a-f0-9]{1,2}|0*\d{1,3})"
 DOMAIN_RE = rb"(?i)(?<![-$\w.\\])(?:[a-z0-9-]+\.)+(?:xn--[a-z0-9]{4,18}|[a-z]{2,12})(?![a-z1-9.(=_@-])"
 EMAIL_RE = rb"(?i)\b[a-z0-9._%+-]{3,}@(" + DOMAIN_RE[4:] + rb")\b"
 
-IP_RE = rb"(?i)(?<![\w.-])(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"(?![\w.-])"
+IP_RE = rb"(?i)(?<![\w.-])(?:" + _OCTET_RE + rb"[.]){3}" + _OCTET_RE + rb"(?![\w.=-])"
 
 # Using some weird ranges to shorten the regex:
 # $-. is $%&'()*+,-. all of which are sub-delims $&'()*+, or unreserved .-
@@ -1096,23 +1096,26 @@ def find_ips(data: bytes) -> list[Node]:
     """Find ip addresses in data"""
     out = []
     for match in re.finditer(IP_RE, data):
-        ip = match.group()
-        if not is_ip(ip):
+        try:
+            ip = parse_ip(match.group())
+        except ValueError:
+            continue  # Not an ip address
+        if ip.value == b"0.0.0.0":
             continue
-        if all(byte in b"0x." for byte in ip):
-            continue  # 0.0.0.0
-        if ip.endswith((b".0", b".255")):
+        if ip.value.endswith((b".0", b".255")):
             continue  # Class C network identifier or broadcast address
-        start, end = match.span()
-        prefix = data[start - 1 :: -1]
+        if ip.value != b"127.0.0.1" and len(ip.value.split(b".")[1]) == 1:
+            continue  # More likely to be a version number than an ip address
+        ip.shift(match.start())
+        prefix = data[ip.start - 1 :: -1]
         if re.match(rb"\s*>t(?::\w+)?<", prefix):
             continue  # xml section numbering
         if re.match(rb"(?i)\s+(?:noit|[.])ces", prefix):
             continue  # section number
-        offset = data.rfind(b"ersion", max(start - 10, 0), start)
-        if offset >= 0 and re.match(rb'[\x00=\s"]+$', data[offset + 6 : start]):
+        offset = data.rfind(b"ersion", max(ip.start - 10, 0), ip.start)
+        if offset >= 0 and re.match(rb'[\x00=\s"]+$', data[offset + 6 : ip.start]):
             continue  # version number, not an ip address
-        out.append(parse_ip(match.group()).shift(match.start()))
+        out.append(ip)
     return out
 
 
