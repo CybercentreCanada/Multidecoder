@@ -1095,23 +1095,24 @@ def find_ips(data: bytes) -> list[Node]:
     """Find ip addresses in data"""
     out = []
     for match in re.finditer(IP_RE, data):
-        ip = match.group()
-        if not is_ip(ip):
+        try:
+            ip = parse_ip(match.group()))
+        except ValueError:
+            continue  # Not an ip address
+        if ip.value == b"0.0.0.0":
             continue
-        if all(byte in b"0x." for byte in ip):
-            continue  # 0.0.0.0
-        if ip.endswith((b".0", b".255")):
+        if ip.value.endswith((b".0", b".255")):
             continue  # Class C network identifier or broadcast address
-        start, end = match.span()
-        prefix = data[start - 1 :: -1]
+        ip.shift(match.start())
+        prefix = data[ip.start - 1 :: -1]
         if re.match(rb"\s*>t(?::\w+)?<", prefix):
             continue  # xml section numbering
         if re.match(rb"(?i)\s+(?:noit|[.])ces", prefix):
             continue  # section number
-        offset = data.rfind(b"ersion", max(start - 10, 0), start)
-        if offset >= 0 and re.match(rb'[\x00=\s"]+$', data[offset + 6 : start]):
+        offset = data.rfind(b"ersion", max(ip.start - 10, 0), ip.start)
+        if offset >= 0 and re.match(rb'[\x00=\s"]+$', data[offset + 6 : ip.start]):
             continue  # version number, not an ip address
-        out.append(parse_ip(match.group()).shift(match.start()))
+        out.append(ip)
     return out
 
 
