@@ -1082,7 +1082,10 @@ def find_domains(data: bytes) -> list[Node]:
             obfuscation = "split"
         # Check if the preceeding character where this domain was found in the data is a "%"
         # Some of the URL encoding might be stuck to the domain that was found via regex.
-        elif preceeding_character == "%" and domain.lower().startswith((b"2f", b"40")):
+        elif (
+            re.match(rb"(?ir)(?:[%*]\s?3A|:)\s?[%*]\s?2F\s?[%*]\s?2F", data, endpos=start + 2)
+            or data[start - 1 : start + 2] == b"%40"
+        ):
             # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
             domain = domain[2:]
             start = start + 2
