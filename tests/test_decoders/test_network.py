@@ -98,6 +98,7 @@ def test_parse_ip():
         b"sec. 1.1.1.4",
         b"1.1.8.35-g8f5559c",
         b'version="1.2.0.58"',
+        b'@("2.5.29.37={text}1.3.6.1.5.5.7.3.1")',
     ],
 )
 def test_find_ips_false_positives(data):
