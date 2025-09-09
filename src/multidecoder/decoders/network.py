@@ -1096,6 +1096,9 @@ def find_domains(data: bytes) -> list[Node]:
             # If it is, we need to remove the trailing characters that follow as that's not part of the actual domain.
             domain = domain[2:]
             start = start + 2
+        elif data[start - 1 : start + 4] == b"%2540":
+            domain = domain[4:]
+            start = start + 4
 
         if not is_domain(domain) or len(domain) < 7:
             continue

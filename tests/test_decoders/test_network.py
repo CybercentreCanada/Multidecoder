@@ -253,6 +253,7 @@ def test_domain_is_false_positive_real_domain(domain):
         (b"https % 3A % 2F % 2Fdoi.org % 2F ", [Node("network.domain", b"doi.org", "", 20, 27)]),
         (b"https:*2F*2Fexample.org*2f", [Node("network.domain", b"example.org", "", 12, 23)]),
         (b"Firstname.Lastname=40example.com", [Node("network.domain", b"example.com", "", 21, 32)]),
+        (b"username%2540example.com", [Node("network.domain", b"example.com", "", 13, 24)]),
     ],
 )
 def test_find_domains(data, domains):
