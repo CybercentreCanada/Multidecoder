@@ -1082,12 +1082,17 @@ def find_domains(data: bytes) -> list[Node]:
         if (
             preceeding_character
             and preceeding_character in "\x00\n\t\r"
-            and next_character == "/"
-            and (url_match := re.match(rb"(?ir)https?://([\x00\r\n\ta-z0-9.-]+)", data, endpos=start))
+            and (url_match := re.match(rb"(?ir)https?:[\x00\r\n\t]*//([\x00\r\n\ta-z0-9.-]+)", data, endpos=start))
         ):
-            start = url_match.start(1)
-            domain = data[start:end].translate(bytes(range(256)), delete=b"\x00\r\n\t")
-            obfuscation = "split"
+            if next_character == "/":
+                # We know both the start and end of the domain
+                start = url_match.start(1)
+                domain = data[start:end].translate(bytes(range(256)), delete=b"\x00\r\n\t")
+                obfuscation = "split"
+            else:
+                # We know where the domain starts, but we can't be sure where it ends, discard
+                continue
+
         # Check if the preceeding character where this domain was found in the data is a "%"
         # Some of the URL encoding might be stuck to the domain that was found via regex.
         elif re.match(rb"(?ir)(?:[%*=]\s?3A|:)\s?[%*=]\s?2F\s?[%*=]\s?2F", data, endpos=start + 2) or data[
