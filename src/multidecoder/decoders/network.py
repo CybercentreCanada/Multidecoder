@@ -530,6 +530,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"total",
         b"tracing",
         b"track",
+        b"tracker",
         b"trie",
         b"try",
         b"tween",
