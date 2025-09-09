@@ -127,6 +127,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"activesheet",
         b"activesearch",
         b"activeworkbook",
+        b"actor",
         b"adodb",
         b"agent",
         b"algorithm",
