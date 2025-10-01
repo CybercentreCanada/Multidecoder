@@ -264,6 +264,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"float64",
         b"fnmatch",
         b"font",
+        b"foreign",
         b"forkunsafe",
         b"format",
         b"frame",

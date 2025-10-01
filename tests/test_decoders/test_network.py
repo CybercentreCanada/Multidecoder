@@ -224,6 +224,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"bbbbb-bbbbbbbbbbbxbbbbbobbbbbrbb.bb",
         b"actor.name",
         b"TRACKERS.one",
+        b"FOREIGN.zip",
     ],
 )
 def test_domain_is_false_positive(domain):
