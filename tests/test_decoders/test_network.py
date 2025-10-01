@@ -259,6 +259,7 @@ def test_domain_is_false_positive_real_domain(domain):
         (b"username%2540example.com", [Node("network.domain", b"example.com", "", 13, 24)]),
         (b'=""http:\x00//www.or\x00acle.com\xe2/', []),
         (b"https://example.com/c9k5y4.zip", [Node("network.domain", b"example.com", "", 8, 19)]),
+        (b"/c9k5y4.zip", []),
     ],
 )
 def test_find_domains(data, domains):

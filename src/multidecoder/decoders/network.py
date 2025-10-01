@@ -1082,7 +1082,7 @@ def find_domains(data: bytes) -> list[Node]:
         preceeding_character = chr(data[start - 1]) if start != 0 else None
         next_character = chr(data[end]) if end < len(data) else None
 
-        if preceeding_character == "/" and start >= 2 and data[start - 2] != ord("/"):
+        if preceeding_character == "/" and (start < 2 or data[start - 2] != ord("/")):
             continue  # filename not domain
 
         if (
