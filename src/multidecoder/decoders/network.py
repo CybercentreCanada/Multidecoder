@@ -257,6 +257,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"example",
         b"exit",
         b"expr",
+        b"ext",
         b"extention",
         b"faas",
         b"facility",
@@ -576,6 +577,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"unsafe",
         b"unscaledcycleclock",
         b"unwinder",
+        b"update",
         b"upgrade",
         b"urandom",
         b"user",
@@ -1096,6 +1098,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         or (tld == b"next" and b"iterator" in domain_lower)  # Iterator not domain
         or (len(split) == 3 and split[1] == b"prototype" and len(root) < 3 and len(tld) < 3)  # javascript pattern
         or domain_lower.endswith(b"prototype.at")
+        or (len(root) == 3 and root[1] == ord("-"))  # Minified Javascript false positive
         or b"icrosoft.com".endswith(domain_lower)  # Truncated microsoft.com
         or b"harepoint.com".endswith(domain_lower)  # Truncated sharepoint.com
         or b"utlook.com".endswith(domain_lower)  # Truncated outlook.com

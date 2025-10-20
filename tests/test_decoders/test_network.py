@@ -216,6 +216,8 @@ def test_DOMAIN_RE_context(data, domain):
         b"FOREIGN.zip",
         b"self.data",
         b"Makefile.win",
+        b"i-r.top",
+        b"update.zip",
     ],
 )
 def test_domain_is_false_positive(domain):
