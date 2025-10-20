@@ -218,6 +218,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"Makefile.win",
         b"i-r.top",
         b"update.zip",
+        b"cluster.fit",
     ],
 )
 def test_domain_is_false_positive(domain):
