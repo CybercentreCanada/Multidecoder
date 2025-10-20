@@ -265,6 +265,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"float64",
         b"fnmatch",
         b"font",
+        b"foreign",
         b"forkunsafe",
         b"format",
         b"frame",
@@ -1081,6 +1082,9 @@ def find_domains(data: bytes) -> list[Node]:
 
         preceeding_character = chr(data[start - 1]) if start != 0 else None
         next_character = chr(data[end]) if end < len(data) else None
+
+        if preceeding_character == "/" and (start < 2 or data[start - 2] != ord("/")):
+            continue  # filename not domain
 
         if (
             preceeding_character
