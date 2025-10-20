@@ -1111,9 +1111,6 @@ def find_domains(data: bytes) -> list[Node]:
         elif data[start - 1 : start + 4] == b"%2540":
             domain = domain[4:]
             start = start + 4
-        elif data[start - 2 : start] == b"./":
-            # file not a domain
-            continue
 
         if not is_domain(domain) or len(domain) < 7:
             continue
