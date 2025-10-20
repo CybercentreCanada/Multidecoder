@@ -226,6 +226,7 @@ def test_DOMAIN_RE_context(data, domain):
         b"TRACKERS.one",
         b"backup.sh",
         b"FOREIGN.zip",
+        b"self.data",
     ],
 )
 def test_domain_is_false_positive(domain):

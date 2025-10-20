@@ -451,6 +451,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"security",
         b"select",
         b"selection",
+        b"self",
         b"sequence",
         b"serv",
         b"service",
