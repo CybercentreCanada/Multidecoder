@@ -2,19 +2,7 @@ import re
 
 import pytest
 
-from multidecoder.decoders.network import (
-    DOMAIN_RE,
-    EMAIL_RE,
-    IP_RE,
-    URL_RE,
-    domain_is_false_positive,
-    find_domains,
-    find_ips,
-    find_urls,
-    is_domain,
-    is_url,
-    parse_ip,
-)
+import multidecoder.decoders.network as network
 from multidecoder.node import Node
 
 # IP --------------------------------------------
@@ -45,7 +33,7 @@ from multidecoder.node import Node
 )
 def test_IP_RE_match(ip):
     """Test that IP_RE matches expected ip addresses"""
-    assert re.match(IP_RE, ip).end() == len(ip)
+    assert re.match(network.IP_RE, ip).end() == len(ip)
 
 
 @pytest.mark.parametrize(
@@ -68,17 +56,17 @@ def test_IP_RE_match(ip):
 )
 def test_IP_RE_false_positive(data):
     """Test that IP_RE does not match false positives"""
-    assert re.search(IP_RE, data) is None
+    assert re.search(network.IP_RE, data) is None
 
 
 @pytest.mark.parametrize(("data", "ip"), [(b"http://8.8.8.8/something", b"8.8.8.8")])
 def test_IP_RE_context(data, ip):
     """Test if IP_RE can find ip addresses in context"""
-    assert re.search(IP_RE, data).group() == ip
+    assert re.search(network.IP_RE, data).group() == ip
 
 
 def test_parse_ip():
-    assert parse_ip(b"8.8.8.8") == Node("network.ip", b"8.8.8.8", "", 0, 7)
+    assert network.parse_ip(b"8.8.8.8") == Node("network.ip", b"8.8.8.8", "", 0, 7)
 
 
 @pytest.mark.parametrize(
@@ -102,7 +90,7 @@ def test_parse_ip():
     ],
 )
 def test_find_ips_false_positives(data):
-    assert find_ips(data) == []
+    assert network.find_ips(data) == []
 
 
 # Domain ----------------------------------------
@@ -118,7 +106,7 @@ def test_find_ips_false_positives(data):
 )
 def test_DOMAIN_RE_match(domain):
     """Test that DOMAIN_RE matches expected domains"""
-    assert re.match(DOMAIN_RE, domain).end() == len(domain)
+    assert re.match(network.DOMAIN_RE, domain).end() == len(domain)
 
 
 @pytest.mark.parametrize(
@@ -137,12 +125,12 @@ def test_DOMAIN_RE_match(domain):
 )
 def test_DOMAIN_RE_false_positives(domain):
     """Test that DOMAIN_RE does not match potential false positives"""
-    assert not re.search(DOMAIN_RE, domain)
+    assert not re.search(network.DOMAIN_RE, domain)
 
 
 def test_is_valid_domain_re():
-    assert is_domain(b"website.com")
-    assert not is_domain(b"website.notatld")
+    assert network.is_domain(b"website.com")
+    assert not network.is_domain(b"website.notatld")
 
 
 @pytest.mark.parametrize(
@@ -153,7 +141,7 @@ def test_is_valid_domain_re():
 )
 def test_DOMAIN_RE_context(data, domain):
     """Test that DOMAIN_RE matches in context"""
-    assert re.search(DOMAIN_RE, data).group() == domain
+    assert re.search(network.DOMAIN_RE, data).group() == domain
 
 
 @pytest.mark.parametrize(
@@ -224,11 +212,17 @@ def test_DOMAIN_RE_context(data, domain):
         b"bbbbb-bbbbbbbbbbbxbbbbbobbbbbrbb.bb",
         b"actor.name",
         b"TRACKERS.one",
+        b"backup.sh",
         b"FOREIGN.zip",
+        b"self.data",
+        b"Makefile.win",
+        b"i-r.top",
+        b"update.zip",
+        b"cluster.fit",
     ],
 )
 def test_domain_is_false_positive(domain):
-    assert domain_is_false_positive(domain)
+    assert network.domain_is_false_positive(domain)
 
 
 @pytest.mark.parametrize(
@@ -241,7 +235,7 @@ def test_domain_is_false_positive(domain):
     ],
 )
 def test_domain_is_false_positive_real_domain(domain):
-    assert not domain_is_false_positive(domain)
+    assert not network.domain_is_false_positive(domain)
 
 
 @pytest.mark.parametrize(
@@ -258,19 +252,20 @@ def test_domain_is_false_positive_real_domain(domain):
         (b"Firstname.Lastname=40example.com", [Node("network.domain", b"example.com", "", 21, 32)]),
         (b"username%2540example.com", [Node("network.domain", b"example.com", "", 13, 24)]),
         (b'=""http:\x00//www.or\x00acle.com\xe2/', []),
+        (b"./example.com ", []),
         (b"https://example.com/c9k5y4.zip", [Node("network.domain", b"example.com", "", 8, 19)]),
         (b"/c9k5y4.zip", []),
     ],
 )
 def test_find_domains(data, domains):
-    assert find_domains(data) == domains
+    assert network.find_domains(data) == domains
 
 
 # Email -----------------------------------------
 
 
 def test_email_re():
-    assert re.match(EMAIL_RE, b"a_name@gmail.com")
+    assert re.match(network.EMAIL_RE, b"a_name@gmail.com")
 
 
 # URL -------------------------------------------
@@ -364,7 +359,7 @@ def test_email_re():
 )
 def test_URL_RE_matches(url):
     """Test that URL_RE matches expected URLs"""
-    assert re.match(URL_RE, url).span() == (0, len(url))
+    assert re.match(network.URL_RE, url).span() == (0, len(url))
 
 
 @pytest.mark.parametrize(
@@ -388,11 +383,11 @@ def test_URL_RE_matches(url):
 )
 def test_URL_RE_context(data, url):
     """Test that URL_RE correctly matches URLs in context"""
-    assert re.search(URL_RE, data).group() == url
+    assert re.search(network.URL_RE, data).group() == url
 
 
 def test_is_url():
-    assert is_url(b"https://some.domain.com")
+    assert network.is_url(b"https://some.domain.com")
 
 
 @pytest.mark.parametrize(
@@ -507,4 +502,4 @@ def test_is_url():
     ],
 )
 def test_find_url(data, urls):
-    assert find_urls(data) == urls
+    assert network.find_urls(data) == urls
