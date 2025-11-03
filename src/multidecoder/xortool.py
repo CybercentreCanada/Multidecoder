@@ -241,7 +241,7 @@ def produce_plaintexts(
     text_charset: Container[int],
     known_plain: bytes,
     filter_output: object,
-):
+) -> list[bytes]:
     """
     Produce plaintext variant for each possible key,
     returns the plaintext, the key that produced it,

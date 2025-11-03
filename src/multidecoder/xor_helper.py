@@ -8,7 +8,7 @@ from multidecoder.node import Node
 XOR_RE = rb"(?i)-b?xor\s*(\d{1,3})"
 
 
-def get_xorkey(data: bytes) -> int:
+def get_xorkey(data: bytes) -> int | None:
     xorkey = re.search(XOR_RE, data)
     if xorkey:
         return int(xorkey.group(1))
