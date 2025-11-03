@@ -34,6 +34,7 @@ lint.select = [
     "RUF",
 ]
 lint.fixable = ["I"]
+lint.ignore = ['RUF023']
 
 [tool.mypy]
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"

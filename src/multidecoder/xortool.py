@@ -53,7 +53,7 @@ def xortool(
     if not known_key_length:
         known_key_length = guess_key_length(ciphertext, max_key_length)
 
-    (probable_keys, key_char_used) = guess_probable_keys_for_chars(ciphertext, try_chars, known_key_length)
+    (probable_keys, _) = guess_probable_keys_for_chars(ciphertext, try_chars, known_key_length)
 
     return produce_plaintexts(ciphertext, probable_keys, text_charset, known_plain, filter_output)
 
