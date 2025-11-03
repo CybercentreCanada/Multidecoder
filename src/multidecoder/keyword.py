@@ -1,11 +1,6 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
+from collections.abc import Iterable
 
 from multidecoder.node import Node
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
 
 MIXED_CASE_OBF = "MixedCase"
 

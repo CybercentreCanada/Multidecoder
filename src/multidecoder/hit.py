@@ -1,13 +1,8 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
+from collections.abc import Callable
 
 import regex as re
 
 from multidecoder.node import Node
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
 
 
 def match_to_hit(label: str, match: re.Match[bytes], group: int = 0) -> Node:

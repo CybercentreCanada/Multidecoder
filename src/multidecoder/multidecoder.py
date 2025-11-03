@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from multidecoder.node import Node
 from multidecoder.registry import Registry, build_registry
 

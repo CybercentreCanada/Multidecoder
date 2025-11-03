@@ -1,7 +1,3 @@
-"""Network indicators"""
-
-from __future__ import annotations
-
 import binascii
 import contextlib
 import socket
