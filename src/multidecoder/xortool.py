@@ -27,13 +27,8 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER I
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from __future__ import annotations
-
 import string
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from collections.abc import Container
+from collections.abc import Container
 
 
 class AnalysisError(Exception):
@@ -53,7 +48,7 @@ def xortool(
     if not known_key_length:
         known_key_length = guess_key_length(ciphertext, max_key_length)
 
-    (probable_keys, key_char_used) = guess_probable_keys_for_chars(ciphertext, try_chars, known_key_length)
+    (probable_keys, _) = guess_probable_keys_for_chars(ciphertext, try_chars, known_key_length)
 
     return produce_plaintexts(ciphertext, probable_keys, text_charset, known_plain, filter_output)
 
@@ -246,7 +241,7 @@ def produce_plaintexts(
     text_charset: Container[int],
     known_plain: bytes,
     filter_output: object,
-):
+) -> list[bytes]:
     """
     Produce plaintext variant for each possible key,
     returns the plaintext, the key that produced it,

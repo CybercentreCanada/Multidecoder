@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import ntpath
 
 import regex as re
@@ -59,7 +57,7 @@ def find_windows_path(data: bytes) -> list[Node]:
         else:
             path_type = "windows.path"
         filename = segments[-1]
-        basename, extension = ntpath.splitext(filename)
+        _, extension = ntpath.splitext(filename)
         if extension:
             type_ = EXT_MAP.get(extension.lower(), "filename")
             children.append(Node(type_, filename, "", len(path) - len(filename), len(path)))

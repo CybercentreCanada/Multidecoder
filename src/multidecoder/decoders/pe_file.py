@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import struct
 
 import pefile
@@ -39,7 +37,7 @@ def find_pe_files(data: bytes) -> list[Node]:
     return pe_files
 
 
-def pe_size(pe_data) -> int:
+def pe_size(pe_data: bytes) -> int:
     """Find the end of a PE file.
 
     If there is a parsable PE file at the start of pe_data this function returns the offset of the end of that PE file

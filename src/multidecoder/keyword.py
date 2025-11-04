@@ -1,11 +1,6 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
+from collections.abc import Iterable
 
 from multidecoder.node import Node
-
-if TYPE_CHECKING:
-    from typing import Iterable
 
 MIXED_CASE_OBF = "MixedCase"
 
@@ -16,7 +11,7 @@ def is_mixed_case(expected: bytes, found: bytes) -> bool:
     in_word = False
     all_upper = True
     good_case = True
-    for byte_found, byte_expected in zip(found, expected):
+    for byte_found, byte_expected in zip(found, expected, strict=True):
         if chr(byte_found).isalpha():
             in_word = True
             found_upper = chr(byte_found).isupper()

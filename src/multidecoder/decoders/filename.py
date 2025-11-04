@@ -1,12 +1,6 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 from multidecoder.hit import regex_hits
+from multidecoder.node import Node
 from multidecoder.registry import decoder
-
-if TYPE_CHECKING:
-    from multidecoder.node import Node
 
 EXECUTABLE_TYPE = "executable.filename"
 LIBRARY_TYPE = "executable.library.filename"

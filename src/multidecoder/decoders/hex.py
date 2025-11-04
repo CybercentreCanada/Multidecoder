@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from binascii import Error as binascii_error
 from binascii import unhexlify
 

@@ -2,26 +2,22 @@
 Module for automatically registering and collecting decoder functions
 """
 
-from __future__ import annotations
-
 import importlib
 import inspect
 import os
 import pkgutil
+from collections.abc import Callable, Iterable
 from functools import partial
-from typing import TYPE_CHECKING, Callable, Iterable, List
+from typing import TypeAlias
 
 import multidecoder
 import multidecoder.decoders
 from multidecoder.keyword import find_keywords
 from multidecoder.node import Node
 
-if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
-
 # Registry type
-Decoder: TypeAlias = Callable[[bytes], List[Node]]
-Registry: TypeAlias = List[Decoder]
+Decoder: TypeAlias = Callable[[bytes], list[Node]]
+Registry: TypeAlias = list[Decoder]
 
 
 def decoder(func: Decoder) -> Decoder:

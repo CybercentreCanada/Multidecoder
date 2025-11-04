@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from urllib.parse import unquote_to_bytes
 
 import regex as re
