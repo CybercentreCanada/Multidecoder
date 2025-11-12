@@ -64,25 +64,25 @@ def test_base64_re_matches_equals():
     assert match.group() == ex
 
 
-ENCODED = binascii.b2a_base64(b"Some base64 encoded text")
-TEST_STRINGS = {
-    ENCODED: [Node("", b"Some base64 encoded text", "encoding.base64", 0, 32)],
-    b"lorem ipsum lorum asdf\nhjkl\nASDF\nasdf\nhjkl\nASDF\n44==lorum ipsum": [
-        Node(
-            "",
-            b"j\xc7_\x869%\x01 \xc5j\xc7_\x869%\x01 \xc5\xe3",
-            "encoding.base64",
-            18,
-            52,
-        )
+@pytest.mark.parametrize(
+    ("text", "found"),
+    [
+        (
+            binascii.b2a_base64(b"Some base64 encoded text"),
+            [Node("", b"Some base64 encoded text", "encoding.base64", 0, 32)],
+        ),
+        (
+            b"lorem ipsum lorum asdf\nhjkl\nASDF\nasdf\nhjkl\nASDF\n44==lorum ipsum",
+            [Node("", b"j\xc7_\x869%\x01 \xc5j\xc7_\x869%\x01 \xc5\xe3", "encoding.base64", 18, 52)],
+        ),
+        (
+            b'var img = "aHR0cHM6Ly9leC5leGFtcGxlLmNvbS93cC93cC1hZG1pbi9jc3MvYXV0aC5waHA"',
+            [Node("", b"https://ex.example.com/wp/wp-admin/css/auth.php", "encoding.base64", 11, 74)],
+        ),
     ],
-}
-
-
-def test_base64_search_texts():
-    for data, expected in TEST_STRINGS.items():
-        response = find_base64(data)
-        assert response == expected, f"{data} Failed"
+)
+def test_find_base64(text: bytes, found: list[Node]):
+    assert find_base64(text) == found
 
 
 # -- FromBase64String --

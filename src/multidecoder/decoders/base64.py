@@ -69,18 +69,20 @@ def find_base64(data: bytes) -> list[Node]:
             .replace(b"\r", b"")
             .replace(b"<\x00  \x00", b"")
         )
-        if len(b64_string) % 4 != 0 or len(set(b64_string)) <= MIN_B64_CHARS:
-            continue
-        if re.fullmatch(HEX_RE, b64_string):
+        if b64_string.startswith(b"aHR0c"):  # Base64 encoded http
+            b64_string = pad_base64(b64_string)
+        elif (
+            len(b64_string) % 4 != 0
+            or len(set(b64_string)) <= MIN_B64_CHARS
             # Hexadecimal characters are a subset of base64
             # Hashes commonly are hex and have multiple of 4 lengths
-            continue
-        if re.fullmatch(CAMEL_RE, b64_string):
+            or re.fullmatch(HEX_RE, b64_string)
             # Camel case text can be confused for base64
             # It is common in scripts as names
-            continue
-        if b64_string.count(b"/") / len(b64_string) > 3 / 32:
+            or re.fullmatch(CAMEL_RE, b64_string)
             # If there are a lot of / it as more likely a path
+            or b64_string.count(b"/") / len(b64_string) > 3 / 32
+        ):
             continue
         try:
             b64_result = binascii.a2b_base64(b64_string)
