@@ -85,7 +85,7 @@ def find_base64(data: bytes) -> list[Node]:
         ):
             continue
         try:
-            b64_result = binascii.a2b_base64(b64_string, strict_mode=True)
+            b64_result = binascii.a2b_base64(b64_string)
             b64_matches.append(
                 Node(
                     "",
