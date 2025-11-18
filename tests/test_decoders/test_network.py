@@ -503,3 +503,177 @@ def test_is_url():
 )
 def test_find_url(data, urls):
     assert network.find_urls(data) == urls
+
+
+@pytest.mark.parametrize(
+    ("data", "nodes"),
+    [
+
+        (
+                [
+                    b'<a href="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>',
+                    b'<A href="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>',
+                    b'<A hReF="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>',
+                ],
+                [
+                    Node(
+                        "network.url",
+                        b"https://www.example.ca/test1/test1-test1 tdata#ttag",
+                        "",
+                        9,
+                        60
+                    )
+                ]
+        ),
+        (
+                [b'<a testattr=""href="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>'],
+                [
+                    Node(
+                        "network.url",
+                        b"https://www.example.ca/test1/test1-test1 tdata#ttag",
+                        "",
+                        20,
+                        71
+                    )
+                ]
+        ),
+        (
+                [
+                    b'<a href="">Test</a>',
+                    b'<a href=>Test</a>',
+                    b'<a href>Test</a>',
+                    b'<a>Test</a>',
+                ], []
+        ),
+        (
+                [
+                    b'<a href href="http://test.com">Test</a>'
+                ], [
+                    Node(
+                        "network.url",
+                        b"http://test.com",
+                        "",
+                        14,
+                        29
+                    )
+                ]
+        ),
+        (
+                [
+                    b'<a href="http://test1.com" href="http://test2.com">Test</a>'
+                ], [
+                    Node(
+                        "network.url",
+                        b"http://test1.com",
+                        "",
+                        9,
+                        25
+                    ),
+                    Node(
+                        "network.url",
+                        b"http://test2.com",
+                        "",
+                        33,
+                        49
+                    )
+                ]
+        ),
+        (
+                [
+                    b'<form action="http://test1.com">Test</a>',
+                    b'<fORm action="http://test1.com">Test</FORM>',
+                    b'<fORm aCTIon="http://test1.com">Test</FORM>'
+                ], [
+                    Node(
+                        "network.url",
+                        b"http://test1.com",
+                        "",
+                        14,
+                        30
+                    )
+                ]
+        ),
+        (
+                [
+                    b'<button formaction="http://test1.com">Test</button>',
+                ], [
+                    Node(
+                        "network.url",
+                        b"http://test1.com",
+                        "",
+                        20,
+                        36
+                    )
+                ]
+        ),
+        (
+                [
+                    b"""<A style='FONT-SIZE: 10px; FONT-FAMILY: "some family 1", "some family 2", arial' href="https://example.website/test/my directory/file.html#example.test@test.com">""",
+                ], [
+                    Node(
+                        "network.url",
+                        b"https://example.website/test/my directory/file.html#example.test@test.com",
+                        "",
+                        87,
+                        160
+                    )
+                ]
+        ),
+        (
+                [
+                    b'<A href="https://www.test.ca/test2/test12test2     \r\n    \r\n    \r\n        #example">',
+                ], [
+                    Node(
+                        "network.url",
+                        b"https://www.test.ca/test2/test12test2                     #example",
+                        "",
+                        9,
+                        81
+                    )
+                ]
+        ),
+        (
+                [
+                    b'<A href="https://www.test.ca/test2/test12test2     \r\n    \r\n    \r\n        #example">',
+                ], [
+                    Node(
+                        "network.url",
+                        b"https://www.test.ca/test2/test12test2                     #example",
+                        "",
+                        9,
+                        81
+                    )
+                ]
+        ),
+        (
+                [
+                    b'<A href="https://www.test.ca/test2/test12test2     \n    \n    \n        #example">',
+                ], [
+                    Node(
+                        "network.url",
+                        b"https://www.test.ca/test2/test12test2                     #example",
+                        "",
+                        9,
+                        78
+                    )
+                ]
+        ),
+        (
+                [
+                    b'<A href="https://www.test.ca/test2/test12test2\n#exa\nmple">',
+                ], [
+                    Node(
+                        "network.url",
+                        b"https://www.test.ca/test2/test12test2#example",
+                        "",
+                        9,
+                        56
+                    )
+                ]
+        )
+    ]
+)
+def test_href_from_html(data, nodes):
+    for d in data:
+        r = network.find_html_url(d)
+        assert len(nodes) == len(r) and all(n in r for n in nodes)

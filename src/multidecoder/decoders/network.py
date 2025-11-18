@@ -95,7 +95,8 @@ HTML_URI_HOST_COMPONENTS = [
     b"EMBED",
     b"COMMAND",
     b"AUDIO",
-    b"SVG"
+    b"SVG",
+    b"BUTTON"
 ]
 
 HTML_ATTRIBUTE_DEF_PATTERN = re.compile(rb">|(([^\s=]+)=)")
@@ -1169,9 +1170,9 @@ def domain_is_false_positive(domain: bytes) -> bool:
     )
 
 
-def extract_html_attribute_value(data: bytes, start_index: int) -> tuple[bytes | None, int]:
+def extract_html_attribute_value(data: bytes, start_index: int) -> tuple[bytes | None, int, int]:
     if start_index >= len(data):
-        return None, start_index
+        return None, start_index, 0
 
     accepted_quotes = b"\"'`"
     block_url_starts = string.punctuation.encode()
@@ -1184,15 +1185,15 @@ def extract_html_attribute_value(data: bytes, start_index: int) -> tuple[bytes |
 
         # We encountered malformed html
         if end_index > 0:
-            return data[start_index + 1:end_index], end_index + 1
+            return data[start_index + 1:end_index], end_index + 1, 1
     elif chr(delim).isascii() and delim not in block_url_starts:
         # The text is not contained in quotes. The end is implicitly defined by parsing pattern.
         contents = HTML_UNQUOTED_ATTR_VALUE_PATTERN.search(data, start_index)
 
         if contents:
-            return contents.group(1), contents.end()
+            return contents.group(1), contents.end(), 0
 
-    return None, start_index
+    return None, start_index, 0
 
 
 def find_html_attrib_urls(data: bytes, offset: int) -> Generator[tuple[bytes, int, int], None, None]:
@@ -1211,21 +1212,27 @@ def find_html_attrib_urls(data: bytes, offset: int) -> Generator[tuple[bytes, in
         if token[-1] != ord('='):
             break
 
-        attr_def_begin = match.end()
+        attr_val_begin = match.end()
 
         attr_name = match.group(2)
-        attr_value, end_index = extract_html_attribute_value(data, attr_def_begin)
+        attr_value, end_index, delim_len = extract_html_attribute_value(data, attr_val_begin)
 
         # Parsing failed to extract an attribute. Parsing has broken, and we must terminate (malformed html)
         if attr_value is None:
             break
 
+        attr_val_begin += delim_len
+        attr_val_end = end_index - delim_len
+
         # If value is non-empty and the name is identified, report the url.
         if attr_value and attr_name.lower() in HTML_URL_ATTRIBUTES and is_url(attr_value):
-            yield attr_value, attr_def_begin, end_index
+            yield attr_value, attr_val_begin, attr_val_end
 
         cursor = end_index
 
+
+def clean_html_url(url: bytes) -> bytes:
+    return re.sub(rb"\r|\n", b"", url)
 
 # Decoders
 @decoder
@@ -1236,7 +1243,7 @@ def find_html_url(data: bytes) -> list[Node]:
     )
 
     return [
-        Node(URL_TYPE, unquote_to_bytes(u[0]), "", u[1], u[2])
+        Node(URL_TYPE, unquote_to_bytes(clean_html_url(u[0])), "", u[1], u[2], data)
         for u in itertools.chain(*urls)
     ]
 
