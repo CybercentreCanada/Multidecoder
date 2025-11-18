@@ -1179,13 +1179,14 @@ def extract_html_attribute_value(data: bytes, start_index: int) -> tuple[bytes |
     delim = data[start_index]
 
     if delim in accepted_quotes:
-        # Parse out using delimiter
+        # A valid container / delimiter character is used.
         end_index = data.find(delim, start_index + 1)
 
-        # malformed html
+        # We encountered malformed html
         if end_index > 0:
             return data[start_index + 1:end_index], end_index + 1
     elif chr(delim).isascii() and delim not in block_url_starts:
+        # The text is not contained in quotes. The end is implicitly defined by parsing pattern.
         contents = HTML_UNQUOTED_ATTR_VALUE_PATTERN.search(data, start_index)
 
         if contents:
