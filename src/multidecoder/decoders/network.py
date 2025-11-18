@@ -1,6 +1,9 @@
+import string
 import binascii
 import contextlib
 import socket
+import itertools
+from typing import Generator
 from collections import Counter
 from ipaddress import AddressValueError, IPv4Address, IPv6Address
 from urllib.parse import unquote_to_bytes, urlsplit
@@ -47,6 +50,65 @@ URL_RE = (
     # to prevent trailing characters from being included in the url.
 )
 
+# Sourced from the following table: https://www.w3.org/TR/REC-html40/index/attributes.html
+HTML_URL_ATTRIBUTES = {
+    b"action",
+    b"background",
+    b"cite",
+    b"classid",
+    b"codebase",
+    b"data",
+    b"href",
+    b"longdesc",
+    b"profile",
+    b"src",
+    b"usemap",
+    b"formaction",
+    b"icon",
+    b"manifest",
+    b"poster"
+}
+
+# Sourced from the following table: https://www.w3.org/TR/REC-html40/index/attributes.html
+HTML_URI_HOST_COMPONENTS = [
+    b"FORM",
+    b"BODY",
+    b"BLOCKQUOTE",
+    b"Q",
+    b"DEL",
+    b"INS",
+    b"OBJECT",
+    b"APPLET",
+    b"A",
+    b"AREA",
+    b"LINK",
+    b"BASE",
+    b"HEAD",
+    b"SCRIPT",
+    b"INPUT",
+    b"FRAME",
+    b"IFRAME",
+    b"IMG",
+    b"VIDEO",
+    b"TRACK",
+    b"SOURCE",
+    b"EMBED",
+    b"COMMAND",
+    b"AUDIO",
+    b"SVG"
+]
+
+HTML_ATTRIBUTE_DEF_PATTERN = re.compile(rb">|(([^\s=]+)=)")
+
+HTML_COMPONENT_START_PATTERN = re.compile(
+    b"<(" +
+        b'|'.join(HTML_URI_HOST_COMPONENTS) +
+    b")\\s",
+    flags=re.IGNORECASE
+)
+
+# Refer to spec html standard https://www.w3.org/TR/REC-html40/intro/sgmltut.html#h-3.2.2
+HTML_UNQUOTED_ATTR_VALUE_PATTERN = re.compile(rb"\s*([a-z0-9\-/:\._]+)", re.IGNORECASE)
 
 # Regex validators
 def is_domain(domain: bytes) -> bool:
@@ -1107,7 +1169,77 @@ def domain_is_false_positive(domain: bytes) -> bool:
     )
 
 
+def extract_html_attribute_value(data: bytes, start_index: int) -> tuple[bytes | None, int]:
+    if start_index >= len(data):
+        return None, start_index
+
+    accepted_quotes = b"\"'`"
+    block_url_starts = string.punctuation.encode()
+
+    delim = data[start_index]
+
+    if delim in accepted_quotes:
+        # Parse out using delimiter
+        end_index = data.find(delim, start_index + 1)
+
+        # malformed html
+        if end_index > 0:
+            return data[start_index + 1:end_index], end_index + 1
+    elif chr(delim).isascii() and delim not in block_url_starts:
+        contents = HTML_UNQUOTED_ATTR_VALUE_PATTERN.search(data, start_index)
+
+        if contents:
+            return contents.group(1), contents.end()
+
+    return None, start_index
+
+
+def find_html_attrib_urls(data: bytes, offset: int) -> Generator[tuple[bytes, int, int], None, None]:
+    cursor = offset
+
+    while True:
+        # If we exceed a certain seek, short-circuit as this may not be valid html
+        match = HTML_ATTRIBUTE_DEF_PATTERN.search(data, cursor, cursor + 2048)
+
+        if not match:
+            break
+
+        token = match.group()
+
+        # If we didn't match an attribute, we have hit the end of the html component. I.e '>' matched.
+        if token[-1] != ord('='):
+            break
+
+        attr_def_begin = match.end()
+
+        attr_name = match.group(2)
+        attr_value, end_index = extract_html_attribute_value(data, attr_def_begin)
+
+        # Parsing failed to extract an attribute. Parsing has broken, and we must terminate (malformed html)
+        if attr_value is None:
+            break
+
+        # If value is non-empty and the name is identified, report the url.
+        if attr_value and attr_name.lower() in HTML_URL_ATTRIBUTES and is_url(attr_value):
+            yield attr_value, attr_def_begin, end_index
+
+        cursor = end_index
+
+
 # Decoders
+@decoder
+def find_html_url(data: bytes) -> list[Node]:
+    urls = (
+        find_html_attrib_urls(data, c.end())
+        for c in HTML_COMPONENT_START_PATTERN.finditer(data)
+    )
+
+    return [
+        Node(URL_TYPE, unquote_to_bytes(u[0]), "", u[1], u[2])
+        for u in itertools.chain(*urls)
+    ]
+
+
 @decoder
 def find_domains(data: bytes) -> list[Node]:
     """Find domains in data"""
