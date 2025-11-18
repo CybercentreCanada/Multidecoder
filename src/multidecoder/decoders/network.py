@@ -99,6 +99,8 @@ HTML_URI_HOST_COMPONENTS = [
     b"BUTTON"
 ]
 
+HTML_MAX_SCAN_LENGTH = 2048
+
 HTML_ATTRIBUTE_DEF_PATTERN = re.compile(rb">|(([^\s=]+)=)")
 
 HTML_COMPONENT_START_PATTERN = re.compile(
@@ -1201,7 +1203,7 @@ def find_html_attrib_urls(data: bytes, offset: int) -> Generator[tuple[bytes, in
 
     while True:
         # If we exceed a certain seek, short-circuit as this may not be valid html
-        match = HTML_ATTRIBUTE_DEF_PATTERN.search(data, cursor, cursor + 2048)
+        match = HTML_ATTRIBUTE_DEF_PATTERN.search(data, cursor, cursor + HTML_MAX_SCAN_LENGTH)
 
         if not match:
             break
