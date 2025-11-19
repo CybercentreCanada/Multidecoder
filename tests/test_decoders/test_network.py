@@ -508,7 +508,6 @@ def test_find_url(data, urls):
 @pytest.mark.parametrize(
     ("data", "nodes"),
     [
-
         (
                 [
                     b'<a href="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>',
@@ -670,10 +669,16 @@ def test_find_url(data, urls):
                         56
                     )
                 ]
+        ),
+        (
+                [
+                    b'<A href="https://www.test.ca\x00/test2/test12test2\n#exa\nmple">',
+                ], [
+                ]
         )
     ]
 )
-def test_href_from_html(data, nodes):
+def test_url_from_html(data, nodes):
     for d in data:
         r = network.find_html_url(d)
         assert len(nodes) == len(r) and all(n in r for n in nodes)

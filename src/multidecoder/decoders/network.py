@@ -1179,16 +1179,15 @@ def extract_html_attribute_value(data: bytes, start_index: int) -> tuple[bytes |
     accepted_quotes = b"\"'`"
     block_url_starts = string.punctuation.encode()
 
-    delim = data[start_index]
+    delim = bytes([data[start_index]])
 
     if delim in accepted_quotes:
         # A valid container / delimiter character is used.
-        end_index = data.find(delim, start_index + 1)
+        m = re.match(rb"(\r|\n|[^\p{C}" + delim + rb"])*" + delim, data, re.S, start_index + 1)
 
-        # We encountered malformed html
-        if end_index > 0:
-            return data[start_index + 1:end_index], end_index + 1, 1
-    elif chr(delim).isascii() and delim not in block_url_starts:
+        if m:
+            return data[start_index + 1: m.end() - 1], m.end(), 1
+    elif delim.isascii() and delim not in block_url_starts:
         # The text is not contained in quotes. The end is implicitly defined by parsing pattern.
         contents = HTML_UNQUOTED_ATTR_VALUE_PATTERN.search(data, start_index)
 
