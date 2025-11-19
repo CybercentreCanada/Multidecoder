@@ -704,6 +704,33 @@ def test_find_url(data, urls):
         ),
         (
                 [
+                    b'<a href=https://testtt.ca/test12test2#atag.2@test.test.com?test=100&other=%20a>test</a>',
+                ], [
+                    Node(
+                        "network.url",
+                        b"https://testtt.ca/test12test2#atag.2@test.test.com?test=100&other= a",
+                        "",
+                        8,
+                        78
+                    )
+                ]
+        ),
+        (
+                [
+                    b'<a href=https://testtt.ca/test12test2 #tdata>test</a>',
+                    b'<a href=https://testtt.ca/test12test2 anotherurlpart>test</a>',
+                ], [
+                    Node(
+                        "network.url",
+                        b"https://testtt.ca/test12test2",
+                        "",
+                        8,
+                        37
+                    )
+                ]
+        ),
+        (
+                [
                     b'<A href="https://www.test.ca\x00/test2/test12test2\n#exa\nmple">',
                 ], [
                 ]
