@@ -111,7 +111,7 @@ HTML_COMPONENT_START_PATTERN = re.compile(
 )
 
 # Refer to spec html standard https://www.w3.org/TR/REC-html40/intro/sgmltut.html#h-3.2.2
-HTML_UNQUOTED_ATTR_VALUE_PATTERN = re.compile(rb"\s*([a-z0-9\-/:\._]+)", re.IGNORECASE)
+HTML_UNQUOTED_ATTR_VALUE_PATTERN = re.compile(rb"\s*([a-z0-9\-/:\._#@?&=%]+)", re.IGNORECASE)
 
 # Regex validators
 def is_domain(domain: bytes) -> bool:
