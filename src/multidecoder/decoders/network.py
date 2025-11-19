@@ -1232,28 +1232,31 @@ def find_html_attribute_urls(data: bytes, offset: int) -> Generator[tuple[bytes,
         cursor = end_index
 
 
-def clean_html_url(url: bytes) -> bytes:
-    url = re.sub(rb"\r|\n", b"", url)
-
-    # For minimal percent encoding, we unwrap the encoding and then apply only
-    # what is necessary
-    url = unquote_to_bytes(url)
-    url = quote_from_bytes(url, safe=":/&?=#@").encode()
-
-    return url
-
 # Decoders
 
 @decoder
-def find_html_url(data: bytes) -> list[Node]:
+def find_html_urls(data: bytes) -> list[Node]:
     """Find urls from html components"""
+
+    def construct_node(url, start, end):
+        url = re.sub(rb"\r|\n", b"", url)
+
+        return Node(
+            URL_TYPE,
+            *normalize_percent_encoding(url),
+            start,
+            end,
+            data,
+            parse_url(url)
+        )
+
     urls = (
         find_html_attribute_urls(data, c.end())
         for c in HTML_COMPONENT_START_PATTERN.finditer(data)
     )
 
     return [
-        Node(URL_TYPE, clean_html_url(u[0]), "", u[1], u[2], data)
+        construct_node(*u)
         for u in itertools.chain(*urls)
     ]
 
