@@ -101,7 +101,7 @@ HTML_URI_HOST_COMPONENTS = [
 
 HTML_MAX_SCAN_LENGTH = 2048
 
-HTML_ATTRIBUTE_DEF_PATTERN = re.compile(rb">|(([^\s=]+)=)")
+HTML_ATTRIBUTE_DEF_PATTERN = re.compile(rb">|(([^\s=]+)\s*=\s*)", re.S)
 
 HTML_COMPONENT_START_PATTERN = re.compile(
     b"<(" +
@@ -1197,7 +1197,7 @@ def extract_html_attribute_value(data: bytes, start_index: int) -> tuple[bytes |
     return None, start_index, 0
 
 
-def find_html_attrib_urls(data: bytes, offset: int) -> Generator[tuple[bytes, int, int], None, None]:
+def find_html_attribute_urls(data: bytes, offset: int) -> Generator[tuple[bytes, int, int], None, None]:
     cursor = offset
 
     while True:
@@ -1209,8 +1209,8 @@ def find_html_attrib_urls(data: bytes, offset: int) -> Generator[tuple[bytes, in
 
         token = match.group()
 
-        # If we didn't match an attribute, we have hit the end of the html component. I.e '>' matched.
-        if token[-1] != ord('='):
+        # If matched >, we have hit the end of the html component.
+        if token[0] == ord('>'):
             break
 
         attr_val_begin = match.end()
@@ -1239,7 +1239,7 @@ def clean_html_url(url: bytes) -> bytes:
 @decoder
 def find_html_url(data: bytes) -> list[Node]:
     urls = (
-        find_html_attrib_urls(data, c.end())
+        find_html_attribute_urls(data, c.end())
         for c in HTML_COMPONENT_START_PATTERN.finditer(data)
     )
 

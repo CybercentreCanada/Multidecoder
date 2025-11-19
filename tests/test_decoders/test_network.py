@@ -510,6 +510,38 @@ def test_find_url(data, urls):
     [
         (
                 [
+                    b'<a href  =   "https://www.example.ca/">Test</a>',
+                ],
+                [
+                    Node(
+                        "network.url",
+                        b"https://www.example.ca/",
+                        "",
+                        14,
+                        37
+                    )
+                ]
+        ),(
+                [
+                    b'<a href\r\n\r\n=\r\n\r\n"https://www.example.ca/">Test</a>',
+                ],
+                [
+                    Node(
+                        "network.url",
+                        b"https://www.example.ca/",
+                        "",
+                        17,
+                        40
+                    )
+                ]
+        ),(
+                [
+                    b'<a >href="https://www.example.ca/"',
+                ],
+                [ ]
+        ),
+        (
+                [
                     b'<a href="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>',
                     b'<A href="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>',
                     b'<A hReF="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>',
