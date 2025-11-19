@@ -549,7 +549,7 @@ def test_find_url(data, urls):
                 [
                     Node(
                         "network.url",
-                        b"https://www.example.ca/test1/test1-test1 tdata#ttag",
+                        b"https://www.example.ca/test1/test1-test1%20tdata#ttag",
                         "",
                         9,
                         60
@@ -561,7 +561,7 @@ def test_find_url(data, urls):
                 [
                     Node(
                         "network.url",
-                        b"https://www.example.ca/test1/test1-test1 tdata#ttag",
+                        b"https://www.example.ca/test1/test1-test1%20tdata#ttag",
                         "",
                         20,
                         71
@@ -643,7 +643,7 @@ def test_find_url(data, urls):
                 ], [
                     Node(
                         "network.url",
-                        b"https://example.website/test/my directory/file.html#example.test@test.com",
+                        b"https://example.website/test/my%20directory/file.html#example.test@test.com",
                         "",
                         87,
                         160
@@ -652,40 +652,27 @@ def test_find_url(data, urls):
         ),
         (
                 [
-                    b'<A href="https://www.test.ca/test2/test12test2     \r\n    \r\n    \r\n        #example">',
+                    b'<A href="https://www.test.ca/test2/test12test2  \r\n \r\n \r\n   #example">',
                 ], [
                     Node(
                         "network.url",
-                        b"https://www.test.ca/test2/test12test2                     #example",
+                        b"https://www.test.ca/test2/test12test2%20%20%20%20%20%20%20#example",
                         "",
                         9,
-                        81
+                        67
                     )
                 ]
         ),
         (
                 [
-                    b'<A href="https://www.test.ca/test2/test12test2     \r\n    \r\n    \r\n        #example">',
+                    b'<A href="https://www.test.ca/test2/test12test2  \n \n \n #example">',
                 ], [
                     Node(
                         "network.url",
-                        b"https://www.test.ca/test2/test12test2                     #example",
+                        b"https://www.test.ca/test2/test12test2%20%20%20%20%20#example",
                         "",
                         9,
-                        81
-                    )
-                ]
-        ),
-        (
-                [
-                    b'<A href="https://www.test.ca/test2/test12test2     \n    \n    \n        #example">',
-                ], [
-                    Node(
-                        "network.url",
-                        b"https://www.test.ca/test2/test12test2                     #example",
-                        "",
-                        9,
-                        78
+                        62
                     )
                 ]
         ),
@@ -708,7 +695,7 @@ def test_find_url(data, urls):
                 ], [
                     Node(
                         "network.url",
-                        b"https://testtt.ca/test12test2#atag.2@test.test.com?test=100&other= a",
+                        b"https://testtt.ca/test12test2#atag.2@test.test.com?test=100&other=%20a",
                         "",
                         8,
                         78
@@ -726,6 +713,19 @@ def test_find_url(data, urls):
                         "",
                         8,
                         37
+                    )
+                ]
+        ),
+        (
+                [
+                    b'<a href="https://%74%65%73%74.com/my folder">test</a>',
+                ], [
+                    Node(
+                        "network.url",
+                        b"https://test.com/my%20folder",
+                        "",
+                        9,
+                        43
                     )
                 ]
         ),
