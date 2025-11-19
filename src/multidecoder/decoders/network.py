@@ -1243,8 +1243,10 @@ def clean_html_url(url: bytes) -> bytes:
     return url
 
 # Decoders
+
 @decoder
 def find_html_url(data: bytes) -> list[Node]:
+    """Find urls from html components"""
     urls = (
         find_html_attribute_urls(data, c.end())
         for c in HTML_COMPONENT_START_PATTERN.finditer(data)
