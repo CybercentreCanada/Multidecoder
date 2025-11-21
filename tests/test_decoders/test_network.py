@@ -925,6 +925,12 @@ def test_find_url(data, urls):
                 b'<A href="https://www.test.ca\x00/test2/test12test2\n#exa\nmple">',
             ], [
             ]
+        ),
+        (
+            [
+                b'<a href=\x00\x10https://test.com>test</a>',
+            ], [
+            ]
         )
     ]
 )

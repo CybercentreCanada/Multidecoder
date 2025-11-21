@@ -6,7 +6,7 @@ import itertools
 from typing import Generator
 from collections import Counter
 from ipaddress import AddressValueError, IPv4Address, IPv6Address
-from urllib.parse import unquote_to_bytes, urlsplit, quote_from_bytes
+from urllib.parse import unquote_to_bytes, urlsplit
 
 import regex as re
 
@@ -1189,7 +1189,7 @@ def extract_html_attribute_value(data: bytes, start_index: int) -> tuple[bytes |
             return data[start_index + 1: m.end() - 1], m.end(), 1
     elif delim.isascii() and delim not in block_url_starts:
         # The text is not contained in quotes. The end is implicitly defined by parsing pattern.
-        contents = HTML_UNQUOTED_ATTR_VALUE_PATTERN.search(data, start_index)
+        contents = HTML_UNQUOTED_ATTR_VALUE_PATTERN.match(data, start_index)
 
         if contents:
             return contents.group(1), contents.end(), 0
