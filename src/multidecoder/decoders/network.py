@@ -1238,7 +1238,7 @@ def find_html_attribute_urls(data: bytes, offset: int) -> Generator[tuple[bytes,
 def find_html_urls(data: bytes) -> list[Node]:
     """Find urls from html components"""
 
-    def construct_node(url, start, end):
+    def construct_node(url: bytes, start: int, end: int) -> Node:
         url = re.sub(rb"\r|\n", b"", url)
 
         return Node(
