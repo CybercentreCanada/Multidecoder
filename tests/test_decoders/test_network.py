@@ -571,7 +571,7 @@ def test_find_url(data, urls):
             [
                 Node(
                     "network.url",
-                    b"https://www.example.ca/test1/test1-test1 tdata#ttag",
+                    b"https://www.example.ca/test1/test1-test1%20tdata#ttag",
                     "",
                     9,
                     60,
@@ -583,14 +583,14 @@ def test_find_url(data, urls):
                             b"/test1/test1-test1 tdata",
                             "",
                             22,
-                            46,
+                            48,
                         ),
                         Node(
                             "network.url.fragment",
                             b"ttag",
                             "",
-                            47,
-                            51,
+                            49,
+                            53,
                         ),
                     ]
                 )
@@ -601,7 +601,7 @@ def test_find_url(data, urls):
             [
                 Node(
                     "network.url",
-                    b"https://www.example.ca/test1/test1-test1 tdata#ttag",
+                    b"https://www.example.ca/test1/test1-test1%20tdata#ttag",
                     "",
                     20,
                     71,
@@ -613,14 +613,14 @@ def test_find_url(data, urls):
                             b"/test1/test1-test1 tdata",
                             "",
                             22,
-                            46,
+                            48,
                         ),
                         Node(
                             "network.url.fragment",
                             b"ttag",
                             "",
-                            47,
-                            51,
+                            49,
+                            53,
                         ),
                     ]
                 )
@@ -722,7 +722,7 @@ def test_find_url(data, urls):
             ], [
                 Node(
                     "network.url",
-                    b"https://example.website/test/my directory/file.html#example.test@test.com",
+                    b"https://example.website/test/my%20directory/file.html#example.test@test.com",
                     "",
                     87,
                     160,
@@ -734,14 +734,14 @@ def test_find_url(data, urls):
                             b"/test/my directory/file.html",
                             "",
                             23,
-                            51,
+                            53,
                         ),
                         Node(
                             "network.url.fragment",
                             b"example.test@test.com",
                             "",
-                            52,
-                            73,
+                            54,
+                            75,
                         ),
                     ]
                 ),
@@ -753,7 +753,7 @@ def test_find_url(data, urls):
             ], [
                 Node(
                     "network.url",
-                    b"https://www.test.ca/test2/test12test2       #example",
+                    b"https://www.test.ca/test2/test12test2%20%20%20%20%20%20%20#example",
                     "",
                     9,
                     67,
@@ -765,14 +765,14 @@ def test_find_url(data, urls):
                             b"/test2/test12test2       ",
                             "",
                             19,
-                            44,
+                            58,
                         ),
                         Node(
                             "network.url.fragment",
                             b"example",
                             "",
-                            45,
-                            52,
+                            59,
+                            66,
                         ),
                     ]
                 )
@@ -784,7 +784,7 @@ def test_find_url(data, urls):
             ], [
                 Node(
                     "network.url",
-                    b"https://www.test.ca/test2/test12test2       #example",
+                    b"https://www.test.ca/test2/test12test2%20%20%20%20%20%20%20#example",
                     "",
                     9,
                     64,
@@ -796,14 +796,14 @@ def test_find_url(data, urls):
                             b"/test2/test12test2       ",
                             "",
                             19,
-                            44,
+                            58,
                         ),
                         Node(
                             "network.url.fragment",
                             b"example",
                             "",
-                            45,
-                            52,
+                            59,
+                            66,
                         ),
                     ]
                 )
@@ -902,7 +902,7 @@ def test_find_url(data, urls):
             ], [
                 Node(
                     "network.url",
-                    b'https://test.com/my folder',
+                    b'https://test.com/my%20folder',
                     "escape.percent",
                     9,
                     43,
@@ -914,7 +914,31 @@ def test_find_url(data, urls):
                             b"/my folder",
                             "",
                             24,
-                            34,
+                            36,
+                        )
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<a href="https://example.com/my\tfolder">test</a>',
+            ], [
+                Node(
+                    "network.url",
+                    b'https://example.com/myfolder',
+                    "",
+                    9,
+                    38,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.com", "", 8, 19),
+                        Node(
+                            "network.url.path",
+                            b"/myfolder",
+                            "",
+                            19,
+                            28,
                         )
                     ]
                 )

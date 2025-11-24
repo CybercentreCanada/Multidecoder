@@ -1183,7 +1183,7 @@ def extract_html_attribute_value(data: bytes, start_index: int) -> tuple[bytes |
 
     if delim in accepted_quotes:
         # A valid container / delimiter character is used.
-        m = re.match(rb"(\r|\n|[^\p{C}" + delim + rb"])*" + delim, data, re.S, start_index + 1)
+        m = re.match(rb"(\r|\n|\t|[^\p{C}" + delim + rb"])*" + delim, data, re.S, start_index + 1)
 
         if m:
             return data[start_index + 1: m.end() - 1], m.end(), 1
@@ -1239,7 +1239,18 @@ def find_html_urls(data: bytes) -> list[Node]:
     """Find urls from html components"""
 
     def construct_node(url: bytes, start: int, end: int) -> Node:
-        url = re.sub(rb"\r|\n", b"", url)
+        url_replace_mapping = {
+            b"\r": b"",
+            b"\n": b"",
+            b"\t": b"",
+            b" ": b"%20"
+        }
+
+        url = re.sub(
+            b"|".join(map(re.escape, url_replace_mapping.keys())),
+            lambda m: url_replace_mapping.get(m.group(0)),
+            url
+         )
 
         return Node(
             URL_TYPE,
