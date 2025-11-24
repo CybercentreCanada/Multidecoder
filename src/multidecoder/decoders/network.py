@@ -1,6 +1,9 @@
+import string
 import binascii
 import contextlib
 import socket
+import itertools
+from typing import Generator
 from collections import Counter
 from ipaddress import AddressValueError, IPv4Address, IPv6Address
 from urllib.parse import unquote_to_bytes, urlsplit
@@ -47,6 +50,68 @@ URL_RE = (
     # to prevent trailing characters from being included in the url.
 )
 
+# Sourced from the following table: https://www.w3.org/TR/REC-html40/index/attributes.html
+HTML_URL_ATTRIBUTES = {
+    b"action",
+    b"background",
+    b"cite",
+    b"classid",
+    b"codebase",
+    b"data",
+    b"href",
+    b"longdesc",
+    b"profile",
+    b"src",
+    b"usemap",
+    b"formaction",
+    b"icon",
+    b"manifest",
+    b"poster"
+}
+
+# Sourced from the following table: https://www.w3.org/TR/REC-html40/index/attributes.html
+HTML_URI_HOST_COMPONENTS = [
+    b"FORM",
+    b"BODY",
+    b"BLOCKQUOTE",
+    b"Q",
+    b"DEL",
+    b"INS",
+    b"OBJECT",
+    b"APPLET",
+    b"A",
+    b"AREA",
+    b"LINK",
+    b"BASE",
+    b"HEAD",
+    b"SCRIPT",
+    b"INPUT",
+    b"FRAME",
+    b"IFRAME",
+    b"IMG",
+    b"VIDEO",
+    b"TRACK",
+    b"SOURCE",
+    b"EMBED",
+    b"COMMAND",
+    b"AUDIO",
+    b"SVG",
+    b"BUTTON"
+]
+
+HTML_MAX_SCAN_LENGTH = 2048
+
+HTML_ATTRIBUTE_DEF_PATTERN = re.compile(rb">|(([^\s=]+)\s*=\s*)", re.S)
+
+HTML_COMPONENT_START_PATTERN = re.compile(
+    b"<(" +
+        b'|'.join(HTML_URI_HOST_COMPONENTS) +
+    b")\\s",
+    flags=re.IGNORECASE
+)
+
+# Refer to spec html standard https://www.w3.org/TR/REC-html40/intro/sgmltut.html#h-3.2.2
+HTML_UNQUOTED_ATTR_VALUE_PATTERN = re.compile(rb"\s*([a-z0-9\-/:\._#@?&=%]+)", re.IGNORECASE)
 
 # Regex validators
 def is_domain(domain: bytes) -> bool:
@@ -1107,7 +1172,106 @@ def domain_is_false_positive(domain: bytes) -> bool:
     )
 
 
+def extract_html_attribute_value(data: bytes, start_index: int) -> tuple[bytes | None, int, int]:
+    if start_index >= len(data):
+        return None, start_index, 0
+
+    accepted_quotes = b"\"'`"
+    block_url_starts = string.punctuation.encode()
+
+    delim = bytes([data[start_index]])
+
+    if delim in accepted_quotes:
+        # A valid container / delimiter character is used.
+        m = re.match(rb"(\r|\n|\t|[^\p{C}" + delim + rb"])*" + delim, data, re.S, start_index + 1)
+
+        if m:
+            return data[start_index + 1: m.end() - 1], m.end(), 1
+    elif delim.isascii() and delim not in block_url_starts:
+        # The text is not contained in quotes. The end is implicitly defined by parsing pattern.
+        contents = HTML_UNQUOTED_ATTR_VALUE_PATTERN.match(data, start_index)
+
+        if contents:
+            return contents.group(1), contents.end(), 0
+
+    return None, start_index, 0
+
+
+def find_html_attribute_urls(data: bytes, offset: int) -> Generator[tuple[bytes, int, int], None, None]:
+    cursor = offset
+
+    while True:
+        # If we exceed a certain seek, short-circuit as this may not be valid html
+        match = HTML_ATTRIBUTE_DEF_PATTERN.search(data, cursor, cursor + HTML_MAX_SCAN_LENGTH)
+
+        if not match:
+            break
+
+        token = match.group()
+
+        # If matched >, we have hit the end of the html component.
+        if token[0] == ord('>'):
+            break
+
+        attr_val_begin = match.end()
+
+        attr_name = match.group(2)
+        attr_value, end_index, delim_len = extract_html_attribute_value(data, attr_val_begin)
+
+        # Parsing failed to extract an attribute. Parsing has broken, and we must terminate (malformed html)
+        if attr_value is None:
+            break
+
+        attr_val_begin += delim_len
+        attr_val_end = end_index - delim_len
+
+        # If value is non-empty and the name is identified, report the url.
+        if attr_value and attr_name.lower() in HTML_URL_ATTRIBUTES and is_url(attr_value):
+            yield attr_value, attr_val_begin, attr_val_end
+
+        cursor = end_index
+
+
 # Decoders
+
+@decoder
+def find_html_urls(data: bytes) -> list[Node]:
+    """Find urls from html components"""
+
+    def construct_node(url: bytes, start: int, end: int) -> Node:
+        url_replace_mapping = {
+            b"\r": b"",
+            b"\n": b"",
+            b"\t": b"",
+            b" ": b"%20"
+        }
+
+        url = re.sub(
+            b"|".join(map(re.escape, url_replace_mapping.keys())),
+            lambda m: url_replace_mapping.get(m.group(0)),
+            url
+         )
+
+        return Node(
+            URL_TYPE,
+            *normalize_percent_encoding(url),
+            start,
+            end,
+            data,
+            parse_url(url)
+        )
+
+    urls = (
+        find_html_attribute_urls(data, c.end())
+        for c in HTML_COMPONENT_START_PATTERN.finditer(data)
+    )
+
+    return [
+        construct_node(*u)
+        for u in itertools.chain(*urls)
+    ]
+
+
 @decoder
 def find_domains(data: bytes) -> list[Node]:
     """Find domains in data"""

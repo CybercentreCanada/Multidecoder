@@ -503,3 +503,462 @@ def test_is_url():
 )
 def test_find_url(data, urls):
     assert network.find_urls(data) == urls
+
+
+@pytest.mark.parametrize(
+    ("data", "nodes"),
+    [
+        (
+            [
+                b'<a href  =   "https://www.example.ca/">Test</a>',
+            ],
+            [
+                Node(
+                    "network.url",
+                    b"https://www.example.ca/",
+                    "",
+                    14,
+                    37,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"www.example.ca", "", 8, 22),
+                        Node(
+                            "network.url.path",
+                            b"/",
+                            "",
+                            22,
+                            23,
+                        ),
+                    ]
+                )
+            ]
+        ),(
+            [
+                b'<a href\r\n\r\n=\r\n\r\n"https://www.example.ca/">Test</a>',
+            ],
+            [
+                Node(
+                    "network.url",
+                    b"https://www.example.ca/",
+                    "",
+                    17,
+                    40,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"www.example.ca", "", 8, 22),
+                        Node(
+                            "network.url.path",
+                            b"/",
+                            "",
+                            22,
+                            23,
+                        ),
+                    ]
+                )
+            ]
+        ),(
+            [
+                b'<a >href="https://www.example.ca/"',
+            ],
+            [ ]
+        ),
+        (
+            [
+                b'<a href="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>',
+                b'<A href="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>',
+                b'<A hReF="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>',
+            ],
+            [
+                Node(
+                    "network.url",
+                    b"https://www.example.ca/test1/test1-test1%20tdata#ttag",
+                    "",
+                    9,
+                    60,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"www.example.ca", "", 8, 22),
+                        Node(
+                            "network.url.path",
+                            b"/test1/test1-test1 tdata",
+                            "",
+                            22,
+                            48,
+                        ),
+                        Node(
+                            "network.url.fragment",
+                            b"ttag",
+                            "",
+                            49,
+                            53,
+                        ),
+                    ]
+                )
+            ]
+        ),
+        (
+            [b'<a testattr=""href="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>'],
+            [
+                Node(
+                    "network.url",
+                    b"https://www.example.ca/test1/test1-test1%20tdata#ttag",
+                    "",
+                    20,
+                    71,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"www.example.ca", "", 8, 22),
+                        Node(
+                            "network.url.path",
+                            b"/test1/test1-test1 tdata",
+                            "",
+                            22,
+                            48,
+                        ),
+                        Node(
+                            "network.url.fragment",
+                            b"ttag",
+                            "",
+                            49,
+                            53,
+                        ),
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<a href="">Test</a>',
+                b'<a href=>Test</a>',
+                b'<a href>Test</a>',
+                b'<a>Test</a>',
+            ], []
+        ),
+        (
+            [
+                b'<a href href="http://test.com">Test</a>'
+            ], [
+                Node(
+                    "network.url",
+                    b"http://test.com",
+                    "",
+                    14,
+                    29,
+                    children=[
+                        Node("network.url.scheme", b"http", "", 0, 4),
+                        Node("network.domain", b"test.com", "", 7, 15)
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<a href="http://test1.com" href="http://test2.com">Test</a>'
+            ], [
+                Node(
+                    "network.url",
+                    b"http://test1.com",
+                    "",
+                    9,
+                    25,
+                    children=[
+                        Node("network.url.scheme", b"http", "", 0, 4),
+                        Node("network.domain", b"test1.com", "", 7, 16)
+                    ]
+                ),
+                Node(
+                    "network.url",
+                    b"http://test2.com",
+                    "",
+                    33,
+                    49,
+                    children=[
+                        Node("network.url.scheme", b"http", "", 0, 4),
+                        Node("network.domain", b"test2.com", "", 7, 16)
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<form action="http://test1.com">Test</a>',
+                b'<fORm action="http://test1.com">Test</FORM>',
+                b'<fORm aCTIon="http://test1.com">Test</FORM>'
+            ], [
+                Node(
+                    "network.url",
+                    b"http://test1.com",
+                    "",
+                    14,
+                    30,
+                    children=[
+                        Node("network.url.scheme", b"http", "", 0, 4),
+                        Node("network.domain", b"test1.com", "", 7, 16)
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<button formaction="http://test1.com">Test</button>',
+            ], [
+                Node(
+                    "network.url",
+                    b"http://test1.com",
+                    "",
+                    20,
+                    36,
+                    children=[
+                        Node("network.url.scheme", b"http", "", 0, 4),
+                        Node("network.domain", b"test1.com", "", 7, 16)
+                    ]
+                )
+            ]
+        ),
+
+        (
+            [
+                b"""<A style='FONT-SIZE: 10px; FONT-FAMILY: "some family 1", "some family 2", arial' href="https://example.website/test/my directory/file.html#example.test@test.com">""",
+            ], [
+                Node(
+                    "network.url",
+                    b"https://example.website/test/my%20directory/file.html#example.test@test.com",
+                    "",
+                    87,
+                    160,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.website", "", 8, 23),
+                        Node(
+                            "network.url.path",
+                            b"/test/my directory/file.html",
+                            "",
+                            23,
+                            53,
+                        ),
+                        Node(
+                            "network.url.fragment",
+                            b"example.test@test.com",
+                            "",
+                            54,
+                            75,
+                        ),
+                    ]
+                ),
+            ]
+        ),
+        (
+            [
+                b'<A href="https://www.test.ca/test2/test12test2  \r\n \r\n \r\n   #example">',
+            ], [
+                Node(
+                    "network.url",
+                    b"https://www.test.ca/test2/test12test2%20%20%20%20%20%20%20#example",
+                    "",
+                    9,
+                    67,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"www.test.ca", "", 8, 19),
+                        Node(
+                            "network.url.path",
+                            b"/test2/test12test2       ",
+                            "",
+                            19,
+                            58,
+                        ),
+                        Node(
+                            "network.url.fragment",
+                            b"example",
+                            "",
+                            59,
+                            66,
+                        ),
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<A href="https://www.test.ca/test2/test12test2  \n \n \n   #example">',
+            ], [
+                Node(
+                    "network.url",
+                    b"https://www.test.ca/test2/test12test2%20%20%20%20%20%20%20#example",
+                    "",
+                    9,
+                    64,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"www.test.ca", "", 8, 19),
+                        Node(
+                            "network.url.path",
+                            b"/test2/test12test2       ",
+                            "",
+                            19,
+                            58,
+                        ),
+                        Node(
+                            "network.url.fragment",
+                            b"example",
+                            "",
+                            59,
+                            66,
+                        ),
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<A href="https://www.test.ca/test2/test12test2\n#exa\nmple">',
+            ], [
+                Node(
+                    "network.url",
+                    b"https://www.test.ca/test2/test12test2#example",
+                    "",
+                    9,
+                    56,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"www.test.ca", "", 8, 19),
+                        Node(
+                            "network.url.path",
+                            b"/test2/test12test2",
+                            "",
+                            19,
+                            37,
+                        ),
+                        Node(
+                            "network.url.fragment",
+                            b"example",
+                            "",
+                            38,
+                            45,
+                        ),
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<a href=https://testtt.ca/test12test2#atag.2@test.test.com?test=100&other=%20a>test</a>',
+            ], [
+                Node(
+                    "network.url",
+                    b'https://testtt.ca/test12test2#atag.2@test.test.com?test=100&other=%20a',
+                    "",
+                    8,
+                    78,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"testtt.ca", "", 8, 17),
+                        Node(
+                            "network.url.path",
+                            b"/test12test2",
+                            "",
+                            17,
+                            29,
+                        ),
+                        Node(
+                            "network.url.fragment",
+                            b"atag.2@test.test.com?test=100&other= a",
+                            "",
+                            30,
+                            70,
+                        ),
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<a href=https://testtt.ca/test12test2 #tdata>test</a>',
+                b'<a href=https://testtt.ca/test12test2 anotherurlpart>test</a>',
+            ], [
+                Node(
+                    "network.url",
+                    b"https://testtt.ca/test12test2",
+                    "",
+                    8,
+                    37,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"testtt.ca", "", 8, 17),
+                        Node(
+                            "network.url.path",
+                            b"/test12test2",
+                            "",
+                            17,
+                            29,
+                        )
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<a href="https://%74%65%73%74.com/my folder">test</a>',
+            ], [
+                Node(
+                    "network.url",
+                    b'https://test.com/my%20folder',
+                    "escape.percent",
+                    9,
+                    43,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"test.com", "", 8, 16),
+                        Node(
+                            "network.url.path",
+                            b"/my folder",
+                            "",
+                            24,
+                            36,
+                        )
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<a href="https://example.com/my\tfolder">test</a>',
+            ], [
+                Node(
+                    "network.url",
+                    b'https://example.com/myfolder',
+                    "",
+                    9,
+                    38,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"example.com", "", 8, 19),
+                        Node(
+                            "network.url.path",
+                            b"/myfolder",
+                            "",
+                            19,
+                            28,
+                        )
+                    ]
+                )
+            ]
+        ),
+        (
+            [
+                b'<A href="https://www.test.ca\x00/test2/test12test2\n#exa\nmple">',
+            ], [
+            ]
+        ),
+        (
+            [
+                b'<a href=\x00\x10https://test.com>test</a>',
+            ], [
+            ]
+        )
+    ]
+)
+def test_url_from_html(data, nodes):
+    for d in data:
+        r = network.find_html_urls(d)
+        assert len(nodes) == len(r) and all(n in r for n in nodes)
