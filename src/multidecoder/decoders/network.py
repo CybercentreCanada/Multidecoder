@@ -120,11 +120,17 @@ def is_domain(domain: bytes) -> bool:
     Returns:
         Whether domain has a valid top level domain.
     """
-    parts = domain.rsplit(b".", 1)
-    if len(parts) != 2:
+    # Enforce DNS size limit (https://www.rfc-editor.org/rfc/rfc1035#section-2.3.4)
+    if len(domain) > 255:
         return False
-    name, tld = parts
-    return bool(name and tld.upper() in TOP_LEVEL_DOMAINS)
+    parts = domain.split(b".")
+    if len(parts) < 2:
+        return False
+    *labels, tld = parts
+    return bool(
+        all(label and len(label) <= 63 and not label.startswith(b"-") and not label.endswith(b"-") for label in labels)
+        and tld.upper() in TOP_LEVEL_DOMAINS
+    )
 
 
 def is_ip(ip: bytes) -> bool:

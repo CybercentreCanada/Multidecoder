@@ -128,11 +128,6 @@ def test_DOMAIN_RE_false_positives(domain):
     assert not re.search(network.DOMAIN_RE, domain)
 
 
-def test_is_valid_domain_re():
-    assert network.is_domain(b"website.com")
-    assert not network.is_domain(b"website.notatld")
-
-
 @pytest.mark.parametrize(
     ("data", "domain"),
     [
@@ -142,6 +137,20 @@ def test_is_valid_domain_re():
 def test_DOMAIN_RE_context(data, domain):
     """Test that DOMAIN_RE matches in context"""
     assert re.search(network.DOMAIN_RE, data).group() == domain
+
+
+@pytest.mark.parametrize(
+    ("domain", "expected"),
+    [
+        (b"example.com", True),
+        (b"example.notatld", False),
+        (b"-example.com", False),
+        (b"example-.com", False),
+        (b"example..com", False),
+    ],
+)
+def test_is_domain(domain: bytes, expected: bool):
+    assert network.is_domain(domain) == expected
 
 
 @pytest.mark.parametrize(
@@ -529,10 +538,11 @@ def test_find_url(data, urls):
                             22,
                             23,
                         ),
-                    ]
+                    ],
                 )
-            ]
-        ),(
+            ],
+        ),
+        (
             [
                 b'<a href\r\n\r\n=\r\n\r\n"https://www.example.ca/">Test</a>',
             ],
@@ -553,14 +563,15 @@ def test_find_url(data, urls):
                             22,
                             23,
                         ),
-                    ]
+                    ],
                 )
-            ]
-        ),(
+            ],
+        ),
+        (
             [
                 b'<a >href="https://www.example.ca/"',
             ],
-            [ ]
+            [],
         ),
         (
             [
@@ -592,9 +603,9 @@ def test_find_url(data, urls):
                             49,
                             53,
                         ),
-                    ]
+                    ],
                 )
-            ]
+            ],
         ),
         (
             [b'<a testattr=""href="https://www.example.ca/test1/test1-test1 tdata#ttag">Test</a>'],
@@ -622,22 +633,22 @@ def test_find_url(data, urls):
                             49,
                             53,
                         ),
-                    ]
+                    ],
                 )
-            ]
+            ],
         ),
         (
             [
                 b'<a href="">Test</a>',
-                b'<a href=>Test</a>',
-                b'<a href>Test</a>',
-                b'<a>Test</a>',
-            ], []
+                b"<a href=>Test</a>",
+                b"<a href>Test</a>",
+                b"<a>Test</a>",
+            ],
+            [],
         ),
         (
+            [b'<a href href="http://test.com">Test</a>'],
             [
-                b'<a href href="http://test.com">Test</a>'
-            ], [
                 Node(
                     "network.url",
                     b"http://test.com",
@@ -646,15 +657,14 @@ def test_find_url(data, urls):
                     29,
                     children=[
                         Node("network.url.scheme", b"http", "", 0, 4),
-                        Node("network.domain", b"test.com", "", 7, 15)
-                    ]
+                        Node("network.domain", b"test.com", "", 7, 15),
+                    ],
                 )
-            ]
+            ],
         ),
         (
+            [b'<a href="http://test1.com" href="http://test2.com">Test</a>'],
             [
-                b'<a href="http://test1.com" href="http://test2.com">Test</a>'
-            ], [
                 Node(
                     "network.url",
                     b"http://test1.com",
@@ -663,8 +673,8 @@ def test_find_url(data, urls):
                     25,
                     children=[
                         Node("network.url.scheme", b"http", "", 0, 4),
-                        Node("network.domain", b"test1.com", "", 7, 16)
-                    ]
+                        Node("network.domain", b"test1.com", "", 7, 16),
+                    ],
                 ),
                 Node(
                     "network.url",
@@ -674,17 +684,18 @@ def test_find_url(data, urls):
                     49,
                     children=[
                         Node("network.url.scheme", b"http", "", 0, 4),
-                        Node("network.domain", b"test2.com", "", 7, 16)
-                    ]
-                )
-            ]
+                        Node("network.domain", b"test2.com", "", 7, 16),
+                    ],
+                ),
+            ],
         ),
         (
             [
                 b'<form action="http://test1.com">Test</a>',
                 b'<fORm action="http://test1.com">Test</FORM>',
-                b'<fORm aCTIon="http://test1.com">Test</FORM>'
-            ], [
+                b'<fORm aCTIon="http://test1.com">Test</FORM>',
+            ],
+            [
                 Node(
                     "network.url",
                     b"http://test1.com",
@@ -693,15 +704,16 @@ def test_find_url(data, urls):
                     30,
                     children=[
                         Node("network.url.scheme", b"http", "", 0, 4),
-                        Node("network.domain", b"test1.com", "", 7, 16)
-                    ]
+                        Node("network.domain", b"test1.com", "", 7, 16),
+                    ],
                 )
-            ]
+            ],
         ),
         (
             [
                 b'<button formaction="http://test1.com">Test</button>',
-            ], [
+            ],
+            [
                 Node(
                     "network.url",
                     b"http://test1.com",
@@ -710,16 +722,16 @@ def test_find_url(data, urls):
                     36,
                     children=[
                         Node("network.url.scheme", b"http", "", 0, 4),
-                        Node("network.domain", b"test1.com", "", 7, 16)
-                    ]
+                        Node("network.domain", b"test1.com", "", 7, 16),
+                    ],
                 )
-            ]
+            ],
         ),
-
         (
             [
                 b"""<A style='FONT-SIZE: 10px; FONT-FAMILY: "some family 1", "some family 2", arial' href="https://example.website/test/my directory/file.html#example.test@test.com">""",
-            ], [
+            ],
+            [
                 Node(
                     "network.url",
                     b"https://example.website/test/my%20directory/file.html#example.test@test.com",
@@ -743,14 +755,15 @@ def test_find_url(data, urls):
                             54,
                             75,
                         ),
-                    ]
+                    ],
                 ),
-            ]
+            ],
         ),
         (
             [
                 b'<A href="https://www.test.ca/test2/test12test2  \r\n \r\n \r\n   #example">',
-            ], [
+            ],
+            [
                 Node(
                     "network.url",
                     b"https://www.test.ca/test2/test12test2%20%20%20%20%20%20%20#example",
@@ -774,14 +787,15 @@ def test_find_url(data, urls):
                             59,
                             66,
                         ),
-                    ]
+                    ],
                 )
-            ]
+            ],
         ),
         (
             [
                 b'<A href="https://www.test.ca/test2/test12test2  \n \n \n   #example">',
-            ], [
+            ],
+            [
                 Node(
                     "network.url",
                     b"https://www.test.ca/test2/test12test2%20%20%20%20%20%20%20#example",
@@ -805,14 +819,15 @@ def test_find_url(data, urls):
                             59,
                             66,
                         ),
-                    ]
+                    ],
                 )
-            ]
+            ],
         ),
         (
             [
                 b'<A href="https://www.test.ca/test2/test12test2\n#exa\nmple">',
-            ], [
+            ],
+            [
                 Node(
                     "network.url",
                     b"https://www.test.ca/test2/test12test2#example",
@@ -836,17 +851,18 @@ def test_find_url(data, urls):
                             38,
                             45,
                         ),
-                    ]
+                    ],
                 )
-            ]
+            ],
         ),
         (
             [
-                b'<a href=https://testtt.ca/test12test2#atag.2@test.test.com?test=100&other=%20a>test</a>',
-            ], [
+                b"<a href=https://testtt.ca/test12test2#atag.2@test.test.com?test=100&other=%20a>test</a>",
+            ],
+            [
                 Node(
                     "network.url",
-                    b'https://testtt.ca/test12test2#atag.2@test.test.com?test=100&other=%20a',
+                    b"https://testtt.ca/test12test2#atag.2@test.test.com?test=100&other=%20a",
                     "",
                     8,
                     78,
@@ -867,15 +883,16 @@ def test_find_url(data, urls):
                             30,
                             70,
                         ),
-                    ]
+                    ],
                 )
-            ]
+            ],
         ),
         (
             [
-                b'<a href=https://testtt.ca/test12test2 #tdata>test</a>',
-                b'<a href=https://testtt.ca/test12test2 anotherurlpart>test</a>',
-            ], [
+                b"<a href=https://testtt.ca/test12test2 #tdata>test</a>",
+                b"<a href=https://testtt.ca/test12test2 anotherurlpart>test</a>",
+            ],
+            [
                 Node(
                     "network.url",
                     b"https://testtt.ca/test12test2",
@@ -891,18 +908,19 @@ def test_find_url(data, urls):
                             "",
                             17,
                             29,
-                        )
-                    ]
+                        ),
+                    ],
                 )
-            ]
+            ],
         ),
         (
             [
                 b'<a href="https://%74%65%73%74.com/my folder">test</a>',
-            ], [
+            ],
+            [
                 Node(
                     "network.url",
-                    b'https://test.com/my%20folder',
+                    b"https://test.com/my%20folder",
                     "escape.percent",
                     9,
                     43,
@@ -915,18 +933,19 @@ def test_find_url(data, urls):
                             "",
                             24,
                             36,
-                        )
-                    ]
+                        ),
+                    ],
                 )
-            ]
+            ],
         ),
         (
             [
                 b'<a href="https://example.com/my\tfolder">test</a>',
-            ], [
+            ],
+            [
                 Node(
                     "network.url",
-                    b'https://example.com/myfolder',
+                    b"https://example.com/myfolder",
                     "",
                     9,
                     38,
@@ -939,24 +958,24 @@ def test_find_url(data, urls):
                             "",
                             19,
                             28,
-                        )
-                    ]
+                        ),
+                    ],
                 )
-            ]
+            ],
         ),
         (
             [
                 b'<A href="https://www.test.ca\x00/test2/test12test2\n#exa\nmple">',
-            ], [
-            ]
+            ],
+            [],
         ),
         (
             [
-                b'<a href=\x00\x10https://test.com>test</a>',
-            ], [
-            ]
-        )
-    ]
+                b"<a href=\x00\x10https://test.com>test</a>",
+            ],
+            [],
+        ),
+    ],
 )
 def test_url_from_html(data, nodes):
     for d in data:
