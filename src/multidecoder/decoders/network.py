@@ -1256,6 +1256,7 @@ def find_html_urls(data: bytes) -> list[Node]:
     def construct_node(url: bytes, start: int, end: int) -> Node:
         url_replace_mapping = {b"\r": b"", b"\n": b"", b"\t": b"", b" ": b"%20"}
 
+        url = url.strip()
         url = re.sub(
             b"|".join(map(re.escape, url_replace_mapping.keys())), lambda m: url_replace_mapping.get(m.group(0)), url
         )

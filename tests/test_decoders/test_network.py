@@ -975,6 +975,31 @@ def test_find_url(data, urls):
             ],
             [],
         ),
+        (
+            [
+                b'<a href=" https://www.example.com/example.html ">',
+            ],
+            [
+                Node(
+                    "network.url",
+                    b"https://www.example.com/example.html",
+                    "",
+                    9,
+                    47,
+                    children=[
+                        Node("network.url.scheme", b"https", "", 0, 5),
+                        Node("network.domain", b"www.example.com", "", 8, 23),
+                        Node(
+                            "network.url.path",
+                            b"/example.html",
+                            "",
+                            23,
+                            36,
+                        ),
+                    ],
+                )
+            ],
+        ),
     ],
 )
 def test_url_from_html(data, nodes):
