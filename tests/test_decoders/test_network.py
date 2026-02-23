@@ -490,7 +490,7 @@ def test_is_url():
             [
                 Node(
                     "network.url",
-                    b"https://journal.com/Canadian Centre for Cyber Security/My Great Article.docx",
+                    b"https://journal.com/Canadian%20Centre%20for%20Cyber%20Security/My%20Great%20Article.docx",
                     "",
                     9,
                     85,
@@ -502,7 +502,7 @@ def test_is_url():
                             b"/Canadian Centre for Cyber Security/My Great Article.docx",
                             "",
                             19,
-                            76,
+                            88,
                         ),
                     ],
                 )
