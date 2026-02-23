@@ -44,7 +44,7 @@ URL_RE = (
     rb"(?i)(?:t?ftp|https?|wss?|udp|socks(?:\d[a-z]?)?)://"  # scheme
     rb"(?:[\w!$-.:;=~@]*@)?"  # userinfo
     rb"(?:(?!%5B)[%A-Z0-9.-]{4,253}|(?:\[|%5B)[%0-9A-F:]{3,117}(?:\]|%5D))"  # host
-    rb"(?::[0-6]?[0-9]{0,4})?"  # port
+    rb"(?::[0-6]?[0-9]{1,4})?"  # port
     rb"(?:[/?#](?:[\w!#-/:;=@?~]*[\w!#-&(*+\-/:=@?~])?)?"  # path, query and fragment
     # The final char class stops urls from ending in ' ) , . or ;
     # to prevent trailing characters from being included in the url.
@@ -120,11 +120,17 @@ def is_domain(domain: bytes) -> bool:
     Returns:
         Whether domain has a valid top level domain.
     """
-    parts = domain.rsplit(b".", 1)
-    if len(parts) != 2:
+    # Enforce DNS size limit (https://www.rfc-editor.org/rfc/rfc1035#section-2.3.4)
+    if len(domain) > 255:
         return False
-    name, tld = parts
-    return bool(name and tld.upper() in TOP_LEVEL_DOMAINS)
+    parts = domain.split(b".")
+    if len(parts) < 2:
+        return False
+    *labels, tld = parts
+    return bool(
+        all(label and len(label) <= 63 and not label.startswith(b"-") and not label.endswith(b"-") for label in labels)
+        and tld.upper() in TOP_LEVEL_DOMAINS
+    )
 
 
 def is_ip(ip: bytes) -> bool:
@@ -1248,13 +1254,8 @@ def find_html_urls(data: bytes) -> list[Node]:
     """Find urls from html components"""
 
     def construct_node(url: bytes, start: int, end: int) -> Node:
-        url_replace_mapping = {b"\r": b"", b"\n": b"", b"\t": b"", b" ": b"%20"}
-
-        url = re.sub(
-            b"|".join(map(re.escape, url_replace_mapping.keys())), lambda m: url_replace_mapping.get(m.group(0)), url
-        )
-
-        return Node(URL_TYPE, *normalize_percent_encoding(url), start, end, data, parse_url(url))
+        url = _fix_whitespace(url)
+        return Node(URL_TYPE, *normalize_percent_encoding(url), start, end, children=parse_url(url))
 
     urls = (find_html_attribute_urls(data, c.end()) for c in HTML_COMPONENT_START_PATTERN.finditer(data))
 
@@ -1379,6 +1380,7 @@ def find_urls(data: bytes) -> list[Node]:
                 group = data[start:end]
         if not is_url(group):
             continue
+        group = _fix_whitespace(group)
         out.append(
             Node(
                 URL_TYPE,
@@ -1632,3 +1634,12 @@ def _is_printable(b: bytes) -> bool:
         return b.decode("ascii").isprintable()
     except UnicodeDecodeError:
         return False
+
+
+def _fix_whitespace(url: bytes) -> bytes:
+    url_replace_mapping = {b"\r": b"", b"\n": b"", b"\t": b"", b" ": b"%20"}
+
+    url = url.strip()
+    return re.sub(
+        b"|".join(map(re.escape, url_replace_mapping.keys())), lambda m: url_replace_mapping.get(m.group(0), b""), url
+    )
