@@ -20,4 +20,4 @@ def find_executable_name(data: bytes) -> list[Node]:
 @decoder
 def find_library(data: bytes) -> list[Node]:
     """Find dll files"""
-    return regex_hits(EXECUTABLE_TYPE, LIBRARY_RE, data)
+    return regex_hits(LIBRARY_TYPE, LIBRARY_RE, data)
