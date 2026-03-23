@@ -120,7 +120,6 @@ def test_DOMAIN_RE_match(domain):
         b'fi.search="',
         b"variable.call(",
         b"Microsoft.Win32",
-        b"delete.me@",
     ],
 )
 def test_DOMAIN_RE_false_positives(domain):
@@ -264,6 +263,7 @@ def test_domain_is_false_positive_real_domain(domain):
         (b"./example.com ", []),
         (b"https://example.com/c9k5y4.zip", [Node("network.domain", b"example.com", "", 8, 19)]),
         (b"/c9k5y4.zip", []),
+        (b"example-domain.net@80\\something.something", [Node("network.domain", b"example-domain.net", "", 0, 18)]),
     ],
 )
 def test_find_domains(data, domains):
