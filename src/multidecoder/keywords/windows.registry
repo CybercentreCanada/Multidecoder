@@ -49,3 +49,4 @@ ROOT\SecurityCenter2
 \shell\open\command
 \Device\KeyboardClassC
 \DosDevices\KeyboardClassC
+Registry\Machine\System\CurrentControlSet\Control\Class
