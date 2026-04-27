@@ -524,6 +524,22 @@ def test_is_url():
                 )
             ],
         ),
+        (
+            b"http://ocsp.verisign.com0;",
+            [
+                Node(
+                    "network.url",
+                    b"http://ocsp.verisign.com",
+                    "",
+                    0,
+                    24,
+                    children=[
+                        Node("network.url.scheme", b"http", "", 0, 4),
+                        Node("network.domain", b"ocsp.verisign.com", "", 7, 24),
+                    ],
+                )
+            ],
+        ),
     ],
 )
 def test_find_url(data, urls):

@@ -1365,8 +1365,8 @@ def find_urls(data: bytes) -> list[Node]:
         next_chr = data[end + 1] if end + 1 < len(data) else None
         if start == 0:
             # Check for pascal 0 in strings that have been ascii extracted
-            if data.count(b"/") == 2:
-                tld = data.rsplit(b".", 1)[-1]
+            if group.count(b"/") == 2:
+                tld = group.rsplit(b".", 1)[-1]
                 pascal_0 = tld.find(b"0")
                 if pascal_0 > -1 and tld[:pascal_0].upper() in TOP_LEVEL_DOMAINS:
                     end = end - len(tld) + pascal_0
