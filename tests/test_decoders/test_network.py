@@ -508,6 +508,22 @@ def test_is_url():
                 )
             ],
         ),
+        (
+            b"http://ts-ocsp.ws.symantec.com07",
+            [
+                Node(
+                    "network.url",
+                    b"http://ts-ocsp.ws.symantec.com",
+                    "",
+                    0,
+                    30,
+                    children=[
+                        Node("network.url.scheme", b"http", "", 0, 4),
+                        Node("network.domain", b"ts-ocsp.ws.symantec.com", "", 7, 30),
+                    ],
+                )
+            ],
+        ),
     ],
 )
 def test_find_url(data, urls):
