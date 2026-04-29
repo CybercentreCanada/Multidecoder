@@ -1364,7 +1364,13 @@ def find_urls(data: bytes) -> list[Node]:
         prev = data[start - 1]
         next_chr = data[end + 1] if end + 1 < len(data) else None
         if start == 0:
-            pass  # No context
+            # Check for pascal 0 in strings that have been ascii extracted
+            if group.count(b"/") == 2:
+                tld = group.rsplit(b".", 1)[-1]
+                pascal_0 = tld.find(b"0")
+                if pascal_0 > -1 and tld[:pascal_0].upper() in TOP_LEVEL_DOMAINS:
+                    end = end - len(tld) + pascal_0
+                    group = group[:end]
         elif group[prev : prev + 1] == b"0" and not _is_printable(data[start - 10 : start]):
             # Pascal string in PE file
             end = start + prev
