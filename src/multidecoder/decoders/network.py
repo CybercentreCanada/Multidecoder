@@ -437,6 +437,7 @@ def domain_is_false_positive(domain: bytes) -> bool:
         b"mail",
         b"makefile",
         b"manager",
+        b"manifest",
         b"match",
         b"matched",
         b"mem",
