@@ -227,6 +227,7 @@ def test_is_domain(domain: bytes, expected: bool):
         b"i-r.top",
         b"update.zip",
         b"cluster.fit",
+        b"MANIFEST.in",
     ],
 )
 def test_domain_is_false_positive(domain):
