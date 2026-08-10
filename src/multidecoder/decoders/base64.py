@@ -12,7 +12,7 @@ from multidecoder.registry import decoder
 from multidecoder.xor_helper import apply_xor_key, get_xorkey
 
 HTML_ESCAPE_RE = rb"&#(?:x[a-fA-F0-9]{1,4}|\d{1,4});"
-BASE64_RE = rb"(?:[A-Za-z0-9+/]{4,}(?:<\x00  \x00)?(?:&#13;|&#xD;)?(?:&#10;|&#xA)?\r?\n?){5,}[A-Za-z0-9+/]{2,}=?=?"
+BASE64_RE = rb"(?:[A-Za-z0-9+/]{4,}(?:<\x00  \x00)?(?:[\r\n]|&#10;|&#xA;|&#13;|&#xD;)*){5,}[A-Za-z0-9+/]{2,}=?=?"
 BASE64DECODE_RE = rb"(?i)Base64Decode\(['\"]([a-z0-9/+]+=?=?)['\"]\)"
 FROMB64STRING_RE = rb"(?i)(\[System.Convert\]::)?FromBase64String\(['\"]([a-z0-9+/]+=?=?)['\"]\)"
 ATOB_RE = rb"atob\(['\"]([A-Za-z0-9+/]+=?=?)['\"]\)"

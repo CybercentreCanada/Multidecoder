@@ -79,6 +79,10 @@ def test_base64_re_matches_equals():
             b'var img = "aHR0cHM6Ly9leC5leGFtcGxlLmNvbS93cC93cC1hZG1pbi9jc3MvYXV0aC5waHA"',
             [Node("", b"https://ex.example.com/wp/wp-admin/css/auth.php", "encoding.base64", 11, 74)],
         ),
+        (
+            b'<img src="asdfhjklASDFa&#10;&#10;&#10;sdfhjklASDF44==">',
+            [Node("", b"j\xc7_\x869%\x01 \xc5j\xc7_\x869%\x01 \xc5\xe3", "encoding.base64", 10, 53)],
+        ),
     ],
 )
 def test_find_base64(text: bytes, found: list[Node]):
