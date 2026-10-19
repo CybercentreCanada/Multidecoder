@@ -158,8 +158,8 @@ def is_url(url: bytes) -> bool:
     Returns:
        Whether url is a URL.
     """
-    split = urlsplit(url)
     try:
+        split = urlsplit(url)  # urlsplit throws ValueError if there are [] in the host but no IPv6
         split.port  # noqa: B018 urlsplit.port is a property that does validation and raises ValueError if it fails.
     except ValueError:
         return False

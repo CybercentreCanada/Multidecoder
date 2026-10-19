@@ -398,6 +398,7 @@ def test_URL_RE_context(data, url):
 
 def test_is_url():
     assert network.is_url(b"https://some.domain.com")
+    assert not network.is_url("http://www.[spoofed sender email domain]")
 
 
 @pytest.mark.parametrize(
