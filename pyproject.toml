@@ -38,3 +38,10 @@ lint.ignore = ['RUF023']
 
 [tool.mypy]
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
+
+[tool.tox]
+env_list = ["3.10","3.11","3.12","3.13","3.14"]
+
+[tool.tox.env_run_base]
+deps = ["pytest"]
+commands = [["pytest", { replace = "posargs", extend = true}]]
