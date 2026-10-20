@@ -26,12 +26,6 @@ jobs:
           versionSpec: "$(python.version)"
       - script: |
           set -x  # Echo commands before they are run
-          sudo env "PATH=$PATH" python -m pip install -U --no-cache-dir pefile regex
-          [ -f $(pwd)/tests/requirements.txt ] && sudo env "PATH=$PATH" python -m pip install -U --no-cache-dir -r $(pwd)/tests/requirements.txt
-          sudo rm -rf /tmp/* ~/.cache/pip
-        displayName: Setup Environment
-      - script: |
-          set -x  # Echo commands before they are run
-          [ ! -d "$(pwd)/tests" ] && echo "No tests found" && exit
-          sudo env "PATH=$PATH" python -m pytest -p no:cacheprovider --durations=10 -rsx -xsvvv --disable-warnings
+          pip install tox
+          tox -e py
         displayName: Test
