@@ -14,7 +14,7 @@ pool:
 jobs:
 - job: test
   strategy:
-    Matrix:
+    matrix:
       Python3_11:
         python.version: "3.11"
       Python3_12:
