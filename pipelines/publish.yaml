@@ -48,7 +48,7 @@ jobs:
   - task: UsePythonVersion@0
     displayName: Set python version
     inputs:
-      versionSpec: 3.10
+      versionSpec: 3.11
 
   - script: |
       set -x
